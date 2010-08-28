@@ -27,6 +27,20 @@ extends JFrame( "Scala Interpreter" ) {
 """// Press '""" + KeyEvent.getKeyModifiersText( txnKeyStroke.getModifiers() ) + " + " +
       KeyEvent.getKeyText( txnKeyStroke.getKeyCode() ) + """' to execute transactionally.
 
+val w = ProcDemiurg.worlds(s)
+val fact = ProcDemiurg.factories
+val test = fact.find( _.name == "test" ).get
+val n = Dissemination.NUM_PLATES
+val tests = (0 until n).map( i => {
+    val p = test.make
+    p.control( "phas" ).v = i.linlin( 0, n + 1, 1, 0 )
+    p.control( "f1" ).v = 0.4
+    p.control( "f2" ).v = (i * 2 + 64).midicps
+    p.control( "q" ).v  = 50
+    p ~> SemiNuages.plateCollectors( i )
+    p.play
+    p
+})
 """
 
       pane.initialCode = Some(
@@ -37,6 +51,7 @@ import de.sciss.synth.ugen._
 import de.sciss.synth.swing._
 import de.sciss.synth.proc._
 import de.sciss.synth.proc.DSL._
+import de.sciss.semi._
 import support._
 """
       )

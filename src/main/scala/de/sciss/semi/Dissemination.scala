@@ -35,13 +35,20 @@ import de.sciss.synth.proc.ProcDemiurg
 import de.sciss.synth._
 import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
+import collection.immutable.{ IndexedSeq => IIdxSeq }
 
 object Dissemination {
+   val GRAZ                = false
+
+   val NUM_PLATES          = if( GRAZ ) 7 else 5
+   val START_WITH_TRANSIT  = GRAZ
    val BASE_PATH           = System.getProperty( "user.home" ) + File.separator + "Desktop" + File.separator + "Dissemination"
    val INTERNAL_AUDIO      = true
    val NUAGES_ANTIALIAS    = false
-   val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else 5
    val MASTER_OFFSET       = 0
+
+   val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
+   val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
 
    val options          = {
       val o = new ServerOptionsBuilder()
@@ -130,7 +137,7 @@ object Dissemination {
       f.setLocation( ((SCREEN_BOUNDS.width - f.getWidth()) >> 1) + 100, 10 )
       f.setVisible( true )
       support.nuages = f
-//      CupolaNuages.init( s, f )
+      SemiNuages.init( s, f )
    }
 
    def quit { System.exit( 0 )}
