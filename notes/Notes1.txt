@@ -1,0 +1,22 @@
+::::: 28-Aug-10 / 16:20 h :::::
+
+- plate processes as individual agents
+- a plate i (where i is the index from 0 to NUM_PLATES - 1)
+  listens to a plate j = (i + 2) % NUM_PLATES, or -- to break
+  the western orientation of left-to-right -- to a plate
+  j* = (i - 2 + NUM_PLATES) % NUM_PLATES, recording its
+  audio output or performing a signal analysis, using the
+  result of this recording / analysis to create after a while
+  its own input signal, which will be somehow "merged" with
+  the previous content.
+
+::::: 16:20 h :::::
+
+- luminosity processes that are panned across all panes
+- step-wise travelling processes: echos, reverberation
+  (e.g. plate 2 echoes plate 0, place 4 echos plate 2...)
+- we need an incubation sequence that produces initial
+  input. this could spark from a self-analysis when that
+  reveals a too low energy level;
+- MachineListening UGens: Onsets, Loudness, MFCC,
+  SpecFlatness, SpecPcile, SpecCentroid
