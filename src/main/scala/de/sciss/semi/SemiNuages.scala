@@ -653,6 +653,18 @@ object SemiNuages extends {
 //      val collMaster = fieldCollectors( MasterField )
 //      sub foreach { _ ~> collMaster }
 
+      // ---- analysis ----
+
+      diff( "ana" ) {
+         graph { in =>
+            val bufID   = bufEmpty( 1024 ).id
+            val chain   = FFT( bufID, Mix( in ))
+            val loud    = Loudness( chain )
+            val centr   = SpecCentroid( chain )
+            val flat    = SpecFlatness( chain )
+         }
+      }
+
       // ---- master ----
 
       collMaster = (filter( "master+" ) {
