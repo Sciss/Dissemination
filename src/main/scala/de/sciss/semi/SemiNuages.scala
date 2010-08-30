@@ -49,7 +49,8 @@ object SemiNuages extends {
    var f : NuagesFrame = _
    var masterSynth : Synth  = _
 
-   var plateCollectors = IIdxSeq[ Proc ]() // = _
+//   var plateCollectors = IIdxSeq[ Proc ]() // = _
+   var plates: IIdxSeq[ Plate ] = _
    var collMaster: Proc = _
    var pMaster:    Proc = _
 
@@ -637,33 +638,7 @@ object SemiNuages extends {
 //         }
 //      }
 
-      // ---- collectors ----
-      val genDummyMono = gen( "@" ) { graph { Silent.ar( 1 )}}
-      plateCollectors = PLATE_TRANSITS.zipWithIndex.map( tup => {
-         val (transit, idx) = tup
-         val genColl = filter( (idx + 1).toString + "+" ) { graph { in => in }}
-         val pColl   = genColl.make
-         val pDummy  = genDummyMono.make
-         pDummy ~> pColl
-         pColl.play
-         pDummy.dispose
-         pColl
-      })( breakOut )
-//      val sub        = (plateCollectors - MasterField).values
-//      val collMaster = fieldCollectors( MasterField )
-//      sub foreach { _ ~> collMaster }
-
-      // ---- analysis ----
-
-      diff( "ana" ) {
-         graph { in =>
-            val bufID   = bufEmpty( 1024 ).id
-            val chain   = FFT( bufID, Mix( in ))
-            val loud    = Loudness( chain )
-            val centr   = SpecCentroid( chain )
-            val flat    = SpecFlatness( chain )
-         }
-      }
+      gen( "@" ) { graph { Silent.ar( 1 )}}
 
       // ---- master ----
 
@@ -675,9 +650,9 @@ object SemiNuages extends {
          }
       }).make
 
-      plateCollectors.zipWithIndex foreach { tup =>
-         val (proc, idx) = tup
-         proc ~> collMaster.audioInput( "in" + (idx+1) )
+      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
+         val (transit, idx) = tup
+         Plate( idx, transit )
       }
 
       pMaster = diff( "semi-master" )({

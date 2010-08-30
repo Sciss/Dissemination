@@ -37,7 +37,7 @@ val tests = (0 until n).map( i => {
     p.control( "f1" ).v = 0.4
     p.control( "f2" ).v = (i * 2 + 64).midicps
     p.control( "q" ).v  = 50
-    p ~> SemiNuages.plateCollectors( i )
+    p ~> SemiNuages.plates( i ).collector
     p.play
     p
 })

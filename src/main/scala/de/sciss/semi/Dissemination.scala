@@ -100,8 +100,7 @@ object Dissemination {
       ntpw.setVisible( true )
       sif.setLocation( sspw.getX + sspw.getWidth + 32, sif.getY )
       sif.setVisible( true )
-      booting = Server.boot( options = options )
-      booting.addListener {
+      booting = Server.boot( options = options ) {
          case ServerConnection.Preparing( srv ) => {
             ssp.server = Some( srv )
             ntp.server = Some( srv )
@@ -119,7 +118,7 @@ object Dissemination {
          }
       }
       Runtime.getRuntime().addShutdownHook( new Thread { override def run = shutDown })
-      booting.start
+//      booting.start
    }
 
    private def initNuages {
