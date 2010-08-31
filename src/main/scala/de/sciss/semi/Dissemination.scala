@@ -36,6 +36,7 @@ import de.sciss.synth._
 import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
 import collection.immutable.{ IndexedSeq => IIdxSeq }
+import de.sciss.osc.TCP
 
 object Dissemination {
    val GRAZ                = false
@@ -63,6 +64,8 @@ object Dissemination {
       o.loadSynthDefs      = false
       o.memorySize         = 65536
       o.zeroConf           = false
+//      o.port               = 0
+//      o.transport          = TCP
 //      o.programPath        = properties.getProperty( PROP_SCPATH ) + File.separator + "scsynth"
       o.build
    }

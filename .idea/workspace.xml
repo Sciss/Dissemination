@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="69471a22-aeeb-4948-b3b3-ea91600520e2" name="Default" comment="" />
-    <ignored path=".idea/workspace.xml" />
     <ignored path="Dissemination.iws" />
+    <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +63,7 @@
       <file leaf-file-name="SemiNuages.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="652" column="55" selection-start="28413" selection-end="28413" vertical-scroll-proportion="0.0">
+            <state line="640" column="0" selection-start="28051" selection-end="28051" vertical-scroll-proportion="-2.0769231">
               <folding />
             </state>
           </provider>
@@ -72,7 +72,7 @@
       <file leaf-file-name="Dissemination.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="49" column="21" selection-start="1728" selection-end="1742" vertical-scroll-proportion="0.0">
+            <state line="66" column="32" selection-start="2379" selection-end="2412" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -81,7 +81,34 @@
       <file leaf-file-name="Plate.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="95" column="14" selection-start="3254" selection-end="3254" vertical-scroll-proportion="0.8897959">
+            <state line="234" column="18" selection-start="8513" selection-end="8513" vertical-scroll-proportion="0.23198198">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SoundContext.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="9" column="1" selection-start="173" selection-end="173" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Material.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="28" column="21" selection-start="997" selection-end="997" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Util.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="56" column="13" selection-start="1560" selection-end="1566" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -131,9 +158,12 @@
         <option value="$PROJECT_DIR$/project/plugins/Plugins.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/REPLSupport.scala" />
         <option value="$PROJECT_DIR$/project/build/Dissemination.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/ScalaInterpreterFrame.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala" />
       </list>
     </option>
@@ -173,6 +203,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -248,36 +280,6 @@
               <option name="myItemId" value="main" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="scala" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="semi" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Plate.scala" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Dissemination" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Dissemination" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -295,8 +297,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="Favorites" />
     </panes>
   </component>
@@ -313,9 +313,9 @@
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.searchVisible" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RunManager" selected="Application.Dissemination">
     <configuration default="true" type="Remote" factoryName="Remote">
@@ -507,7 +507,7 @@
     <supportedVersion>125</supportedVersion>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1396" height="878" extended-state="0" />
+    <frame x="-22" y="22" width="1396" height="878" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -522,7 +522,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22865628" sideWeight="0.6619898" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32908162" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32908162" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -570,6 +570,16 @@
         <state line="4" column="78" selection-start="159" selection-end="159" vertical-scroll-proportion="0.0794702" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/project/build/Dissemination.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="22" selection-start="77" selection-end="77" vertical-scroll-proportion="0.02027027" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/ScalaInterpreterFrame.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="40" column="4" selection-start="1263" selection-end="1263" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/REPLSupport.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="0" selection-start="166" selection-end="166" vertical-scroll-proportion="0.0" />
@@ -580,37 +590,44 @@
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/project/build/Dissemination.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="22" selection-start="77" selection-end="77" vertical-scroll-proportion="0.02027027">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/ScalaInterpreterFrame.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="4" selection-start="1263" selection-end="1263" vertical-scroll-proportion="0.0">
+        <state line="66" column="32" selection-start="2379" selection-end="2412" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="652" column="55" selection-start="28413" selection-end="28413" vertical-scroll-proportion="0.0">
+        <state line="640" column="0" selection-start="28051" selection-end="28051" vertical-scroll-proportion="-2.0769231">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="21" selection-start="1728" selection-end="1742" vertical-scroll-proportion="0.0">
+        <state line="56" column="13" selection-start="1560" selection-end="1566" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="9" column="1" selection-start="173" selection-end="173" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="21" selection-start="997" selection-end="997" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="14" selection-start="3254" selection-end="3254" vertical-scroll-proportion="0.8897959">
+        <state line="234" column="18" selection-start="8513" selection-end="8513" vertical-scroll-proportion="0.23198198">
           <folding />
         </state>
       </provider>
