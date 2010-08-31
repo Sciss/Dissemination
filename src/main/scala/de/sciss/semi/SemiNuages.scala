@@ -654,6 +654,9 @@ object SemiNuages extends {
          val (transit, idx) = tup
          Plate( idx, transit )
       }
+      plates.foreach( p => p.initNeighbours(
+         { val i = p.id - 2; if( i >= 0 ) Some( plates( i )) else None },
+         { val i = p.id + 2; if( i < NUM_PLATES ) Some( plates( i )) else None }))
 
       pMaster = diff( "semi-master" )({
 //         val pmix    = pMix
@@ -690,6 +693,6 @@ object SemiNuages extends {
       // tablet
       this.f = f
 
-s.dumpOSC(1)
+//s.dumpOSC(1)
    }
 }

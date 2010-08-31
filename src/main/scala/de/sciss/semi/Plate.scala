@@ -1,3 +1,31 @@
+/*
+ *  Plate.scala
+ *  (Dissemination)
+ *
+ *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *
+ *  This software is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either
+ *  version 2, june 1991 of the License, or (at your option) any later version.
+ *
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public
+ *  License (gpl.txt) along with this software; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
+ *
+ *
+ *  Changelog:
+ */
+
 package de.sciss.semi
 
 import de.sciss.synth._
@@ -46,6 +74,10 @@ object Plate {
 //      }
 //   }
 
+   def startLife {
+      
+   }
+
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
       val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
       val pDummy  = factory( "@" ).make
@@ -72,7 +104,9 @@ object Plate {
 //           smooth.poll( 2 )
             1.react( smooth ) { data =>
                val Seq( loud, centr, flat ) = data
-               ProcTxn.spawnAtomic { implicit tx =>
+println( "AQUI " + id )
+//               ProcTxn.spawnAtomic { implicit tx => }
+java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
                   plate.newAnalysis( loud, centr, flat )
                   // display
                   val me = plate.analyzer
@@ -80,6 +114,7 @@ object Plate {
                   me.control( "centr" ).v   = centr
                   me.control( "flat" ).v    = flat
                }
+            })
             }
             0
          }
@@ -196,24 +231,59 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc ) {
    def centroid( implicit tx: ProcTxn ) = centroidRef()
    def flatness( implicit tx: ProcTxn ) = flatnessRef()
 
+   private val energyCons  = Ref( 0.0 )
+   private val energyProd  = Ref( 0.0 )
+// private val energyBal   = Ref( 0.0 )  // always equal to prod minus consume
+   private val exhausted   = Ref( 0 )
+
    override def toString = "plate<" + id + ">"
 
-   def newAnalysis( loud: Double, centr: Double, flat: Double )( implicit tx: ProcTxn ) {
+   private var neighbour1: Option[ Plate ] = None
+   private var neighbour2: Option[ Plate ] = None
+   private var neighbourW: Int = 0
+
+   def initNeighbours( n1: Option[ Plate ], n2: Option[ Plate ]) {
+      neighbour1  = n1
+      neighbour2  = n2
+      neighbourW  = (n1 :: n2 :: Nil).count( _.isEmpty ) + 1
+   }
+
+   def newAnalysis( loud0: Double, centr0: Double, flat0: Double )( implicit tx: ProcTxn ) {
+      // eventually we might tune in some kind of correction curves
+      val loud    = (loud0 - 0.192486).max( 0.0 )
+      val centr   = centr0
+      val flat    = flat0
+
       loudnessRef.set( loud )
       centroidRef.set( centr )
       flatnessRef.set( flat )
+      val exhaust = exhausted()
 
-      // ---- act ----
+      // ---- minimum loudness ----
       if( loud < MIN_LOUDNESS_THRESH ) {
          val cnt = silenceCount() + 1
          silenceCount.set( cnt )
-         if( cnt >= MIN_LOUDNESS_COUNT ) {
+         if( (cnt >= MIN_LOUDNESS_COUNT) && (exhaust == 0) ) {
 //            println( this.toString + " : make some noise" )
             makeSomeNoise
          }
       } else {
          silenceCount.set( 0 )
       }
+
+      val eCons = energyCons() + (1.0 - flat) * loud
+      val eProd = energyProd() +
+         neighbour1.map( n => n.flatness * n.loudness * neighbourW ).getOrElse( 0.0 ) +
+         neighbour2.map( n => n.flatness * n.loudness * neighbourW ).getOrElse( 0.0 )
+      val eBal  = eProd - eCons
+      energyCons.set( eCons )
+      energyProd.set( eProd )
+
+      if( exhaust > 0 ) {
+         exhausted.set( exhaust - 1 )
+      }
+
+      println( this.toString + " : energy balance = " + eBal )
    }
 
    private def makeSomeNoise( implicit tx: ProcTxn ) {
