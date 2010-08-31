@@ -9,7 +9,7 @@ import java.io.File
 import Util._
 
 object Plate {
-   val verbose = false
+   val verbose = true
    
    val MIN_LOUDNESS_THRESH = 1.0
    val MIN_LOUDNESS_COUNT  = 10     
@@ -72,7 +72,7 @@ object Plate {
 //           smooth.poll( 2 )
             1.react( smooth ) { data =>
                val Seq( loud, centr, flat ) = data
-               ProcTxn.atomic { implicit tx =>
+               ProcTxn.spawnAtomic { implicit tx =>
                   plate.newAnalysis( loud, centr, flat )
                   // display
                   val me = plate.analyzer

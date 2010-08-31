@@ -54,7 +54,7 @@ object SemiNuages extends {
    var collMaster: Proc = _
    var pMaster:    Proc = _
 
-   def init( s: Server, f: NuagesFrame ) = ProcTxn.atomic { implicit tx =>
+   def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
 
       // -------------- DIFFUSIONS --------------
 
@@ -689,5 +689,7 @@ object SemiNuages extends {
 
       // tablet
       this.f = f
+
+s.dumpOSC(1)
    }
 }
