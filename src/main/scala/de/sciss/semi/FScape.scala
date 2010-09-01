@@ -6,8 +6,11 @@ import java.util.Properties
 import de.sciss.osc.{OSCMessage, TCP, OSCClient}
 import java.io.{FileOutputStream, File}
 import actors.{TIMEOUT, DaemonActor}
+
 // quickly hacked...
 object FScape {
+   var OPEN_WINDOW   = false
+
    lazy val client = {
       val res = OSCClient( TCP )
       res.target = new InetSocketAddress( "127.0.0.1", 0x4653 )
@@ -48,7 +51,7 @@ object FScape {
             val os      = new FileOutputStream( docFile )
             prop.store( os, "Dissemination" )
             os.close
-            client ! OSCMessage( "/doc", "open", docFile, 1 )    // 0 for invisible
+            client ! OSCMessage( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
             query( "/doc", "count" :: Nil ) {
                case Seq( num: Int ) => {
                   var idx = 0
@@ -70,7 +73,7 @@ object FScape {
                                        case TIMEOUT => query( addr, "running" :: "progression" :: "error" :: Nil ) {
                                           case Seq( r: Int, p: Float, e: String ) => {
                                              progress = p
-                                             println( "PROGRESS = " + (p * 100).toInt )
+//                                             println( "PROGRESS = " + (p * 100).toInt )
                                              running  = r
                                              err      = e
                                           }
@@ -79,7 +82,7 @@ object FScape {
                                  } andThen {
                                     client ! OSCMessage( addr, "close" )
                                     if( err != "" ) {
-                                       println( "FScape : ERROR (" + name + " -- " + err + ")" )
+                                       println( "FScape : ERROR (" + name + " -- " + err + ")" + " / " + docFile )
                                        fun( false )
                                     } else {
                                        println( "FScape : Success (" + name + ")" )
@@ -92,8 +95,10 @@ object FScape {
                         case _ => idx += 1
                      }
                   } andThen {
-                     println( "?! File not found : " + docFile )
-                     fun( false )
+                     if( !found ) {
+                        println( "?! File not found (" + name + " / " + docFile + ")" )
+                        fun( false )
+                     }
                   }
                }
             }
@@ -235,7 +240,7 @@ object FScape {
       }
    }
 
-   case class Bleach( anaIn: String, fltIn: Option[ String ] = None, out: String,
+   case class Bleach( in: String, fltIn: Option[ String ] = None, out: String,
       spec: AudioFileSpec = OutputSpec.aiffFloat, gain: Gain = Gain.immediate,
       length: Int = 441, feedback: String = "-60.0dB", clip: String = "18.0dB",
       inverse: Boolean = false )
@@ -243,9 +248,9 @@ object FScape {
       def className = "Bleach"
 
       def toProperties( p: Properties ) {
-         p.setProperty( "AnaInFile", anaIn )
+         p.setProperty( "AnaInFile", in )
          fltIn.foreach( p.setProperty( "FltInFile", _ ))
-         p.setProperty( "UseAnaAsFilter", fltIn.isDefined.toString )
+         p.setProperty( "UseAnaAsFilter", fltIn.isEmpty.toString )
          p.setProperty( "OutputFile", out )
          p.setProperty( "OutputType", audioFileType( spec ))
          p.setProperty( "OutputReso", audioFileRes( spec ))

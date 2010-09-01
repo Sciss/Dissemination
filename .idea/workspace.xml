@@ -60,19 +60,28 @@
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="FScape.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
+      <file leaf-file-name="Plate.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="655" column="22" selection-start="28199" selection-end="28199" vertical-scroll-proportion="0.0">
+            <state line="381" column="6" selection-start="12975" selection-end="12975" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Plate.scala" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
+      <file leaf-file-name="FScape.scala" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="202" column="6" selection-start="7435" selection-end="7435" vertical-scroll-proportion="0.33245033">
+            <state line="252" column="55" selection-start="10224" selection-end="10224" vertical-scroll-proportion="-1.8040817">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Util.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="56" column="44" selection-start="1583" selection-end="1583" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -126,8 +135,8 @@
         <option value="$PROJECT_DIR$/project/build/Dissemination.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala" />
       </list>
@@ -535,7 +544,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22865628" sideWeight="0.6619898" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32908162" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32908162" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32908162" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -618,13 +627,6 @@
         <state line="7" column="58" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="0" selection-start="1975" selection-end="1975" vertical-scroll-proportion="0.8367347">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="51" column="36" selection-start="1784" selection-end="1784" vertical-scroll-proportion="0.01986755">
@@ -632,16 +634,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="655" column="22" selection-start="28199" selection-end="28199" vertical-scroll-proportion="0.0">
+        <state line="56" column="44" selection-start="1583" selection-end="1583" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="202" column="6" selection-start="7435" selection-end="7435" vertical-scroll-proportion="0.33245033">
+        <state line="381" column="6" selection-start="12975" selection-end="12975" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="252" column="55" selection-start="10224" selection-end="10224" vertical-scroll-proportion="-1.8040817">
           <folding />
         </state>
       </provider>

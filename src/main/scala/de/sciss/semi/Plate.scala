@@ -295,43 +295,93 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 
       val tmpA    = WORK_PATH   + fs + "tmp-a" + id + ".aif"
       val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
+      val tmpC    = WORK_PATH   + fs + "tmp-c" + id + ".aif"
       val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
-      val docRvs  = FScape.UnaryOp(
+      val outPath = WORK_PATH   + fs + "plateT" + id + ".aif"
+
+      import FScape._
+
+      val docRvs  = UnaryOp(
          in       = recPath,
          out      = tmpA,
          reverse  = true
       )
-      val docMirr = FScape.BinaryOp(
+      val docMirr = BinaryOp(
          in1      = recPath,
          in2      = tmpA,
          offset2  = "-1.0",
          length2  = "2.0",
          out      = tmpB
       )
-      val docFFT  = FScape.Fourier(
+      val docFFT  = Fourier(
          in       = tmpB,
          out      = tmpA,
-         gain     = FScape.Gain.normalized
+         gain     = Gain.normalized
       )
-      val docFrz  = FScape.Kriechstrom(
-         in       = tmpA,
-         out      = tmpB,
-         length   = "1.5"
-      )
-      val docIFFT = FScape.Fourier(
+      
+      val docTrns = rand( 4 ) match {
+         case 0 =>
+            Kriechstrom(
+               in       = tmpA,
+               out      = tmpB,
+               length   = "1.5"
+            ) :: Nil
+         case 1 =>
+            Bleach(
+               in       = tmpA,
+               out      = tmpB,
+               feedback = "-54dB",
+               length   = 256
+            ) :: UnaryOp(
+               in       = tmpB,
+               out      = tmpA,
+               reverse  = true
+            ) :: Bleach(
+               in       = tmpA,
+               out      = tmpC,
+               feedback = "-54dB",
+               length   = 256
+            ) :: UnaryOp(
+               in       = tmpC,
+               out      = tmpB,
+               reverse  = true
+            ) :: Nil
+         case 2 =>
+            Laguerre(
+               in       = tmpA,
+               out      = tmpB,
+               warp     = rrand( -0.6, -0.2 )
+            ) :: Nil
+         case 3 =>
+            Hilbert(
+               in       = tmpA,
+               out      = tmpB,
+               freq     = exprand( 100, 5000 ) * (if( coin( 0.5 )) 1 else -1)
+            ) :: Nil
+      }
+
+      val docIFFT = Fourier(
          in       = tmpB,
          out      = tmpA,
-         gain     = FScape.Gain.normalized,
+//         gain     = Gain.normalized,
          inverse  = true
       )
-      val docHalf = FScape.UnaryOp(
+      val docHalf = UnaryOp(
          in       = tmpA,
          out      = tmpB,
          length   = "0.5"
       )
-      FScape.processChain( "PlateFrz", docRvs :: docMirr :: docFFT :: docFrz :: docIFFT :: docHalf :: Nil ) { success =>
+      val docLoop = MakeLoop(
+         in       = tmpB,
+         out      = outPath,
+         spec     = OutputSpec.aiffInt,
+         gain     = Gain.normalized
+      )
+
+      processChain( "PlateFrz" + id, docRvs :: docMirr :: docFFT :: docTrns ++ (docIFFT :: docHalf :: docLoop :: Nil) )
+      { success =>
          if( success ) {
-            println( "Done all!" )
+            println( this.toString + " RENDER DONE" )
          } else {
 //            recording.set( false )
          }
