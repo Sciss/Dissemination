@@ -64,4 +64,10 @@ object Util {
       var sum  = 0.0
       seq find { e => sum += fun( e ); sum >= i } getOrElse seq.last
    }
+
+   def nextPowerOfTwo( x: Int ) : Int = {
+      var y = 1
+      while( y < x ) y <<= 1
+      y
+   }
 }

@@ -49,6 +49,7 @@ object Dissemination {
    val INTERNAL_AUDIO      = true
    val NUAGES_ANTIALIAS    = false
    val MASTER_OFFSET       = 0
+   val SAMPLE_RATE         = 44100.0
 
    val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES

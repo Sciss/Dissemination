@@ -106,15 +106,25 @@ object FScape {
       FScapeActor ! Process( name, doc, fun )
    }
 
+   def processChain( name: String, docs: Seq[ Doc ])( fun: Boolean => Unit ) {
+      docs.headOption.map( doc => process( name, doc ) { success =>
+         if( success ) {
+            processChain( name, docs.tail )( fun )
+         } else {
+            fun( false )
+         }
+      }).getOrElse( fun( true ))
+   }
+
    object Gain {
-      val immediate  = Gain( 0.0, false )
-      val normalized = Gain( -0.2, true )
+      val immediate  = Gain( "0.0dB", false )
+      val normalized = Gain( "-0.2dB", true )
    }
    object OutputSpec {
       val aiffFloat  = AudioFileSpec( AudioFileType.AIFF, SampleFormat.Float, 1, 44100.0 ) // numCh, sr not used
       val aiffInt    = AudioFileSpec( AudioFileType.AIFF, SampleFormat.Int24, 1, 44100.0 )
    }
-   case class Gain( value: Double = 0.0, normalized: Boolean = false )
+   case class Gain( value: String = "0.0dB", normalized: Boolean = false )
 
    trait Doc {
       def toProperties( p: Properties ) : Unit
@@ -158,6 +168,144 @@ object FScape {
       override def toString = value.toString + "," + unit.toString
    }
 
+   // ------------- actual processes -------------
+
+   case class UnaryOp( in: String, imagIn: Option[ String ] = None, out: String, imagOut: Option[ String ] = None,
+      spec: AudioFileSpec = OutputSpec.aiffFloat, gain: Gain = Gain.immediate,
+      offset: String = "0.0", length: String = "1.0", op: String = "thru",
+      drive: String = "0.0dB", rectify: Boolean = false, invert: Boolean = false, reverse: Boolean = false,
+      dryMix: String = "0.0", dryInvert: Boolean = false, wetMix: String = "1.0" )
+   extends Doc {
+      def className = "UnaryOpDlg"
+
+      def toProperties( p: Properties ) {
+         p.setProperty( "ReInFile", in )
+         imagIn.foreach( p.setProperty( "ImInFile", _ ))
+         p.setProperty( "HasImInput", imagIn.isDefined.toString )
+         p.setProperty( "ReOutFile", out )
+         imagOut.foreach( p.setProperty( "ImOutFile", _ ))
+         p.setProperty( "HasImOutput", imagOut.isDefined.toString )
+         p.setProperty( "OutputType", audioFileType( spec ))
+         p.setProperty( "OutputReso", audioFileRes( spec ))
+         p.setProperty( "Operator", (op match {
+            case "thru"       => 0
+            case "sin"        => 1
+            case "squared"    => 2
+            case "sqrt"       => 3
+            case "log"        => 4
+            case "exp"        => 5
+            case "rectpolar"  => 6
+            case "rectpolar_unwrapped"=> 7
+            case "polarrect"  => 8
+            case "not"        => 9
+         }).toString )
+         p.setProperty( "GainType", gainType( gain ))
+         p.setProperty( "Gain", dbAmp( gain.value ))
+         p.setProperty( "Invert", invert.toString )
+         p.setProperty( "Reverse", reverse.toString )
+         p.setProperty( "DryMix", factorAmp( dryMix ))
+         p.setProperty( "DryInvert", dryInvert.toString )
+         p.setProperty( "WetMix", factorAmp( wetMix ))
+         p.setProperty( "InGain", dbAmp( drive ))
+
+         p.setProperty( "Offset", absMsFactorTime( offset ))
+	      p.setProperty( "Length", absMsFactorTime( length ))
+      }
+   }
+
+   case class BinaryOp( in1: String, imagIn1: Option[ String ] = None,
+                        in2: String, imagIn2: Option[ String ] = None, out: String, imagOut: Option[ String ] = None,
+      spec: AudioFileSpec = OutputSpec.aiffFloat, gain: Gain = Gain.immediate,
+      offset1: String = "0.0", length1: String = "1.0",
+      offset2: String = "0.0", length2: String = "1.0",
+      op: String = "+",
+      drive1: String = "0.0dB", rectify1: Boolean = false, invert1: Boolean = false,
+      drive2: String = "0.0dB", rectify2: Boolean = false, invert2: Boolean = false,
+      dryMix: String = "0.0", dryInvert: Boolean = false, wetMix: String = "1.0" )
+   extends Doc {
+      def className = "BinaryOpDlg"
+
+      def toProperties( p: Properties ) {
+         p.setProperty( "ReInFile1", in1 )
+         p.setProperty( "ReInFile2", in2 )
+         imagIn1.foreach( p.setProperty( "ImInFile1", _ ))
+         imagIn2.foreach( p.setProperty( "ImInFile2", _ ))
+         p.setProperty( "HasImInput1", imagIn1.isDefined.toString )
+         p.setProperty( "HasImInput2", imagIn2.isDefined.toString )
+         p.setProperty( "ReOutFile", out )
+         imagOut.foreach( p.setProperty( "ImOutFile", _ ))
+         p.setProperty( "HasImOutput", imagOut.isDefined.toString )
+         p.setProperty( "OutputType", audioFileType( spec ))
+         p.setProperty( "OutputReso", audioFileRes( spec ))
+         p.setProperty( "Operator", (op match {
+            case "+"       => 0
+            case "*"       => 1
+            case "/"       => 2
+            case "%"       => 3
+            case "pow"     => 4
+            case "&"       => 5
+            case "|"       => 6
+            case "^"       => 7
+            case "phase"   => 8
+            case "mag"     => 9
+            case "min"     => 10
+            case "max"     => 11
+            case "absmin"  => 12
+            case "absmax"  => 13
+            case "minsum"  => 14
+            case "maxsum"  => 15
+            case "minproj" => 16
+            case "maxproj" => 17
+            case "gate"    => 18
+            case "atan"    => 19
+         }).toString )
+         p.setProperty( "GainType", gainType( gain ))
+         p.setProperty( "Gain", dbAmp( gain.value ))
+         p.setProperty( "Invert1", invert1.toString )
+         p.setProperty( "Invert2", invert2.toString )
+         p.setProperty( "Rectify1", rectify1.toString )
+         p.setProperty( "Rectify2", rectify2.toString )
+         p.setProperty( "DryMix", factorAmp( dryMix ))
+         p.setProperty( "DryInvert", dryInvert.toString )
+         p.setProperty( "WetMix", factorAmp( wetMix ))
+         p.setProperty( "InGain1", dbAmp( drive1 ))
+         p.setProperty( "InGain2", dbAmp( drive2 ))
+
+         p.setProperty( "Offset1", absMsFactorTime( offset1 ))
+         p.setProperty( "Offset2", absMsFactorTime( offset2 ))
+         p.setProperty( "Length1", absMsFactorTime( length1 ))
+	      p.setProperty( "Length2", absMsFactorTime( length2 ))
+      }
+   }
+
+   case class Fourier( in: String, imagIn: Option[ String ] = None, out: String, imagOut: Option[ String ] = None,
+      spec: AudioFileSpec = OutputSpec.aiffFloat, gain: Gain = Gain.immediate,
+      inverse: Boolean = false, format: String = "cartesian", trunc: Boolean = false,
+      memory: Int = 16 )
+   extends Doc {
+      def className = "FourierDlg"
+
+      def toProperties( p: Properties ) {
+         p.setProperty( "ReInFile", in )
+         imagIn.foreach( p.setProperty( "ImInFile", _ ))
+         p.setProperty( "HasImInput", imagIn.isDefined.toString )
+         p.setProperty( "ReOutFile", out )
+         imagOut.foreach( p.setProperty( "ImOutFile", _ ))
+         p.setProperty( "HasImOutput", imagOut.isDefined.toString )
+         p.setProperty( "OutputType", audioFileType( spec ))
+         p.setProperty( "OutputReso", audioFileRes( spec ))
+         p.setProperty( "Dir", (if( inverse ) 1 else 0).toString )
+         p.setProperty( "Format", (format match {
+            case "cartesian"  => 0
+            case "polar"      => 1
+         }).toString )
+         p.setProperty( "Length", (if( trunc ) 1 else 0).toString )
+         p.setProperty( "Memory", par( memory, Param.NONE ))
+         p.setProperty( "GainType", gainType( gain ))
+         p.setProperty( "Gain", dbAmp( gain.value ))
+      }
+   }
+
    case class Kriechstrom( in: String, out: String, spec: AudioFileSpec = OutputSpec.aiffFloat,
                            gain: Gain = Gain.immediate, length: String = "1.0", minChunks: Int = 4,
                            maxChunks: Int = 4, minRepeats: Int = 1, maxRepeats: Int = 1,
@@ -178,7 +326,7 @@ object FScape {
             case "bright"  => 2
          }).toString )
          p.setProperty( "GainType", gainType( gain ))
-         p.setProperty( "Gain", par( gain.value, Param.DECIBEL_AMP ))
+         p.setProperty( "Gain", dbAmp( gain.value ))
          p.setProperty( "LenUpdate", instantaneous.toString )
          p.setProperty( "MinChunkNum", par( minChunks, Param.NONE ))
 	      p.setProperty( "MaxChunkNum", par( maxChunks, Param.NONE ))
@@ -194,11 +342,18 @@ object FScape {
       }
    }
 
+   // ---- helper ----
+
    private def absMsFactorTime( s: String ) : String = {
       if( s.endsWith( "s" )) absMsTime( s ) else factorTime( s )
    }
 
    private def par( value: Double, unit: Int ) : String = Param( value, unit ).toString
+
+   private def dbAmp( s: String ) : String = {
+      require( s.endsWith( "dB" ))
+      Param( s.substring( 0, s.length - 2 ).toDouble, Param.DECIBEL_AMP ).toString
+   }
 
    private def factorAmp( s: String ) : String = {
       Param( s.toDouble * 100, Param.FACTOR_AMP ).toString

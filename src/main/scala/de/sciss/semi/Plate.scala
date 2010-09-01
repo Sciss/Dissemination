@@ -43,41 +43,6 @@ object Plate {
    val MIN_LOUDNESS_THRESH = 1.0
    val MIN_LOUDNESS_COUNT  = 10     
 
-//   def createFactories( implicit tx: ProcTxn ) {
-//      import synth._
-//      import ugen._
-//
-//      gen( "@" ) { graph { Silent.ar( 1 )}}
-//
-//      diff( "ana" ) {
-//         val pid = pScalar( "id", ParamSpec( 0, NUM_PLATES - 1, step = 1 ))
-//
-//         graph { in =>
-//            val bufID   = bufEmpty( 1024 ).id
-//            val chain   = FFT( bufID, Mix( in ))
-//            val loud    = Loudness.kr( chain )
-//            val centr   = SpecCentroid.kr( chain )
-//            val flat0    = SpecFlatness.kr( chain )
-//            val flatc   = CheckBadValues.kr( flat0, post = 0 )
-//            val flat    = Gate.kr( flat0, flatc === 0 )
-////          List( loud, centr, flat ).poll( 2 )
-//            val compound= List( loud, centr, flat )
-//            val smooth  = Lag.kr( compound, 10 )
-////           smooth.poll( 2 )
-//            1.react( smooth ) { data =>
-//               val Seq( loud, centr, flat ) = data
-//               ProcTxn.atomic { implicit tx =>
-//                  pid.
-//               }
-//            }
-//            0
-//         }
-//      }
-//   }
-
-   def startLife {
-      
-   }
 
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
       val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
@@ -303,7 +268,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
          exhausted.set( exhaust - 1 )
       }
 
-      if( verbose ) println( this.toString + " : energy balance = " + eBal )
+//      if( verbose ) println( this.toString + " : energy balance = " + eBal )
       if( eBal < -100 ) {
          produceSomeNoise
       }
@@ -317,7 +282,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       if( recording.swap( true )) return
 
 //      val pRec = recFactory.make
-      recorder.control( "dur" ).v = exprand( 8, 18 )
+      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( 8, 90 ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
 //      collector ~> recorder
       recorder.play
 //      recordProc.set( Some( pRec ))
@@ -328,13 +293,48 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
 
-      val doc = FScape.Kriechstrom(
-         in = RECORD_PATH + fs + "plate" + id + ".aif",
-         out = WORK_PATH + fs + "test" + id + ".aif",
-         length = "1.5"
+      val tmpA    = WORK_PATH   + fs + "tmp-a" + id + ".aif"
+      val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
+      val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
+      val docRvs  = FScape.UnaryOp(
+         in       = recPath,
+         out      = tmpA,
+         reverse  = true
       )
-      FScape.process( "PlateFrz", doc ) { success =>
-         println( "YO! Success = " + success )
+      val docMirr = FScape.BinaryOp(
+         in1      = recPath,
+         in2      = tmpA,
+         offset2  = "-1.0",
+         length2  = "2.0",
+         out      = tmpB
+      )
+      val docFFT  = FScape.Fourier(
+         in       = tmpB,
+         out      = tmpA,
+         gain     = FScape.Gain.normalized
+      )
+      val docFrz  = FScape.Kriechstrom(
+         in       = tmpA,
+         out      = tmpB,
+         length   = "1.5"
+      )
+      val docIFFT = FScape.Fourier(
+         in       = tmpB,
+         out      = tmpA,
+         gain     = FScape.Gain.normalized,
+         inverse  = true
+      )
+      val docHalf = FScape.UnaryOp(
+         in       = tmpA,
+         out      = tmpB,
+         length   = "0.5"
+      )
+      FScape.processChain( "PlateFrz", docRvs :: docMirr :: docFFT :: docFrz :: docIFFT :: docHalf :: Nil ) { success =>
+         if( success ) {
+            println( "Done all!" )
+         } else {
+//            recording.set( false )
+         }
       }
 
 //energyCons.set( 0.0 )   // XXX just for now
