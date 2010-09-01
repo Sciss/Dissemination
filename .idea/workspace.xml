@@ -63,25 +63,25 @@
       <file leaf-file-name="SemiNuages.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="659" column="0" selection-start="28694" selection-end="28694" vertical-scroll-proportion="0.0">
+            <state line="661" column="0" selection-start="28715" selection-end="29057" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Dissemination.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Dissemination.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="61" selection-start="3240" selection-end="3294" vertical-scroll-proportion="0.7468085">
+            <state line="86" column="110" selection-start="3005" selection-end="3005" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Plate.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Plate.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="117" column="13" selection-start="4240" selection-end="4240" vertical-scroll-proportion="0.0">
+            <state line="134" column="110" selection-start="4916" selection-end="4916" vertical-scroll-proportion="0.9361702">
               <folding />
             </state>
           </provider>
@@ -171,8 +171,8 @@
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala" />
         <option value="$PROJECT_DIR$/project/build/Dissemination.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala" />
       </list>
     </option>
@@ -534,7 +534,7 @@
     <supportedVersion>125</supportedVersion>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1396" height="878" extended-state="0" />
+    <frame x="5" y="22" width="1396" height="878" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -617,13 +617,6 @@
         <state line="7" column="58" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="659" column="0" selection-start="28694" selection-end="28694" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="975" vertical-scroll-proportion="0.0">
@@ -643,16 +636,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="13" selection-start="4240" selection-end="4240" vertical-scroll-proportion="0.0">
+        <state line="86" column="110" selection-start="3005" selection-end="3005" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SemiNuages.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="61" selection-start="3240" selection-end="3294" vertical-scroll-proportion="0.7468085">
+        <state line="661" column="0" selection-start="28715" selection-end="29057" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="134" column="110" selection-start="4916" selection-end="4916" vertical-scroll-proportion="0.9361702">
           <folding />
         </state>
       </provider>

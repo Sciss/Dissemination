@@ -35,6 +35,7 @@ import DSL._
 import ugen._
 import java.io.File
 import Util._
+import Dissemination._
 
 object Plate {
    val verbose = true
@@ -104,9 +105,9 @@ object Plate {
 //           smooth.poll( 2 )
             1.react( smooth ) { data =>
                val Seq( loud, centr, flat ) = data
-println( "AQUI " + id )
-//               ProcTxn.spawnAtomic { implicit tx => }
-java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
+//println( "AQUI " + id )
+               ProcTxn.spawnAtomic { implicit tx =>
+//java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
                   plate.newAnalysis( loud, centr, flat )
                   // display
                   val me = plate.analyzer
@@ -114,14 +115,31 @@ java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { impli
                   me.control( "centr" ).v   = centr
                   me.control( "flat" ).v    = flat
                }
-            })
+//            })
             }
             0
          }
       }).make
-      plate = new Plate( id, pColl, pAna )
+
+      val pRec = (diff( "rec" + id ) {
+         val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
+         graph { in =>
+            val b = bufRecord( BASE_PATH + File.separator + "rec" + File.separator + "plate" + id + ".aif",
+               in.numOutputs )
+            DiskOut.ar( b.id, in )
+            val done = Done.kr( Line.kr( dur = pdur.ir ))
+            done.react {
+               ProcTxn.spawnAtomic { implicit tx => plate.recordDone }
+            }
+//            FreeSelf.kr( done )
+            PauseSelf.kr( done ) // free-self not yet recognized by proc, so we avoid a /n_free node not found
+         }
+      }).make
+
+      plate = new Plate( id, pColl, pAna, pRec )
       pColl ~> pAna
       pColl ~> SemiNuages.collMaster.audioInput( "in" + (id+1) )
+      pColl ~> pRec
       pAna.play
       pDummy.dispose
       plate
@@ -217,7 +235,7 @@ val p = proc
    case class RunningProc( proc: Proc, context: SoundContext, startTime: Long, deathTime: Long )
 }
 
-class Plate( val id: Int, val collector: Proc, val analyzer: Proc ) {
+class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder: Proc ) {
    import Plate._
    
    private val loudnessRef = Ref( 0.0 )
@@ -242,6 +260,8 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc ) {
    private var neighbour2: Option[ Plate ] = None
    private var neighbourW: Int = 0
 
+//   private val recordProc: Ref[ Option[ Proc ]] = Ref( None )
+
    def initNeighbours( n1: Option[ Plate ], n2: Option[ Plate ]) {
       neighbour1  = n1
       neighbour2  = n2
@@ -265,7 +285,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc ) {
          silenceCount.set( cnt )
          if( (cnt >= MIN_LOUDNESS_COUNT) && (exhaust == 0) ) {
 //            println( this.toString + " : make some noise" )
-            makeSomeNoise
+            consumeSomeNoise
          }
       } else {
          silenceCount.set( 0 )
@@ -283,11 +303,32 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc ) {
          exhausted.set( exhaust - 1 )
       }
 
-      println( this.toString + " : energy balance = " + eBal )
+      if( verbose ) println( this.toString + " : energy balance = " + eBal )
+      if( eBal < -100 ) {
+         produceSomeNoise
+      }
    }
 
-   private def makeSomeNoise( implicit tx: ProcTxn ) {
+   private def consumeSomeNoise( implicit tx: ProcTxn ) {
       induction.transform( _ + createProc( Material.all ))
+   }
+
+   private def produceSomeNoise( implicit tx: ProcTxn ) {
+      if( recorder.isPlaying ) return
+
+//      val pRec = recFactory.make
+      recorder.control( "dur" ).v = exprand( 8, 18 )
+//      collector ~> recorder
+      recorder.play
+//      recordProc.set( Some( pRec ))
+   }
+
+   def recordDone( implicit tx: ProcTxn ) {
+      println( this.toString + " RECORD DONE" )
+//      recordProc.swap( None ).foreach( _.dispose )
+      recorder.stop
+energyCons.set( 0.0 )   // XXX just for now
+energyProd.set( 0.0 )   // so we don't start recording again straight away                       
    }
 
 //   toStop foreach { rp => xfade( exprand( rp.context.minFade, rp.context.maxFade )) {

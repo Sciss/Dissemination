@@ -35,6 +35,7 @@ import collection.breakOut
 import collection.immutable.{ IndexedSeq => IIdxSeq }
 import ugen._
 import scala.Float.{ PositiveInfinity => inf }
+import java.io.File
 
 /**
  *    @version 0.12, 01-Aug-10
@@ -657,6 +658,15 @@ object SemiNuages extends {
       plates.foreach( p => p.initNeighbours(
          { val i = p.id - 2; if( i >= 0 ) Some( plates( i )) else None },
          { val i = p.id + 2; if( i < NUM_PLATES ) Some( plates( i )) else None }))
+
+//      diff( "rec" ) {
+//         val pid = pScalar( id, ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
+//         graph { in =>
+//            val b = bufRecord( BASE_PATH + File.separator + "rec" + File.separator + "plate" + pid.v.toInt + ".aif",
+//               in.numChannels )
+//            DiskOut.ar( b.id, in )
+//         }
+//      }
 
       pMaster = diff( "semi-master" )({
 //         val pmix    = pMix
