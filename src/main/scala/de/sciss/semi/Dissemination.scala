@@ -56,6 +56,7 @@ object Dissemination {
 
    val RECORD_PATH         = BASE_PATH + fs + "rec"
    val WORK_PATH           = BASE_PATH + fs + "audio_work" + fs + "work"
+   val INJECT_PATH         = BASE_PATH + fs + "inject"
 
    val options          = {
       val o = new ServerOptionsBuilder()

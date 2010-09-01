@@ -49,8 +49,13 @@ sealed abstract class SoundSettings {
    def prepareForPlay( proc: Proc )( implicit tx: ProcTxn ) : Unit
 }
 
-case class TapeSoundSettings( file: String, gain: Double, speed: Double )
-extends SoundSettings {
+trait TapeSoundSettingsLike extends SoundSettings {
+   def file: String
+   def gain: Double
+   def speed: Double
+
+   def fullPath : String
+
    def createProcFactory( name: String )( implicit tx: ProcTxn ) : ProcFactory = {
       import DSL._
       ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
@@ -58,7 +63,7 @@ extends SoundSettings {
          val pamp    = pControl( "amp",   ParamSpec( 0.1f, 10, ExpWarp ), gain.dbamp )
          val ppos    = pScalar(  "pos",   ParamSpec( 0, 1 ), 0 )
          graph {
-            val fullPath   = BASE_PATH + File.separator + "audio_work" + File.separator + file
+//            val fullPath   = BASE_PATH + File.separator + "audio_work" + File.separator + file
             val afSpec     = audioFileSpec( fullPath )
             val startPos   = ppos.v
             val startFrame = (startPos * afSpec.numFrames).toLong
@@ -80,6 +85,14 @@ extends SoundSettings {
       proc.control( "pos" ).v = rand( 0.95 )
    }
 }
+
+case class TapeSoundSettings( file: String, gain: Double, speed: Double )
+extends TapeSoundSettingsLike {
+   def fullPath = BASE_PATH + File.separator + "audio_work" + File.separator + file
+}
+
+case class InjectSoundSettings( fullPath: String, file: String, gain: Double, speed: Double )
+extends TapeSoundSettingsLike
 
 object SimpleFilterSettings extends SoundSettings {
    def createProcFactory( name: String )( implicit tx: ProcTxn ) : ProcFactory = {

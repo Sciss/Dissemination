@@ -33,9 +33,9 @@ import collection.immutable.{ IndexedSeq => IIdxSeq }
 import proc._
 import DSL._
 import ugen._
-import java.io.File
 import Util._
 import Dissemination._
+import java.io.{FilenameFilter, File}
 
 object Plate {
    val verbose = true
@@ -207,12 +207,40 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    private val centroidRef = Ref( 0.0 )
    private val flatnessRef = Ref( 0.0 )
 
+   private val injectPath = INJECT_PATH + fs + id 
+
+   private val (injectIndex, injected) = {
+      val names = new File( injectPath ).listFiles( new FilenameFilter {
+         def accept( dir: File, name: String ) = name.endsWith( ".aif" )
+      }).map( _.getName ).toIndexedSeq.sorted
+      val idx = names.lastOption.map( _.substring( 6, 11 ).toInt ).getOrElse( 0 )
+      val contexts = names.map( wrapInjectionInContext( _ ))
+      (Ref( idx ), Ref( contexts ))
+   }
+
    private val silenceCount   = Ref( 0)
-   private val induction      = Ref( Set.empty[ RunningProc ])
+   private val running        = Ref( Set.empty[ RunningProc ])
 
    def loudness( implicit tx: ProcTxn ) = loudnessRef()
    def centroid( implicit tx: ProcTxn ) = centroidRef()
    def flatness( implicit tx: ProcTxn ) = flatnessRef()
+   def nextInjectPath( implicit tx: ProcTxn ) : String = {
+      val idx = injectIndex() + 1
+      injectIndex.set( idx )
+      injectPath + fs + "inject" + (idx + 100000).toString.substring( 1 ) + ".aif"
+   }
+
+   private def wrapInjectionInContext( name: String ) = {
+      SoundContext( name.substring( 0, name.indexOf( "." )) + "_" + id,
+         InjectSoundSettings( injectPath + fs + name, name, 0.0, 1.0 ),
+         0.0, 0.5, 1.5, 2, 6, 45.0, 120.0, 20.0, 40.0, Set.empty
+      )
+   }
+
+   def inject( path: String )( implicit tx: ProcTxn ) {
+      require( path.startsWith( injectPath ))
+      injected.transform( _ :+ wrapInjectionInContext( new File( path ).getName ))
+   }
 
    private val energyCons  = Ref( 0.0 )
    private val energyProd  = Ref( 0.0 )
@@ -270,19 +298,29 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 
 //      if( verbose ) println( this.toString + " : energy balance = " + eBal )
       if( eBal < -100 ) {
+         releaseSomeNoise
          produceSomeNoise
+         exhausted.transform( num => math.min( num + 60, 120 ))
       }
    }
 
+   private def releaseSomeNoise( implicit tx: ProcTxn ) {
+      val r = running()
+      if( r.isEmpty ) return
+      val rp = choose( r )
+      xfade( exprand( rp.context.minFade, rp.context.maxFade )) { stopAndDispose( rp )}
+      running.transform( _ - rp )
+   }
+
    private def consumeSomeNoise( implicit tx: ProcTxn ) {
-      induction.transform( _ + createProc( Material.all ))
+      running.transform( _ + createProc( Material.all ++ injected() ))
    }
 
    private def produceSomeNoise( implicit tx: ProcTxn ) {
       if( recording.swap( true )) return
 
 //      val pRec = recFactory.make
-      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( 8, 90 ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
+      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( 20, 90 ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
 //      collector ~> recorder
       recorder.play
 //      recordProc.set( Some( pRec ))
@@ -297,7 +335,11 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
       val tmpC    = WORK_PATH   + fs + "tmp-c" + id + ".aif"
       val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
-      val outPath = WORK_PATH   + fs + "plateT" + id + ".aif"
+      val neighbour = choose( (neighbour1  :: neighbour2 :: Nil) collect { case Some( n ) => n })
+//      val injectPath = INJECT_PATH + fs + neighbour.id
+//      new File( injectPath ).mkdirs
+//      val outPath = WORK_PATH   + fs + "plateT" + id + ".aif"
+      val outPath = neighbour.nextInjectPath
 
       import FScape._
 
@@ -380,10 +422,12 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 
       processChain( "PlateFrz" + id, docRvs :: docMirr :: docFFT :: docTrns ++ (docIFFT :: docHalf :: docLoop :: Nil) )
       { success =>
-         if( success ) {
-            println( this.toString + " RENDER DONE" )
-         } else {
-//            recording.set( false )
+         ProcTxn.spawnAtomic { implicit tx =>   // XXX spawn?
+            if( success ) {
+               println( this.toString + " RENDER DONE" )
+               neighbour.inject( outPath )
+            }
+            recording.set( false )
          }
       }
 
