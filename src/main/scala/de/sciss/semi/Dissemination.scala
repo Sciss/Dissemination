@@ -39,17 +39,22 @@ import collection.immutable.{ IndexedSeq => IIdxSeq }
 import de.sciss.osc.TCP
 
 object Dissemination {
+   val fs = File.separator
+
    val GRAZ                = false
 
    val NUM_PLATES          = if( GRAZ ) 7 else 5
    val START_WITH_TRANSIT  = GRAZ
-   val BASE_PATH           = System.getProperty( "user.home" ) + File.separator + "Desktop" + File.separator + "Dissemination"
+   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
    val INTERNAL_AUDIO      = true
    val NUAGES_ANTIALIAS    = false
    val MASTER_OFFSET       = 0
 
    val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
+
+   val RECORD_PATH         = BASE_PATH + fs + "rec"
+   val WORK_PATH           = BASE_PATH + fs + "audio_work" + fs + "work"
 
    val options          = {
       val o = new ServerOptionsBuilder()
@@ -66,7 +71,7 @@ object Dissemination {
       o.zeroConf           = false
 //      o.port               = 0
 //      o.transport          = TCP
-//      o.programPath        = properties.getProperty( PROP_SCPATH ) + File.separator + "scsynth"
+//      o.programPath        = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
       o.build
    }
 
@@ -131,8 +136,7 @@ object Dissemination {
          new AudioBus( s, MASTER_OFFSET, MASTER_NUMCHANNELS )
       }
       val soloBus    = Bus.audio( s, 2 )
-      val recordPath = BASE_PATH + "rec"
-      config         = NuagesConfig( s, Some( masterBus ), Some( soloBus ), Some( recordPath ))
+      config         = NuagesConfig( s, Some( masterBus ), Some( soloBus ), Some( RECORD_PATH ))
       val f          = new NuagesFrame( config )
       f.panel.display.setHighQuality( NUAGES_ANTIALIAS )
       f.setSize( 640, 480 )

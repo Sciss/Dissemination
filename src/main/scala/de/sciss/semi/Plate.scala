@@ -124,7 +124,7 @@ object Plate {
       val pRec = (diff( "rec" + id ) {
          val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
          graph { in =>
-            val b = bufRecord( BASE_PATH + File.separator + "rec" + File.separator + "plate" + id + ".aif",
+            val b = bufRecord( RECORD_PATH + fs + "plate" + id + ".aif",
                in.numOutputs )
             DiskOut.ar( b.id, in )
             val done = Done.kr( Line.kr( dur = pdur.ir ))
@@ -260,7 +260,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    private var neighbour2: Option[ Plate ] = None
    private var neighbourW: Int = 0
 
-//   private val recordProc: Ref[ Option[ Proc ]] = Ref( None )
+   private val recording = Ref( false )
 
    def initNeighbours( n1: Option[ Plate ], n2: Option[ Plate ]) {
       neighbour1  = n1
@@ -314,7 +314,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    }
 
    private def produceSomeNoise( implicit tx: ProcTxn ) {
-      if( recorder.isPlaying ) return
+      if( recording.swap( true )) return
 
 //      val pRec = recFactory.make
       recorder.control( "dur" ).v = exprand( 8, 18 )
@@ -327,8 +327,18 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       println( this.toString + " RECORD DONE" )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
-energyCons.set( 0.0 )   // XXX just for now
-energyProd.set( 0.0 )   // so we don't start recording again straight away                       
+
+      val doc = FScape.Kriechstrom(
+         in = RECORD_PATH + fs + "plate" + id + ".aif",
+         out = WORK_PATH + fs + "test" + id + ".aif",
+         length = "1.5"
+      )
+      FScape.process( "PlateFrz", doc ) { success =>
+         println( "YO! Success = " + success )
+      }
+
+//energyCons.set( 0.0 )   // XXX just for now
+//energyProd.set( 0.0 )   // so we don't start recording again straight away
    }
 
 //   toStop foreach { rp => xfade( exprand( rp.context.minFade, rp.context.maxFade )) {
