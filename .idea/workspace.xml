@@ -63,7 +63,7 @@
       <file leaf-file-name="Plate.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="430" column="10" selection-start="15018" selection-end="15018" vertical-scroll-proportion="1.1659575">
+            <state line="324" column="7" selection-start="11994" selection-end="11994" vertical-scroll-proportion="1.293617">
               <folding />
             </state>
           </provider>
@@ -72,7 +72,7 @@
       <file leaf-file-name="SoundContext.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="30" selection-start="3475" selection-end="3494" vertical-scroll-proportion="0.0">
+            <state line="93" column="97" selection-start="3557" selection-end="3557" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -90,7 +90,7 @@
       <file leaf-file-name="Material.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="0" selection-start="1102" selection-end="1272" vertical-scroll-proportion="0.0">
+            <state line="40" column="67" selection-start="1271" selection-end="1271" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -556,7 +556,7 @@
     <supportedVersion>125</supportedVersion>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1396" height="878" extended-state="0" />
+    <frame x="-13" y="22" width="1396" height="878" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -665,23 +665,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="0" selection-start="1102" selection-end="1272" vertical-scroll-proportion="0.0">
+        <state line="93" column="97" selection-start="3557" selection-end="3557" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="30" selection-start="3475" selection-end="3494" vertical-scroll-proportion="0.0">
+        <state line="40" column="67" selection-start="1271" selection-end="1271" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="430" column="10" selection-start="15018" selection-end="15018" vertical-scroll-proportion="1.1659575">
+        <state line="324" column="7" selection-start="11994" selection-end="11994" vertical-scroll-proportion="1.293617">
           <folding />
         </state>
       </provider>

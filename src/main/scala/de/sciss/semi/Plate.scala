@@ -40,9 +40,19 @@ import java.io.{FilenameFilter, File}
 object Plate {
    val verbose = true
    
-   val MIN_LOUDNESS_THRESH = 1.0
-   val MIN_LOUDNESS_COUNT  = 10     
+   val MIN_LOUDNESS_THRESH    = 1.0
+   val MIN_LOUDNESS_COUNT_LO  = 9
+   val MIN_LOUDNESS_COUNT_HI  = 11     
 
+   val EXHAUST_COUNT_LO       = 30
+   val EXHAUST_COUNT_HI       = 60
+   val MAX_EXHAUST_COUNT      = 120
+
+   val ONGOING_RELEASE_COIN   = 1.0 / 10
+
+   val MIN_RECORD_DUR         = 20.0
+   val MAX_RECORD_DUR         = 60.0
+   val MIN_RECORD_INTEG       = 100.0
 
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
       val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
@@ -93,8 +103,10 @@ object Plate {
                in.numOutputs )
             DiskOut.ar( b.id, in )
             val done = Done.kr( Line.kr( dur = pdur.ir ))
-            done.react {
-               ProcTxn.spawnAtomic { implicit tx => plate.recordDone }
+            val ampInteg = Integrator.kr( Amplitude.kr( in ))
+            done.react( ampInteg ) { data =>
+               val Seq( amp ) = data
+               ProcTxn.spawnAtomic { implicit tx => plate.recordDone( amp )}
             }
 //            FreeSelf.kr( done )
             PauseSelf.kr( done ) // free-self not yet recognized by proc, so we avoid a /n_free node not found
@@ -245,7 +257,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    private val energyCons  = Ref( 0.0 )
    private val energyProd  = Ref( 0.0 )
 // private val energyBal   = Ref( 0.0 )  // always equal to prod minus consume
-   private val exhausted   = Ref( 0 )
+   private val exhaustedRef= Ref( 0 )
 
    override def toString = "plate<" + id + ">"
 
@@ -255,11 +267,15 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 
    private val recording = Ref( false )
 
+   private val minLoudnessCount = rrand( MIN_LOUDNESS_COUNT_LO, MIN_LOUDNESS_COUNT_HI )
+
    def initNeighbours( n1: Option[ Plate ], n2: Option[ Plate ]) {
       neighbour1  = n1
       neighbour2  = n2
       neighbourW  = (n1 :: n2 :: Nil).count( _.isEmpty ) + 1
    }
+
+   def exhausted( implicit tx: ProcTxn ) = exhaustedRef()
 
    def newAnalysis( loud0: Double, centr0: Double, flat0: Double )( implicit tx: ProcTxn ) {
       // eventually we might tune in some kind of correction curves
@@ -270,18 +286,21 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       loudnessRef.set( loud )
       centroidRef.set( centr )
       flatnessRef.set( flat )
-      val exhaust = exhausted()
+      val exhaust = exhaustedRef()
+
+if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " + loud + "; silence = " + silenceCount() )
 
       // ---- minimum loudness ----
       if( loud < MIN_LOUDNESS_THRESH ) {
          val cnt = silenceCount() + 1
          silenceCount.set( cnt )
-         if( (cnt >= MIN_LOUDNESS_COUNT) && (exhaust == 0) ) {
+         if( (cnt >= minLoudnessCount) && (exhaust == 0) ) {
 //            println( this.toString + " : make some noise" )
             consumeSomeNoise
          }
       } else {
          silenceCount.set( 0 )
+         stopTooOldOne
       }
 
       val eCons = energyCons() + (1.0 - flat) * loud
@@ -293,43 +312,66 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       energyProd.set( eProd )
 
       if( exhaust > 0 ) {
-         exhausted.set( exhaust - 1 )
+         exhaustedRef.set( exhaust - 1 )
       }
 
 //      if( verbose ) println( this.toString + " : energy balance = " + eBal )
       if( eBal < -100 ) {
-         releaseSomeNoise
-         produceSomeNoise
-         exhausted.transform( num => math.min( num + 60, 120 ))
+         val prod = produceSomeNoise
+         if( prod || coin( ONGOING_RELEASE_COIN ) ) {
+            releaseSomeNoise
+         }
+         if( prod ) exhaustedRef.transform( num => math.min( num + rrand( EXHAUST_COUNT_LO, EXHAUST_COUNT_HI ), MAX_EXHAUST_COUNT ))
       }
    }
 
-   private def releaseSomeNoise( implicit tx: ProcTxn ) {
+   private def stopTooOldOne( implicit tx: ProcTxn ) {
+      val now = System.currentTimeMillis
+      val toStop = running() filter { rp =>
+         rp.deathTime <= now // || rp.context.scaleStart > scale || rp.context.scaleStop < scale
+      }
+      if( toStop.isEmpty ) return
+      val rp = choose( toStop )
+      xfade( exprand( rp.context.minFade, rp.context.maxFade )) {
+         if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
+         stopAndDispose( rp )
+         running.transform( _ - rp )
+//         rp.proc.dispose // stop
+      }
+   }
+
+   private def releaseSomeNoise( implicit tx: ProcTxn ) : Boolean = {
       val r = running()
-      if( r.isEmpty ) return
+      if( r.size < rrand( 1, 2 )) return false
       val rp = choose( r )
       xfade( exprand( rp.context.minFade, rp.context.maxFade )) { stopAndDispose( rp )}
       running.transform( _ - rp )
+      true
    }
 
    private def consumeSomeNoise( implicit tx: ProcTxn ) {
       running.transform( _ + createProc( Material.all ++ injected() ))
    }
 
-   private def produceSomeNoise( implicit tx: ProcTxn ) {
-      if( recording.swap( true )) return
+   private def produceSomeNoise( implicit tx: ProcTxn ) : Boolean = {
+      if( recording.swap( true )) return false
 
 //      val pRec = recFactory.make
-      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( 20, 90 ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
+      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( MIN_RECORD_DUR, MAX_RECORD_DUR ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
 //      collector ~> recorder
       recorder.play
 //      recordProc.set( Some( pRec ))
+      true
    }
 
-   def recordDone( implicit tx: ProcTxn ) {
-      println( this.toString + " RECORD DONE" )
+   def recordDone( ampInteg: Double )( implicit tx: ProcTxn ) {
+      println( this.toString + " RECORD DONE " + ampInteg )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
+      if( ampInteg < MIN_RECORD_INTEG ) {
+         recording.set( false )
+         return
+      }
 
       val tmpA    = WORK_PATH   + fs + "tmp-a" + id + ".aif"
       val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
