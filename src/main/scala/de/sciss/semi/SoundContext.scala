@@ -60,7 +60,8 @@ trait TapeSoundSettingsLike extends SoundSettings {
       import DSL._
       ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
          val pspeed  = pControl( "speed", ParamSpec( 0.1f, 10, ExpWarp ), speed )
-         val pamp    = pControl( "amp",   ParamSpec( 0.1f, 10, ExpWarp ), gain.dbamp )
+//         val pamp    = pControl( "amp",   ParamSpec( 0.1f, 10, ExpWarp ), gain.dbamp )
+         val pamp    = pAudio( "amp",   ParamSpec( 0.001, 10, ExpWarp ), gain.dbamp )
          val ppos    = pScalar(  "pos",   ParamSpec( 0, 1 ), 0 )
          graph {
 //            val fullPath   = BASE_PATH + File.separator + "audio_work" + File.separator + file
@@ -76,7 +77,9 @@ trait TapeSoundSettingsLike extends SoundSettings {
             val liveFrame  = Integrator.ar( K2A.ar( speed ))
             val livePos    = ((liveFrame / BufFrames.ir( bufID )) + startPos) % 1.0f
 //               livePos ~> ppos
-            d * pamp.kr
+//            d * pamp.kr
+            d * pamp.ar
+//val env = EnvGen.kr( Env( 1, EnvSeg( 1, 0 ) :: Nil, 0 ), "gate".kr( 1 ))
          }
       }
    }

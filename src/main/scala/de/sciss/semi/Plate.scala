@@ -124,15 +124,22 @@ object Plate {
       plate
    }
 
+//   private val stopAndDisposeListener = new Proc.Listener {
+//      def updated( u: Proc.Update ) {
+//         if( !u.state.fading && (!u.state.playing || u.state.bypassed) ) {
+//            if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
+//            disposeProc( u.proc ) // ProcTxn.atomic { implicit tx => }
+//         }
+//      }
+//   }
+
    private val stopAndDisposeListener = new Proc.Listener {
       def updated( u: Proc.Update ) {
-         if( !u.state.fading && (!u.state.playing || u.state.bypassed) ) {
-            // XXX workaround: CCSTM still has the previous txn visible,
-            // hence we need to wait a bit longer :-(
-//EventQueue.invokeLater { new Runnable { def run {
+println( "UPDATE " + u )
+         if( !u.state.fading && (u.state.bypassed || u.controls.find( tup =>
+            (tup._1.name == "amp") && tup._2.mapping.isEmpty ).isDefined) ) { 
             if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
             disposeProc( u.proc ) // ProcTxn.atomic { implicit tx => }
-//}}}
          }
       }
    }
@@ -189,11 +196,12 @@ val p = proc
 //      })
    }
 
-   private def stopAndDispose( rp: RunningProc )( implicit tx: ProcTxn ) {
+   private def stopAndDispose( fadeTime: Double, rp: RunningProc )( implicit tx: ProcTxn ) {
       val p     = rp.proc
       val state = p.state
 //println( "STOP-AND-DISPOSE " + p + " -> " + state + " / " + tx.transit )
-      if( !state.fading && (!state.playing || state.bypassed || (tx.transit == Instant)) ) {
+//      if( !state.fading && (!state.playing || state.bypassed || (tx.transit == Instant)) ) {
+      if( !state.fading && (!state.playing || state.bypassed || (fadeTime == 0.0)) ) {
 //println( ".......INSTANT" )
          p.dispose
       } else {
@@ -201,11 +209,12 @@ val p = proc
          p.anatomy match {
             case ProcFilter => {
 //println( ".......BYPASS" )
-               p.bypass
+               xfade( fadeTime ) { p.bypass }
             }
             case _ => {
 //println( ".......STOP " + (new java.util.Date()) )
-               p.stop
+//               p.stop
+               glide( fadeTime ) { p.control( "amp" ).v = 0.001 }
             }
          }
       }
@@ -221,7 +230,12 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    private val centroidRef = Ref( 0.0 )
    private val flatnessRef = Ref( 0.0 )
 
-   private val injectPath = INJECT_PATH + fs + id 
+   private val injectPath = {
+      val res = INJECT_PATH + fs + id
+      val f = new File( res )
+      if( !f.exists ) f.mkdir()
+      res
+   }
 
    private val (injectIndex, injected) = {
       val names = new File( injectPath ).listFiles( new FilenameFilter {
@@ -334,25 +348,27 @@ if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " 
       }
       if( toStop.isEmpty ) return
       val rp = choose( toStop )
-      xfade( exprand( rp.context.minFade, rp.context.maxFade )) {
-         if( coin( SHADE_PROB )) {
-            val cnt = rp.proc.control( "speed" )
+      val fadeTime = exprand( rp.context.minFade, rp.context.maxFade )
+      if( coin( SHADE_PROB )) {
+         val cnt = rp.proc.control( "speed" )
+         xfade( fadeTime ) {
             cnt.v = (cnt.v * rrand( 0.47, 0.53 )).max( 0.3 )
-            if( verbose ) println( "" + new java.util.Date() + " SHADING OBSOLETE " + rp )
-         } else {
-            if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
-            stopAndDispose( rp )
-            running.transform( _ - rp )
          }
-//         rp.proc.dispose // stop
+         if( verbose ) println( "" + new java.util.Date() + " SHADING OBSOLETE " + rp )
+      } else {
+         if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
+         stopAndDispose( fadeTime, rp )
+         running.transform( _ - rp )
       }
+//         rp.proc.dispose // stop
    }
 
    private def releaseSomeNoise( implicit tx: ProcTxn ) : Boolean = {
       val r = running()
       if( r.size < rrand( 1, 2 )) return false
       val rp = choose( r )
-      xfade( exprand( rp.context.minFade, rp.context.maxFade )) { stopAndDispose( rp )}
+      val fadeTime = exprand( rp.context.minFade, rp.context.maxFade )
+      stopAndDispose( fadeTime, rp )
       running.transform( _ - rp )
       true
    }
