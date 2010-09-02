@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="69471a22-aeeb-4948-b3b3-ea91600520e2" name="Default" comment="" />
-    <ignored path="Dissemination.iws" />
     <ignored path=".idea/workspace.xml" />
+    <ignored path="Dissemination.iws" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +63,7 @@
       <file leaf-file-name="Plate.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="324" column="7" selection-start="11994" selection-end="11994" vertical-scroll-proportion="1.293617">
+            <state line="56" column="36" selection-start="1641" selection-end="1641" vertical-scroll-proportion="0.9574468">
               <folding />
             </state>
           </provider>
@@ -72,7 +72,7 @@
       <file leaf-file-name="SoundContext.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="97" selection-start="3557" selection-end="3557" vertical-scroll-proportion="0.0">
+            <state line="61" column="39" selection-start="2076" selection-end="2081" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -204,6 +204,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -344,9 +346,7 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Favorites" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -362,9 +362,9 @@
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.searchVisible" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RunManager" selected="Application.Dissemination">
     <configuration default="true" type="Remote" factoryName="Remote">
@@ -556,7 +556,7 @@
     <supportedVersion>125</supportedVersion>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-13" y="22" width="1396" height="878" extended-state="0" />
+    <frame x="0" y="22" width="1396" height="878" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -629,6 +629,26 @@
         <state line="92" column="39" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.5851064" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="58" column="54" selection-start="2139" selection-end="2139" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="40" column="67" selection-start="1271" selection-end="1271" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="252" column="55" selection-start="10224" selection-end="10224" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="44" selection-start="1583" selection-end="1583" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/REPLSupport.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="0" selection-start="166" selection-end="166" vertical-scroll-proportion="0.0" />
@@ -644,44 +664,16 @@
         <state line="7" column="58" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/FScape.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="252" column="55" selection-start="10224" selection-end="10224" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Util.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="44" selection-start="1583" selection-end="1583" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Dissemination.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="54" selection-start="2139" selection-end="2139" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/SoundContext.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="97" selection-start="3557" selection-end="3557" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Material.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="67" selection-start="1271" selection-end="1271" vertical-scroll-proportion="0.0">
+        <state line="61" column="39" selection-start="2076" selection-end="2081" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/de/sciss/semi/Plate.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="324" column="7" selection-start="11994" selection-end="11994" vertical-scroll-proportion="1.293617">
+        <state line="56" column="36" selection-start="1641" selection-end="1641" vertical-scroll-proportion="0.9574468">
           <folding />
         </state>
       </provider>

@@ -54,6 +54,8 @@ object Plate {
    val MAX_RECORD_DUR         = 60.0
    val MIN_RECORD_INTEG       = 100.0
 
+   val SHADE_PROB             = 0.25
+
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
       val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
       val pDummy  = factory( "@" ).make
@@ -333,9 +335,15 @@ if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " 
       if( toStop.isEmpty ) return
       val rp = choose( toStop )
       xfade( exprand( rp.context.minFade, rp.context.maxFade )) {
-         if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
-         stopAndDispose( rp )
-         running.transform( _ - rp )
+         if( coin( SHADE_PROB )) {
+            val cnt = rp.proc.control( "speed" )
+            cnt.v = (cnt.v * rrand( 0.47, 0.53 )).max( 0.3 )
+            if( verbose ) println( "" + new java.util.Date() + " SHADING OBSOLETE " + rp )
+         } else {
+            if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
+            stopAndDispose( rp )
+            running.transform( _ - rp )
+         }
 //         rp.proc.dispose // stop
       }
    }
