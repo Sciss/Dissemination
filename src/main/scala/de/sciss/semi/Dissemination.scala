@@ -29,7 +29,6 @@
 package de.sciss.semi
 
 import javax.swing.{WindowConstants, JFrame}
-import java.io.File
 import de.sciss.synth.swing.{ServerStatusPanel, NodeTreePanel}
 import de.sciss.synth.proc.ProcDemiurg
 import de.sciss.synth._
@@ -37,6 +36,8 @@ import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
 import collection.immutable.{ IndexedSeq => IIdxSeq }
 import de.sciss.osc.TCP
+import java.io.{FileOutputStream, FileInputStream, File}
+import java.util.Properties
 
 object Dissemination {
    val fs = File.separator
@@ -45,7 +46,7 @@ object Dissemination {
 
    val NUM_PLATES          = if( GRAZ ) 7 else 5
    val START_WITH_TRANSIT  = GRAZ
-   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
+//   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
    val INTERNAL_AUDIO      = true
    val NUAGES_ANTIALIAS    = false
    val MASTER_OFFSET       = 0
@@ -54,10 +55,34 @@ object Dissemination {
    val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
 
+   private val PROP_BASEPATH  = "basepath"
+   private val PROP_SCPATH    = "scpath"
+
+   val properties          = {
+      val file = new File( "dissemination-settings.xml" )
+      val prop = new Properties()
+      if( file.isFile ) {
+         val is = new FileInputStream( file )
+         prop.loadFromXML( is )
+         is.close
+      } else {
+         prop.setProperty( PROP_BASEPATH,
+            new File( new File( System.getProperty( "user.home" ), "Desktop" ), "Dissemination" ).getAbsolutePath )
+         prop.setProperty( PROP_SCPATH,
+            new File( new File( new File( new File( new File( System.getProperty( "user.home" ), "Documents" ),
+               "devel" ), "SuperCollider3" ), "common" ), "build" ).getAbsolutePath )
+         val os = new FileOutputStream( file )
+         prop.storeToXML( os, "Dissemination Settings" )
+         os.close
+      }
+      prop
+   }
+
+   val BASE_PATH           = properties.getProperty( PROP_BASEPATH )
    val RECORD_PATH         = BASE_PATH + fs + "rec"
    val WORK_PATH           = BASE_PATH + fs + "audio_work" + fs + "work"
    val INJECT_PATH         = BASE_PATH + fs + "inject"
-
+   
    val options          = {
       val o = new ServerOptionsBuilder()
       if( INTERNAL_AUDIO ) {
@@ -65,6 +90,7 @@ object Dissemination {
       } else {
          o.deviceName         = Some( "MOTU 828mk2" )
       }
+      o.programPath        = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
       o.inputBusChannels   = 10
       o.outputBusChannels  = 10
       o.audioBusChannels   = 512

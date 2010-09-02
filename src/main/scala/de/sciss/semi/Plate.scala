@@ -135,7 +135,7 @@ object Plate {
 
    private val stopAndDisposeListener = new Proc.Listener {
       def updated( u: Proc.Update ) {
-println( "UPDATE " + u )
+//println( "UPDATE " + u )
          if( !u.state.fading && (u.state.bypassed || u.controls.find( tup =>
             (tup._1.name == "amp") && tup._2.mapping.isEmpty ).isDefined) ) { 
             if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
