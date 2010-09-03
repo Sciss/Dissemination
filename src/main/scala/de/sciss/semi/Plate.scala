@@ -57,6 +57,10 @@ object Plate {
    val SHADE_PROB             = 0.25
 
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
+//      val pColl   = filter( (id + 1).toString + "+" ) {
+//         val pmute = pControl( "mute", ParamSpec( 0, 1, step = 1 ), 0 )
+//         graph { in => in * (1 - pmute.kr) }
+//      } make
       val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
       val pDummy  = factory( "@" ).make
       pDummy ~> pColl

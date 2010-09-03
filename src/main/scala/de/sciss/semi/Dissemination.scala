@@ -47,13 +47,14 @@ object Dissemination {
    val NUM_PLATES          = if( GRAZ ) 7 else 5
    val START_WITH_TRANSIT  = GRAZ
 //   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
-   val INTERNAL_AUDIO      = true
+   val INTERNAL_AUDIO      = false // true
    val NUAGES_ANTIALIAS    = false
-   val MASTER_OFFSET       = 0
+   val MASTER_INDEX        = 2
    val SAMPLE_RATE         = 44100.0
 
    val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
+   val HEADPHONES_INDEX    = 0
 
    private val PROP_BASEPATH  = "basepath"
    private val PROP_SCPATH    = "scpath"
@@ -108,6 +109,9 @@ object Dissemination {
    
    val support = new REPLSupport
    var masterBus : AudioBus = null
+   var headphonesBus : AudioBus = null
+
+   var gui: GUI            = null
 
    @volatile var s: Server       = _
    @volatile var booting: ServerConnection = _
@@ -131,6 +135,7 @@ object Dissemination {
       val sspw = ssp.makeWindow
       val ntp  = new NodeTreePanel()
       val ntpw = ntp.makeWindow
+      gui      = new GUI
       ntpw.setLocation( sspw.getX, sspw.getY + sspw.getHeight + 32 )
       sspw.setVisible( true )
       ntpw.setVisible( true )
@@ -161,10 +166,11 @@ object Dissemination {
       masterBus  = if( INTERNAL_AUDIO ) {
          new AudioBus( s, 0, 2 )
       } else {
-         new AudioBus( s, MASTER_OFFSET, MASTER_NUMCHANNELS )
+         new AudioBus( s, MASTER_INDEX, MASTER_NUMCHANNELS )
       }
-      val soloBus    = Bus.audio( s, 2 )
-      config         = NuagesConfig( s, Some( masterBus ), Some( soloBus ), Some( RECORD_PATH ))
+//      val soloBus    = Bus.audio( s, 2 )
+      headphonesBus  = new AudioBus( s, HEADPHONES_INDEX, 2 )
+      config         = NuagesConfig( s, Some( masterBus ), None, Some( RECORD_PATH ))
       val f          = new NuagesFrame( config )
       f.panel.display.setHighQuality( NUAGES_ANTIALIAS )
       f.setSize( 640, 480 )

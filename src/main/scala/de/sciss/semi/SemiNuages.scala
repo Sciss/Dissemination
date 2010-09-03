@@ -670,21 +670,37 @@ object SemiNuages extends {
 
       pMaster = diff( "semi-master" )({
 //         val pmix    = pMix
-//         val pMix = pControl( "mix", ParamSpec( 0, 1 ), 0.5 )
-         graph { in =>
+         val php     = pControl( "hp", ParamSpec( 0, 1, step = 1 ), 0 )
+         val psolo   = pControl( "solo", ParamSpec( 0, NUM_PLATES, step = 1 ), 0 )
+         val pamp    = pControl( "amp", ParamSpec( (-40).dbamp, 0.dbamp ), (-30).dbamp )
+         graph { inPure =>
+            val in            = inPure * pamp.kr
             val inChannels    = in.numOutputs
             val outChannels   = masterBus.numChannels
-            val sig = if( inChannels != outChannels ) {
+            val hp            = php.kr
+            val solo          = psolo.kr
+            val soloIdx       = solo - 1
+            val isAll         = solo === 0
+            val sigSolo       = in * Seq.tabulate( NUM_PLATES )( _ === soloIdx )
+            val sigMix: GE    = in * isAll + sigSolo * (1 - isAll)
+            val hpIn          = {
                var pan: GE = 0
 //               val fact = 2f / inChannels
-               val fact = 2f / (inChannels - 1) * (outChannels - 1) / outChannels
+               val hpChans = 2
+               val fact = 2f / (inChannels - 1) * (hpChans - 1) / hpChans
                for( idx <- 0 until inChannels ) {
-                  pan += PanAz.ar( outChannels, in \ idx, idx * fact )
+                  pan += PanAz.ar( hpChans, in \ idx, idx * fact )
                }
-               pan
-            } else in
-            require( sig.numOutputs == outChannels )
-            Out.ar( masterBus.index, sig )
+               pan * (hpChans.toFloat / inChannels).sqrt
+            }
+            val sigSoloM      = Mix( sigSolo )
+            val hpSolo        = sigSoloM :: sigSoloM :: Nil
+            val hpMix         = hpIn * isAll + hpSolo * (1 - isAll)
+//            val sig           = (if( inChannels != outChannels ) hpMix else in) * pamp.kr
+            require( sigMix.numOutputs == outChannels )
+
+            Out.ar( masterBus.index, sigMix * (1 - hp) )
+            Out.ar( headphonesBus.index, hpMix * hp )
          }
       }).make
 
