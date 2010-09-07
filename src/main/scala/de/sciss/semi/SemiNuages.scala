@@ -52,9 +52,10 @@ object SemiNuages extends {
 
 //   var plateCollectors = IIdxSeq[ Proc ]() // = _
    var plates: IIdxSeq[ Plate ] = _
-   var collMaster: Proc = _
-   var pMaster:    Proc = _
-   var sprenger: Sprenger = _
+   var collMaster: Proc    = _
+   var pMaster:    Proc    = _
+   var sprenger: Sprenger  = _
+   var regen: Regen        = _
 
    def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
 
@@ -669,12 +670,12 @@ object SemiNuages extends {
 //         }
 //      }
 
-      filter( "sprenger-trans" ) {
+      filter( "water-trans1" ) {
          val pin2    = pAudioIn( "in2" )
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in =>
+         graph { in1 =>
             val in2  = pin2.ar
-            require( in.numOutputs == 1 && in2.numOutputs == 1 )
+            require( in1.numOutputs == in2.numOutputs )
             val fade    = pfade.ar
 // Rand-fucking-wipe does not work, it produces shit at fade position 1
 //            val fft1    = FFT( bufEmpty( 256 ).id, in )
@@ -682,7 +683,32 @@ object SemiNuages extends {
 //            val chain   = PV_RandWipe( fft1, fft2, fade.linlin( -1, 1, 0, 1 ), Delay1.kr(fade)-fade !== 0 )
 //            IFFT( chain )
             val freq    = fade.linexp( 0, 1, 50, 18000 )
-            HPF.ar( in, freq ) + LPF.ar( in2, freq )
+            HPF.ar( in1, freq ) + LPF.ar( in2, freq )
+         }
+      }
+
+      filter( "water-trans2" ) {
+         val pin2    = pAudioIn( "in2" )
+         val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
+         graph { in1 =>
+            val in2  = pin2.ar
+            val numChannels = in1.numOutputs
+            require( numChannels == in2.numOutputs )
+            val fade0= "fade".kr( 0 )
+//            val fade0 = LFTri.kr( "freq".kr( 0.1 )).linlin( -1, 1, 0, 1 )
+            val fade = fade0.linlin( 0, 1, -1, 1 )
+            val dc   = DC.ar( 1 )
+            val amp1 = Amplitude.kr( in1, 0.05, 0.4 ).max( (-40).dbamp )
+            val amp2 = Amplitude.kr( in2, 0.05, 0.4 ).max( (-40).dbamp )
+            val mix1 = LinXFade2.ar( in1 / amp1, dc, fade )
+            val mix2 = LinXFade2.ar( dc, in2 / amp2, fade )
+            val hlb: GE = (0 until numChannels) map { ch =>
+               val Seq( re1, im1 ) = Hilbert.ar( mix1 \ ch ).outputs
+               val Seq( re2, im2 ) = Hilbert.ar( mix2 \ ch ).outputs
+               re1 * re2 - im1 * im2
+            }
+            val ampMix = amp1 * (1 - fade0).sqrt + amp2 * fade0.sqrt
+            LeakDC.ar( hlb * ampMix )
          }
       }
 
@@ -735,6 +761,7 @@ object SemiNuages extends {
       pMaster.play
 
       sprenger = new Sprenger
+      regen    = new Regen
 
       // tablet
       this.f = f

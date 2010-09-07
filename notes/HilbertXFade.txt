@@ -1,0 +1,51 @@
+val df = SynthDef("AnalogBubbles") {
+    val f1 = "freq1".kr(0.4)
+    val f2 = "freq2".kr(8)
+    val d  = "detune".kr(0.90375)
+    val f = LFSaw.ar(f1).madd(24, LFSaw.ar(List(f2, f2*d)).madd(3, 80)).midicps // glissando function
+    val x = CombN.ar(SinOsc.ar(f)*0.04, 0.2, 0.2, 4) // echoing sine wave
+    Out.ar( "bus".kr, x )
+}
+
+df.recv
+
+val b = Bus.audio( s, 2 )
+val x = df.play( args = List( "bus" -> b.index ))
+
+val df2 = SynthDef("LFO") {
+    Out.ar( "bus".kr, CombL.ar(
+        RLPF.ar(LFPulse.ar(FSinOsc.kr(0.05).madd(80,160),0,0.4)*0.05, 
+            FSinOsc.kr(List(0.6, 0.7)).madd(3600, 4000), 0.2),
+        0.3, List(0.2, 0.25), 2))
+}
+df2.recv
+
+val b2 = Bus.audio( s, 2 )
+val y = df2.play( args = List( "bus" -> b2.index ))
+
+SynthDef.recv( s, "Cross" ) {
+    val in1  = In.ar( "in1".kr, 2 )
+    val in2  = In.ar( "in2".kr, 2 )
+//    val fade0= "fade".kr( 0 )
+val fade0 = LFTri.kr( "freq".kr( 0.1 )).linlin( -1, 1, 0, 1 )
+    val fade = fade0.linlin( 0, 1, -1, 1 )
+    val dc   = DC.ar( 1 )
+    val amp1 = Amplitude.kr( in1, 0.05, 0.4 ).max( (-40).dbamp )
+    val amp2 = Amplitude.kr( in2, 0.05, 0.4 ).max( (-40).dbamp )
+    val mix1 = LinXFade2.ar( in1 / amp1, dc, fade )
+    val mix2 = LinXFade2.ar( dc, in2 / amp2, fade )
+    val hlb: GE = (0 until 2) map { ch =>
+        val Seq( re1, im1 ) = Hilbert.ar( mix1 \ ch ).outputs
+        val Seq( re2, im2 ) = Hilbert.ar( mix2 \ ch ).outputs
+        re1 * re2 - im1 * im2
+    }
+    val ampMix = amp1 * (1 - fade0).sqrt + amp2 * fade0.sqrt
+    Out.ar( "out".kr( 0 ), LeakDC.ar( hlb * ampMix ))
+}
+
+val z = Synth.tail( s, "Cross", List( "in1" -> b.index, "in2" -> b2.index ))
+//z.set( "fade" -> 1 )
+//z.set( "fade" -> 0 )
+//z.set( "fade" -> 0.5 )
+z.set( "freq" -> 0.02 )
+z.free

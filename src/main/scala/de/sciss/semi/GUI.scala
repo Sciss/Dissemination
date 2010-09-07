@@ -42,25 +42,42 @@ class GUI {
          }
       })
 
+      val procLBRegen = new JLabel( "Regen:" )
+      val procGGRegen = new JCheckBox()
+      procGGRegen.addActionListener( new ActionListener {
+         def actionPerformed( e: ActionEvent ) {
+            val onOff = procGGRegen.isSelected()
+            ProcTxn.atomic { implicit tx =>
+               regen.active = onOff
+            }
+         }
+      })
+
       procLay.setHorizontalGroup( procLay.createSequentialGroup()
          .addGroup( procLay.createParallelGroup()
             .addComponent( procLBPlate )
             .addComponent( procLBSprenger )
+            .addComponent( procLBRegen )
          )
          .addGroup( procLay.createParallelGroup()
             .addComponent( procGGPlate )
             .addComponent( procGGSprenger )
+            .addComponent( procGGRegen )
          )
       )
 
-      procLay.setVerticalGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
-         .addGroup( procLay.createSequentialGroup()
+      procLay.setVerticalGroup( procLay.createSequentialGroup()
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBPlate )
-            .addComponent( procLBSprenger )
-         )
-         .addGroup( procLay.createSequentialGroup()
             .addComponent( procGGPlate )
+         )
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
+            .addComponent( procLBSprenger )
             .addComponent( procGGSprenger )
+         )
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
+            .addComponent( procLBRegen )
+            .addComponent( procGGRegen )
          )
       )
 
