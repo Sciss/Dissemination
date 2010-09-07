@@ -19,6 +19,7 @@ class GUI {
       val procLay       = new GroupLayout( procPane )
       procPane.setLayout( procLay )
       procLay.setAutoCreateContainerGaps( true )
+
       val procLBPlate   = new JLabel( "Plate:" )
       val procGGPlate   = new JCheckBox()
       procGGPlate.addActionListener( new ActionListener {
@@ -30,14 +31,37 @@ class GUI {
          }
       })
 
+      val procLBSprenger = new JLabel( "Sprenger:" )
+      val procGGSprenger = new JCheckBox()
+      procGGSprenger.addActionListener( new ActionListener {
+         def actionPerformed( e: ActionEvent ) {
+            val onOff = procGGSprenger.isSelected()
+            ProcTxn.atomic { implicit tx =>
+               sprenger.active = onOff
+            }
+         }
+      })
+
       procLay.setHorizontalGroup( procLay.createSequentialGroup()
-         .addComponent( procLBPlate )
-         .addComponent( procGGPlate )
+         .addGroup( procLay.createParallelGroup()
+            .addComponent( procLBPlate )
+            .addComponent( procLBSprenger )
+         )
+         .addGroup( procLay.createParallelGroup()
+            .addComponent( procGGPlate )
+            .addComponent( procGGSprenger )
+         )
       )
 
       procLay.setVerticalGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
-         .addComponent( procLBPlate )
-         .addComponent( procGGPlate )
+         .addGroup( procLay.createSequentialGroup()
+            .addComponent( procLBPlate )
+            .addComponent( procLBSprenger )
+         )
+         .addGroup( procLay.createSequentialGroup()
+            .addComponent( procGGPlate )
+            .addComponent( procGGSprenger )
+         )
       )
 
       // --- monitoring ----

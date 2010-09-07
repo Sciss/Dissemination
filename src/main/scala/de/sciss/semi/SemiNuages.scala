@@ -54,6 +54,7 @@ object SemiNuages extends {
    var plates: IIdxSeq[ Plate ] = _
    var collMaster: Proc = _
    var pMaster:    Proc = _
+   var sprenger: Sprenger = _
 
    def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
 
@@ -668,6 +669,23 @@ object SemiNuages extends {
 //         }
 //      }
 
+      filter( "sprenger-trans" ) {
+         val pin2    = pAudioIn( "in2" )
+         val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
+         graph { in =>
+            val in2  = pin2.ar
+            require( in.numOutputs == 1 && in2.numOutputs == 1 )
+            val fade    = pfade.ar
+// Rand-fucking-wipe does not work, it produces shit at fade position 1
+//            val fft1    = FFT( bufEmpty( 256 ).id, in )
+//            val fft2    = FFT( bufEmpty( 256 ).id, in2 )
+//            val chain   = PV_RandWipe( fft1, fft2, fade.linlin( -1, 1, 0, 1 ), Delay1.kr(fade)-fade !== 0 )
+//            IFFT( chain )
+            val freq    = fade.linexp( 0, 1, 50, 18000 )
+            HPF.ar( in, freq ) + LPF.ar( in2, freq )
+         }
+      }
+
       pMaster = diff( "semi-master" )({
 //         val pmix    = pMix
          val php     = pControl( "hp", ParamSpec( 0, 1, step = 1 ), 0 )
@@ -715,6 +733,8 @@ object SemiNuages extends {
 //      pMaster ~> pComp
 //      pComp.play
       pMaster.play
+
+      sprenger = new Sprenger
 
       // tablet
       this.f = f

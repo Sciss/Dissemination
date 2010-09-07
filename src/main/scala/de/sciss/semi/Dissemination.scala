@@ -81,7 +81,8 @@ object Dissemination {
 
    val BASE_PATH           = properties.getProperty( PROP_BASEPATH )
    val RECORD_PATH         = BASE_PATH + fs + "rec"
-   val WORK_PATH           = BASE_PATH + fs + "audio_work" + fs + "work"
+   val AUDIO_PATH          = BASE_PATH + fs + "audio_work" 
+   val WORK_PATH           = AUDIO_PATH + fs + "work"
    val INJECT_PATH         = BASE_PATH + fs + "inject"
    
    val options          = {

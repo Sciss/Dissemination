@@ -137,93 +137,6 @@ object Plate {
 //      }
 //   }
 
-   private val stopAndDisposeListener = new Proc.Listener {
-      def updated( u: Proc.Update ) {
-//println( "UPDATE " + u )
-         if( !u.state.fading && (u.state.bypassed || u.controls.find( tup =>
-            (tup._1.name == "amp") && tup._2.mapping.isEmpty ).isDefined) ) { 
-            if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
-            disposeProc( u.proc ) // ProcTxn.atomic { implicit tx => }
-         }
-      }
-   }
-
-   private def disposeProc( proc: Proc ) {
-      ProcTxn.atomic { implicit t =>
-         proc.anatomy match {
-            case ProcFilter => disposeFilter( proc )
-            case _ => disposeGenDiff( proc )
-         }
-      }
-   }
-
-   // XXX copied from Nuages. we should have this going into SoundProcesses directly somehow
-   private def disposeFilter( proc: Proc )( implicit tx: ProcTxn ) {
-      val in   = proc.audioInput( "in" )
-      val out  = proc.audioOutput( "out" )
-      val ines = in.edges.toSeq
-      val outes= out.edges.toSeq
-      if( ines.size > 1 ) println( "WARNING : Filter is connected to more than one input!" )
-      if( verbose && outes.nonEmpty ) println( "" + new java.util.Date() + " " + out + " ~/> " + outes.map( _.in ))
-      outes.foreach( oute => {
-//         if( verbose ) println( "" + out + " ~/> " + oute.in )
-         out ~/> oute.in
-      })
-      ines.headOption.foreach( ine => {
-         if( verbose ) println( "" + new java.util.Date() + " " + ine.out + " ~> " + outes.map( _.in ))
-         outes.foreach( oute => {
-//            if( verbose ) println( "" + ine.out + " ~> " + oute.in )
-            ine.out ~> oute.in
-         })
-      })
-      // XXX tricky: this needs to be last, so that
-      // the pred out's bus isn't set to physical out
-      // (which is currently not undone by AudioBusImpl)
-      if( verbose && ines.nonEmpty ) println( "" + new java.util.Date() + " " + ines.map( _.out ) + " ~/> " + in )
-      ines.foreach( ine => {
-         ine.out ~/> in
-      })
-      proc.dispose
-   }
-
-   // XXX copied from Nuages. we should have this going into SoundProcesses directly somehow
-   private def disposeGenDiff( proc: Proc )( implicit tx: ProcTxn ) {
-//      val toDispose = MSet.empty[ Proc ]
-//      addToDisposal( toDispose, proc )
-//      toDispose.foreach( p => {
-val p = proc
-         val ines = p.audioInputs.flatMap( _.edges ).toSeq // XXX
-         val outes= p.audioOutputs.flatMap( _.edges ).toSeq // XXX
-         outes.foreach( oute => oute.out ~/> oute.in )
-         ines.foreach( ine => ine.out ~/> ine.in )
-         p.dispose
-//      })
-   }
-
-   private def stopAndDispose( fadeTime: Double, rp: RunningProc )( implicit tx: ProcTxn ) {
-      val p     = rp.proc
-      val state = p.state
-//println( "STOP-AND-DISPOSE " + p + " -> " + state + " / " + tx.transit )
-//      if( !state.fading && (!state.playing || state.bypassed || (tx.transit == Instant)) ) {
-      if( !state.fading && (!state.playing || state.bypassed || (fadeTime == 0.0)) ) {
-//println( ".......INSTANT" )
-         p.dispose
-      } else {
-         p.addListener( stopAndDisposeListener )
-         p.anatomy match {
-            case ProcFilter => {
-//println( ".......BYPASS" )
-               xfade( fadeTime ) { p.bypass }
-            }
-            case _ => {
-//println( ".......STOP " + (new java.util.Date()) )
-//               p.stop
-               glide( fadeTime ) { p.control( "amp" ).v = 0.001 }
-            }
-         }
-      }
-   }
-
    case class RunningProc( proc: Proc, context: SoundContext, startTime: Long, deathTime: Long )
 }
 
@@ -382,7 +295,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
          if( verbose ) println( "" + new java.util.Date() + " SHADING OBSOLETE " + rp )
       } else {
          if( verbose ) println( "" + new java.util.Date() + " STOPPING OBSOLETE " + rp )
-         stopAndDispose( fadeTime, rp )
+         ProcHelper.stopAndDispose( fadeTime, rp.proc )
          running.transform( _ - rp )
       }
 //         rp.proc.dispose // stop
@@ -393,7 +306,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       if( r.size < rrand( 1, 2 )) return false
       val rp = choose( r )
       val fadeTime = exprand( rp.context.minFade, rp.context.maxFade )
-      stopAndDispose( fadeTime, rp )
+      ProcHelper.stopAndDispose( fadeTime, rp.proc )
       running.transform( _ - rp )
       true
    }
