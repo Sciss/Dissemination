@@ -260,29 +260,29 @@ object SemiNuages extends {
 //         }
 //      }
 
-//      filter( "achil") {
-//         val pspeed  = pAudio( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 0.5 )
-//         val pmix    = pMix
-//
-//         graph { in =>
-//            val speed	   = Lag.ar( pspeed.ar, 0.1 )
-//            val numFrames  = sampleRate.toInt
-//            val numChannels= in.numOutputs
-//            val buf        = bufEmpty( numFrames, numChannels )
-//            val bufID      = buf.id
-//            val writeRate  = BufRateScale.kr( bufID )
-//            val readRate   = writeRate * speed
-//            val readPhasor = Phasor.ar( 0, readRate, 0, numFrames )
-//            val read			= BufRd.ar( numChannels, bufID, readPhasor, 0, 4 )
-//            val writePhasor= Phasor.ar( 0, writeRate, 0, numFrames )
-//            val old			= BufRd.ar( numChannels, bufID, writePhasor, 0, 1 )
-//            val wet0 		= SinOsc.ar( 0, ((readPhasor - writePhasor).abs / numFrames * math.Pi) )
-//            val dry			= 1 - wet0.squared
-//            val wet			= 1 - (1 - wet0).squared
-//            BufWr.ar( (old * dry) + (in * wet), bufID, writePhasor )
-//            mix( in, read, pmix )
-//         }
-//      }
+      filter( "achil") {
+         val pspeed  = pAudio( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 0.5 )
+         val pmix    = pMix
+
+         graph { in =>
+            val speed	   = Lag.ar( pspeed.ar, 0.1 )
+            val numFrames  = sampleRate.toInt
+            val numChannels= in.numOutputs
+            val buf        = bufEmpty( numFrames, numChannels )
+            val bufID      = buf.id
+            val writeRate  = BufRateScale.kr( bufID )
+            val readRate   = writeRate * speed
+            val readPhasor = Phasor.ar( 0, readRate, 0, numFrames )
+            val read			= BufRd.ar( numChannels, bufID, readPhasor, 0, 4 )
+            val writePhasor= Phasor.ar( 0, writeRate, 0, numFrames )
+            val old			= BufRd.ar( numChannels, bufID, writePhasor, 0, 1 )
+            val wet0 		= SinOsc.ar( 0, ((readPhasor - writePhasor).abs / numFrames * math.Pi) )
+            val dry			= 1 - wet0.squared
+            val wet			= 1 - (1 - wet0).squared
+            BufWr.ar( (old * dry) + (in * wet), bufID, writePhasor )
+            mix( in, read, pmix )
+         }
+      }
 
 //      filter( "a-gate" ) {
 //         val pamt = pAudio( "amt", ParamSpec( 0, 1 ), 1 )
@@ -294,18 +294,18 @@ object SemiNuages extends {
 //         }
 //      }
 
-//      filter( "a-hilb" ) {
-//         val pmix = pMix
-//         graph { in =>
-//            var flt: GE = List.fill( in.numOutputs )( 0.0 )
-//            in.outputs foreach { ch =>
-//               val hlb  = Hilbert.ar( DelayN.ar( ch, 0.01, 0.01 ))
-//               val hlb2 = Hilbert.ar( Normalizer.ar( ch, dur = 0.02 ))
-//               flt     += (hlb \ 0) * (hlb2 \ 0) - (hlb \ 1 * hlb2 \ 1)
-//            }
-//            mix( in, flt, pmix )
-//         }
-//      }
+
+      filter( "a-hilb" ) {
+         val pmix = pMix
+         graph { in =>
+            val flt = in.outputs map { ch =>
+               val hlb  = Hilbert.ar( DelayN.ar( ch, 0.01, 0.01 ))
+               val hlb2 = Hilbert.ar( Normalizer.ar( ch, dur = 0.02 ))
+               (hlb \ 0) * (hlb2 \ 0) - (hlb \ 1 * hlb2 \ 1)
+            }
+            mix( in, flt, pmix )
+         }
+      }
 
       // ---- DISSEM FILTERS ----
 

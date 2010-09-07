@@ -250,7 +250,13 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       (Ref( idx ), Ref( contexts ))
    }
 
-   private val silenceCount   = Ref( 0)
+   // ---- to reset ----
+   private val energyCons  = Ref( 0.0 )
+   private val energyProd  = Ref( 0.0 )
+// private val energyBal   = Ref( 0.0 )  // always equal to prod minus consume
+   private val exhaustedRef= Ref( 0 )
+   private val silenceCount= Ref( 0)
+
    private val running        = Ref( Set.empty[ RunningProc ])
 
    def loudness( implicit tx: ProcTxn ) = loudnessRef()
@@ -260,6 +266,15 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       val idx = injectIndex() + 1
       injectIndex.set( idx )
       injectPath + fs + "inject" + (idx + 100000).toString.substring( 1 ) + ".aif"
+   }
+
+   private val activeRef   = Ref( false )
+   def active( implicit tx: ProcTxn ) = activeRef()
+   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) {
+      val wasActive = activeRef.swap( onOff )
+      if( !wasActive && onOff ) { // reset accum
+         reset
+      }
    }
 
    private def wrapInjectionInContext( name: String ) = {
@@ -274,11 +289,6 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       injected.transform( _ :+ wrapInjectionInContext( new File( path ).getName ))
    }
 
-   private val energyCons  = Ref( 0.0 )
-   private val energyProd  = Ref( 0.0 )
-// private val energyBal   = Ref( 0.0 )  // always equal to prod minus consume
-   private val exhaustedRef= Ref( 0 )
-
    override def toString = "plate<" + id + ">"
 
    private var neighbour1: Option[ Plate ] = None
@@ -288,6 +298,14 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
    private val recording = Ref( false )
 
    private val minLoudnessCount = rrand( MIN_LOUDNESS_COUNT_LO, MIN_LOUDNESS_COUNT_HI )
+
+   def reset( implicit tx: ProcTxn ) {
+      energyCons.set( 0.0 )
+      energyProd.set( 0.0 )
+      exhaustedRef.set( 0 )
+      silenceCount.set( 0 )
+      // XXX maybe: limit number of injected paths?
+   }
 
    def initNeighbours( n1: Option[ Plate ], n2: Option[ Plate ]) {
       neighbour1  = n1
@@ -306,9 +324,12 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       loudnessRef.set( loud )
       centroidRef.set( centr )
       flatnessRef.set( flat )
+
+      if( !active ) return
+
       val exhaust = exhaustedRef()
 
-if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " + loud + "; silence = " + silenceCount() )
+//if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " + loud + "; silence = " + silenceCount() )
 
       // ---- minimum loudness ----
       if( loud < MIN_LOUDNESS_THRESH ) {
@@ -396,7 +417,7 @@ if( id == 0 ) println( this.toString + " : exhaust = " + exhaust + " ; loud = " 
       println( this.toString + " RECORD DONE " + ampInteg )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
-      if( ampInteg < MIN_RECORD_INTEG ) {
+      if( (ampInteg < MIN_RECORD_INTEG) || !active ) {
          recording.set( false )
          return
       }
