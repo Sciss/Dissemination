@@ -76,4 +76,10 @@ object Util {
       while( y < x ) y <<= 1
       y
    }
+
+   def nextPowerOfTwo( x: Long ) : Long = {
+      var y = 1
+      while( y < x ) y <<= 1
+      y
+   }
 }

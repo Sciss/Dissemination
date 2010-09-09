@@ -27,6 +27,30 @@ extends JFrame( "Scala Interpreter" ) {
 """// Press '""" + KeyEvent.getKeyModifiersText( txnKeyStroke.getModifiers() ) + " + " +
       KeyEvent.getKeyText( txnKeyStroke.getKeyCode() ) + """' to execute transactionally.
 
+val so = new ServerOptionsBuilder
+so.nrtOutputPath = "/Users/hhrutz/Desktop/test.aiff"
+so.sampleRate = 44100
+so.outputBusChannels = 2
+
+import Float.{ PositiveInfinity => inf }
+case class Span( start: Long, stop: Long ) { def length = stop - start }
+
+val path = "/Users/hhrutz/Documents/Cupola/rec/Windspiel2.aif"
+
+val bc = BounceSynthContext( so )
+
+import Util._
+
+val df3 = SynthDef( "WindVoice" ) {
+   val bufID     = "buf".ir
+   val rate      = "rate".kr( 1 )
+   val dur       = "dur".ir
+   val play      = VDiskIn.ar( 2, bufID, rate )
+   val env       = Line.ar( 1, 0, dur, freeSelf )
+   Out.ar( 0, play * env )
+}
+bc.perform( bc.add( df3.recvMsg ), 0.0 )
+
 val w = ProcDemiurg.worlds(s)
 val fact = ProcDemiurg.factories
 val test = fact.find( _.name == "test" ).get

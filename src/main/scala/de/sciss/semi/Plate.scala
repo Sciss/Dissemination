@@ -102,17 +102,17 @@ object Plate {
          }
       }).make
 
+      val recPathF   = ProcHelper.createTempAudioFile
       val pRec = (diff( "rec" + id ) {
          val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
          graph { in =>
-            val b = bufRecord( RECORD_PATH + fs + "plate" + id + ".aif",
-               in.numOutputs )
+            val b = bufRecord( recPathF.getAbsolutePath(), in.numOutputs )
             DiskOut.ar( b.id, in )
             val done = Done.kr( Line.kr( dur = pdur.ir ))
             val ampInteg = Integrator.kr( Amplitude.kr( in ))
             done.react( ampInteg ) { data =>
                val Seq( amp ) = data
-               ProcTxn.spawnAtomic { implicit tx => plate.recordDone( amp )}
+               ProcTxn.spawnAtomic { implicit tx => plate.recordDone( recPathF, amp )}
             }
 //            FreeSelf.kr( done )
             PauseSelf.kr( done ) // free-self not yet recognized by proc, so we avoid a /n_free node not found
@@ -326,7 +326,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
       true
    }
 
-   def recordDone( ampInteg: Double )( implicit tx: ProcTxn ) {
+   def recordDone( recPathF: File, ampInteg: Double )( implicit tx: ProcTxn ) {
       println( this.toString + " RECORD DONE " + ampInteg )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
@@ -335,11 +335,21 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
          return
       }
 
-      val tmpA    = WORK_PATH   + fs + "tmp-a" + id + ".aif"
-      val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
-      val tmpC    = WORK_PATH   + fs + "tmp-c" + id + ".aif"
-      val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
-      val neighbour = choose( (neighbour1  :: neighbour2 :: Nil) collect { case Some( n ) => n })
+//      val tmpA    = WORK_PATH   + fs + "tmp-a" + id + ".aif"
+//      val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
+//      val tmpC    = WORK_PATH   + fs + "tmp-c" + id + ".aif"
+//      val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
+      val tmpAF      = ProcHelper.createTempAudioFile
+      val tmpBF      = ProcHelper.createTempAudioFile
+      val tmpCF      = ProcHelper.createTempAudioFile
+//      val recPathF   = ProcHelper.createTempAudioFile
+
+      val tmpA       = tmpAF.getAbsolutePath()
+      val tmpB       = tmpBF.getAbsolutePath()
+      val tmpC       = tmpCF.getAbsolutePath()
+      val recPath    = recPathF.getAbsolutePath()
+
+      val neighbour  = choose( (neighbour1  :: neighbour2 :: Nil) collect { case Some( n ) => n })
 //      val injectPath = INJECT_PATH + fs + neighbour.id
 //      new File( injectPath ).mkdirs
 //      val outPath = WORK_PATH   + fs + "plateT" + id + ".aif"
@@ -430,6 +440,10 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
             if( success ) {
                println( this.toString + " RENDER DONE" )
                neighbour.inject( outPath )
+               tmpAF.delete()
+               tmpBF.delete()
+               tmpCF.delete()
+               recPathF.delete()
             }
             recording.set( false )
          }

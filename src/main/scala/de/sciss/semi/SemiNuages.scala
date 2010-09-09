@@ -52,10 +52,11 @@ object SemiNuages extends {
 
 //   var plateCollectors = IIdxSeq[ Proc ]() // = _
    var plates: IIdxSeq[ Plate ] = _
-   var collMaster: Proc    = _
-   var pMaster:    Proc    = _
-   var sprenger: Sprenger  = _
-   var regen: Regen        = _
+   var collMaster: Proc       = _
+   var pMaster:    Proc       = _
+   var sprenger: Sprenger     = _
+   var regen: Regen           = _
+   var windspiel: Windspiel   = _
 
    def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
 
@@ -760,8 +761,9 @@ object SemiNuages extends {
 //      pComp.play
       pMaster.play
 
-      sprenger = new Sprenger
-      regen    = new Regen
+      sprenger    = new Sprenger
+      regen       = new Regen
+      windspiel   = new Windspiel
 
       // tablet
       this.f = f

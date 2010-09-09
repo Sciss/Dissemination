@@ -1,3 +1,31 @@
+/*
+ *  BounceSynthContext.scala
+ *  (Dissemination)
+ *
+ *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *
+ *  This software is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either
+ *  version 2, june 1991 of the License, or (at your option) any later version.
+ *
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public
+ *  License (gpl.txt) along with this software; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
+ *
+ *
+ *  Changelog:
+ */
+
 package de.sciss.semi
 
 import scala.collection.immutable.{ Queue => IQueue }
@@ -12,25 +40,32 @@ import de.sciss.synth._
 object BounceSynthContext {
    @throws( classOf[ IOException ])
    def apply( so: ServerOptionsBuilder ) : BounceSynthContext = {
-//      val appPath = audioPrefs.get( PrefsUtil.KEY_SUPERCOLLIDERAPP, null )
-//      if( appPath == null ) {
-//         throw new IOException( AbstractApplication.getApplication.getResourceString( "errSCSynthAppNotFound" ))
-//      }
-//      so.program.value = appPath
-//      val so = new ServerOptions()
-//      so.blockSize = 1
-//      so.sampleRate
       val oscPath = File.createTempFile( "kontur", ".osc" )
       val oscFile = new RandomAccessFile( oscPath, "rw" )
-//      oscFile.setLength( 0L )
       so.nrtCommandPath = oscPath.getCanonicalPath
-//      val s = new Server( "Bounce", so.build )
       val context = new BounceSynthContext( so.build, oscPath, oscFile )
       context
+   }
+
+   private var current: BounceSynthContext = null
+
+   trait AbstractBundle {
+      protected var msgs     = IQueue[ OSCMessage ]()
+
+      @throws( classOf[ IOException ])
+      def send: Unit
+
+      def add( msg: OSCMessage ) {
+         msgs = msgs.enqueue( msg )
+      }
+
+      def messages: Seq[ OSCMessage ] = msgs
    }
 }
 
 class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: RandomAccessFile ) {
+   import BounceSynthContext._
+
    private val verbose =  false
 
    private var timebaseVar = 0.0
@@ -42,14 +77,6 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
 
    protected var bundle: AbstractBundle = null
    
-//   // ---- constructor ----
-//   {
-//      // XXX initTree missing at the moment
-//      perform {
-//         add( server.defaultGroup.newMsg( server.rootNode, addToHead ))
-//      }
-//   }
-
    def timebase = timebaseVar
    def timebase_=( newVal: Double ) {
       if( newVal < timebaseVar ) throw new IllegalArgumentException( newVal.toString )
@@ -58,7 +85,40 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
       }
    }
 
-//   override val sampleRate : Double = server.options.sampleRate.value
+   def perform( thunk: => Unit ) {
+      perform( thunk, -1 )
+   }
+
+   def delayed( tb: Double, delay: Double )( thunk: => Unit ) {
+      perform( thunk, (tb - timebase) + delay )
+   }
+
+   private def perform( thunk: => Unit, time: Double ) {
+      val savedContext  = BounceSynthContext.current
+      val savedBundle   = bundle
+      try {
+         initBundle( time )
+         BounceSynthContext.current = this
+         thunk
+         sendBundle
+      }
+      finally {
+         BounceSynthContext.current = savedContext
+         bundle = savedBundle
+      }
+   }
+
+   private def sendBundle {
+      try {
+         bundle.send // sendBundle( bundle )
+      }
+      catch { case e: IOException => e.printStackTrace }
+      finally {
+         bundle = null
+      }
+   }
+
+   def sampleRate : Double = so.sampleRate
 
    private def advanceTo( newTime: Double ) {
       var keepGoing = true
@@ -165,18 +225,6 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
       catch { case e: IOException => e.printStackTrace }
    }
 
-//   override def endsAfter( rn: RichNode, dur: Double ) {
-////println( "endsAfter " + dur + ": " + rn.node )
-//      delayed( timebase, dur ) {
-////println( "endsAfter really " + dur + ": " + rn.node )
-////         add( rn.node.freeMsg )
-////         rn.isOnline = false
-//         addAsync( new AsyncAction {
-//            def asyncDone { rn.isOnline = false }
-//         })
-//      } // simulate n_end
-//   }
-
    @throws( classOf[ IOException ])
    private def write( b: Bundle ) {
       val bndl = OSCBundle.secs( b.time, b.messages: _* )
@@ -212,40 +260,8 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
       }
    }
 
-   trait AbstractBundle {
-      protected var msgs     = IQueue[ OSCMessage ]()
-//      protected var asyncs   = Queue[ AsyncAction ]()
-//      private var hasAsyncVar = false
-
-      @throws( classOf[ IOException ])
-      def send: Unit
-
-      def add( msg: OSCMessage ) {
-         msgs = msgs.enqueue( msg )
-      }
-
-//      def addAsync( msg: OSCMessage ) {
-//         hasAsyncVar = true
-//         add( msg )
-//      }
-//
-//      def addAsync( msg: OSCMessage, async: AsyncAction ) {
-//         addAsync( async )
-//         add( msg )
-//      }
-//
-//      def addAsync( async: AsyncAction ) {
-//          hasAsyncVar = true
-//          asyncs   = asyncs.enqueue( async )
-//       }
-
-//      def hasAsync = hasAsyncVar
-
-      def messages: Seq[ OSCMessage ] = msgs
-
-//      def doAsync {
-//         asyncs.foreach( _.asyncDone )
-//      }
+   def add( msg: OSCMessage ) {
+      bundle.add( msg )
    }
 
    private class Bundle( val time: Double )

@@ -635,7 +635,7 @@ object FScape {
       }
    }
 
-   case class Wavelet( in: String, mod: String, out: String,
+   case class Wavelet( in: String, out: String,
       spec: AudioFileSpec = OutputSpec.aiffFloat, gain: Gain = Gain.immediate,
       filter: String = "daub4", inverse: Boolean = false, trunc: Boolean = false,
       scaleGain: String = "3dB" )
