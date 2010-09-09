@@ -63,7 +63,7 @@ class Sprenger extends WaterLike {
    def exclusives = Set( "regen" ) 
    def trigger : GE = { // XXX
       import synth._
-      Dust.kr( 1.0 / 120 )
+      Dust.kr( 1.0 / 360 )
    }
 
    @tailrec

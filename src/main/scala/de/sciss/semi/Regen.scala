@@ -58,7 +58,7 @@ class Regen extends WaterLike {
    def exclusives = Set( "sprenger" )
    def trigger : GE = { // XXX
       import synth._
-      Dust.kr( 1.0 / 120 )
+      Dust.kr( 1.0 / 360 )
    }
    
    protected def gens( implicit tx: ProcTxn ) : (Proc, Proc) = {

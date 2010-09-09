@@ -30,7 +30,8 @@ package de.sciss.semi
 
 import SemiNuages._
 import de.sciss.synth.Constant
-import de.sciss.synth.proc.{DSL, ProcTxn}
+import de.sciss.synth.proc.{Proc, DSL, ProcTxn}
+import collection.breakOut
 import DSL._
 
 object Meta {
@@ -41,6 +42,7 @@ class Meta {
    import Meta._
    
    private val procs = plates :: regen :: sprenger :: windspiel :: Nil
+   private val procMap: Map[ String, SemiProcess ] = procs.map( p => p.name -> p )( breakOut )
 
    def init( implicit tx: ProcTxn ) {
       val ptrig = (diff( "meta" ) {
@@ -57,11 +59,20 @@ class Meta {
                val offTrig = (-tr).max( 0 )
                onTrig.react {
                   if( verbose ) println( "ACTIVATING " + proc.name )
-                  ProcTxn.spawnAtomic { implicit tx => proc.active = true }
+                  ProcTxn.spawnAtomic { implicit tx =>
+                     if( !proc.exclusives.exists( name =>
+                        procMap.get( name ).map( _.active ).getOrElse( false )
+                     )) {
+                        proc.active = true
+                     }
+                  }
                }
                offTrig.react {
                   if( verbose ) println( "DEACTIVATING " + proc.name )
-                  ProcTxn.spawnAtomic { implicit tx => proc.active = false }
+                  ProcTxn.spawnAtomic { implicit tx =>
+//                     if( procs.exists( p => p != proc && p.active ))
+                     proc.active = false
+                  }
                }
             }
             0
