@@ -29,8 +29,13 @@
 package de.sciss.semi
 
 import de.sciss.synth.proc.ProcTxn
+import de.sciss.synth.GE
 
 trait SemiProcess {
    def active( implicit tx: ProcTxn ) : Boolean
    def active_=( onOff: Boolean )( implicit tx: ProcTxn ) : Unit
+   def name : String
+   def exclusives : Set[ String ]
+   
+   def trigger : GE
 }

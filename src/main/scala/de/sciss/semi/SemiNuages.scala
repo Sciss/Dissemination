@@ -51,12 +51,15 @@ object SemiNuages extends {
    var masterSynth : Synth  = _
 
 //   var plateCollectors = IIdxSeq[ Proc ]() // = _
-   var plates: IIdxSeq[ Plate ] = _
+//   var plates: IIdxSeq[ Plate ] = _
+   var plates: Plates         = _
    var collMaster: Proc       = _
    var pMaster:    Proc       = _
    var sprenger: Sprenger     = _
    var regen: Regen           = _
    var windspiel: Windspiel   = _
+
+   var meta: Meta             = _
 
    def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
 
@@ -654,13 +657,14 @@ object SemiNuages extends {
          }
       }).make
 
-      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
-         val (transit, idx) = tup
-         Plate( idx, transit )
-      }
-      plates.foreach( p => p.initNeighbours(
-         { val i = p.id - 2; if( i >= 0 ) Some( plates( i )) else None },
-         { val i = p.id + 2; if( i < NUM_PLATES ) Some( plates( i )) else None }))
+      plates = Plates.create
+//      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
+//         val (transit, idx) = tup
+//         Plate( idx, transit )
+//      }
+//      plates.foreach( p => p.initNeighbours(
+//         { val i = p.id - 2; if( i >= 0 ) Some( plates( i )) else None },
+//         { val i = p.id + 2; if( i < NUM_PLATES ) Some( plates( i )) else None }))
 
 //      diff( "rec" ) {
 //         val pid = pScalar( id, ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
@@ -764,9 +768,12 @@ object SemiNuages extends {
       sprenger    = new Sprenger
       regen       = new Regen
       windspiel   = new Windspiel
+      meta        = new Meta
 
       // tablet
       this.f = f
+
+      meta.init 
 
 //s.dumpOSC(1)
    }

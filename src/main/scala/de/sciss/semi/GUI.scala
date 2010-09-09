@@ -48,13 +48,13 @@ class GUI {
       procPane.setLayout( procLay )
       procLay.setAutoCreateContainerGaps( true )
 
-      val procLBPlate   = new JLabel( "Plate:" )
+      val procLBPlate   = new JLabel( "Plates:" )
       val procGGPlate   = new JCheckBox()
       procGGPlate.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
             val onOff = procGGPlate.isSelected()
             ProcTxn.atomic { implicit tx =>
-               plates.foreach( _.active = onOff )
+               plates.active = onOff
             }
          }
       })

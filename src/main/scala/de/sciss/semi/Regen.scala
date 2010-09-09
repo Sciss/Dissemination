@@ -30,8 +30,10 @@ package de.sciss.semi
 
 import Dissemination._
 import de.sciss.synth
+import synth.GE
 import synth.proc.{ExpWarp, ParamSpec, DSL, ProcTxn, Proc}
 import DSL._
+import synth.ugen.Dust
 import Util._
 
 object Regen {
@@ -52,6 +54,13 @@ class Regen extends WaterLike {
       (fact.make, fact.make)
    }
 
+   def name = "regen"
+   def exclusives = Set( "sprenger" )
+   def trigger : GE = { // XXX
+      import synth._
+      Dust.kr( 1.0 / 120 )
+   }
+   
    protected def gens( implicit tx: ProcTxn ) : (Proc, Proc) = {
       import synth._
       import ugen._

@@ -111,6 +111,13 @@ class Windspiel extends SemiProcess {
       if( onOff ) start else stop
    }
 
+   def name = "windspiel"
+   def exclusives = Set.empty[ String ] 
+   def trigger : GE = { // XXX
+      import synth._
+      Dust.kr( LFNoise0.kr.linexp( -1, 1, 1.0/10, 1.0/60 ))
+   }
+
    private def stop( implicit tx: ProcTxn ) {
       
    }

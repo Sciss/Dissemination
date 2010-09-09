@@ -32,10 +32,12 @@ import Dissemination._
 import SemiNuages._
 import Util._
 import de.sciss.synth
+import synth.GE
 import synth.proc.{Proc, ExpWarp, ProcDemiurg, DSL, ParamSpec, ProcTxn, Ref}
 import collection.immutable.{ IndexedSeq => IIdxSeq }
 import DSL._
 import annotation.tailrec
+import synth.ugen.Dust
 
 object Sprenger {
    val FADE_DUR   = 6.0
@@ -56,6 +58,13 @@ class Sprenger extends WaterLike {
    protected def minFade      = INOUT_MIN
    protected def maxFade      = INOUT_MAX
    protected def engageFade   = SHORT_FADE
+
+   def name = "sprenger"
+   def exclusives = Set( "regen" ) 
+   def trigger : GE = { // XXX
+      import synth._
+      Dust.kr( 1.0 / 120 )
+   }
 
    @tailrec
    private def cutOut( pieces: IIdxSeq[ (Double, Double) ], minKeep: Double, minSkip: Double, maxSkip: Double ) : IIdxSeq[ (Double, Double) ] = {
