@@ -61,9 +61,12 @@ object Plate {
 //         val pmute = pControl( "mute", ParamSpec( 0, 1, step = 1 ), 0 )
 //         graph { in => in * (1 - pmute.kr) }
 //      } make
-      val pColl   = filter( (id + 1).toString + "+" ) { graph { in => in }} make
+      val collFact = filter( (id + 1).toString + "+" ) { graph { in => in }}
+      val pColl1  = collFact.make
+      val pColl2  = collFact.make
       val pDummy  = factory( "@" ).make
-      pDummy ~> pColl
+      pDummy ~> pColl1
+      pColl1 ~> pColl2
       var plate: Plate = null
       val pAna    = (diff( "ana" + (id+1) ) {
 //         val pid = pScalar( "id", ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
@@ -105,11 +108,12 @@ object Plate {
       val recPathF   = ProcHelper.createTempAudioFile
       val pRec = (diff( "rec" + id ) {
          val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
-         graph { in =>
-            val b = bufRecord( recPathF.getAbsolutePath(), in.numOutputs )
+         graph { in0 =>
+            val in         = LeakDC.ar( in0 )
+            val b          = bufRecord( recPathF.getAbsolutePath(), in.numOutputs )
             DiskOut.ar( b.id, in )
-            val done = Done.kr( Line.kr( dur = pdur.ir ))
-            val ampInteg = Integrator.kr( Amplitude.kr( in ))
+            val done       = Done.kr( Line.kr( dur = pdur.ir ))
+            val ampInteg   = Integrator.kr( Amplitude.kr( in ))
             done.react( ampInteg ) { data =>
                val Seq( amp ) = data
                ProcTxn.spawnAtomic { implicit tx => plate.recordDone( recPathF, amp )}
@@ -119,10 +123,10 @@ object Plate {
          }
       }).make
 
-      plate = new Plate( id, pColl, pAna, pRec )
-      pColl ~> pAna
-      pColl ~> SemiNuages.collMaster.audioInput( "in" + (id+1) )
-      pColl ~> pRec
+      plate = new Plate( id, pColl1, pColl2, pAna, pRec )
+      pColl1 ~> pAna
+      pColl2 ~> SemiNuages.collMaster.audioInput( "in" + (id+1) )
+      pColl1 ~> pRec
       pAna.play
       pDummy.dispose
       plate
@@ -140,7 +144,7 @@ object Plate {
    case class RunningProc( proc: Proc, context: SoundContext, startTime: Long, deathTime: Long )
 }
 
-class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder: Proc ) {
+class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyzer: Proc, val recorder: Proc ) {
    import Plate._
    
    private val loudnessRef = Ref( 0.0 )
@@ -460,7 +464,7 @@ class Plate( val id: Int, val collector: Proc, val analyzer: Proc, val recorder:
 //   }}
 
    private def insertAndPlayGen( rp: RunningProc, fdt: Double )( implicit tx: ProcTxn ) {
-      rp.proc ~> collector // CupolaNuages.fieldCollectors( rp.context.field )
+      rp.proc ~> collector1 // CupolaNuages.fieldCollectors( rp.context.field )
       xfade( fdt ) { rp.proc.play }
    }
 

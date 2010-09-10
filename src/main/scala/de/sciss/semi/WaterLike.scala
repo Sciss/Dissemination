@@ -87,8 +87,8 @@ trait WaterLike extends SemiProcess {
 
       chans foreach { ch =>
          val plate = plates( ch.idx )
-         val insertTarget = ProcHelper.findOutEdge( plate.collector, collMaster ).get.in
-         plate.collector ~| ch.procFilter |> insertTarget
+         val insertTarget = ProcHelper.findOutEdge( plate.collector2, collMaster ).get.in
+         plate.collector2 ~| ch.procFilter |> insertTarget
          ch.procGen ~> ch.procFilter.audioInput( "in2" )
          ch.procFilter.bypass
          ch.procGen.play

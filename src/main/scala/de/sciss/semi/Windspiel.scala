@@ -61,6 +61,7 @@ object Windspiel {
    val MAX_POW       = 2.0
    val MIN_DUR       = 20.0
    val MAX_DUR       = 60.0
+   val REC_PROB      = 0.2
 
    val MIN_SPEED     = 0.25 // 4
    val MAX_SPEED     = 0.6
@@ -268,8 +269,8 @@ println( outPathF.getAbsolutePath() )
       if( verbose ) println( "" + new java.util.Date() + " STARTING (SPARSE) " + p )
 
       val Seq( idx1, idx2 ) = urn.take( 2 )
-      val collector1 = plates( idx1 ).collector
-      val collector2 = plates( idx2 ).collector 
+      val collector1 = if( coin( REC_PROB )) plates( idx1 ).collector1 else plates( idx1 ).collector2
+      val collector2 = if( coin( REC_PROB )) plates( idx2 ).collector1 else plates( idx2 ).collector2
       
       p ~> collector1
       p.audioOutput( "out2" ) ~> collector2
