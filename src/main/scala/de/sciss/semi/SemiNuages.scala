@@ -58,6 +58,7 @@ object SemiNuages extends {
    var sprenger: Sprenger     = _
    var regen: Regen           = _
    var windspiel: Windspiel   = _
+   var apfel: Apfelessen      = _
 
    var meta: Meta             = _
 
@@ -768,6 +769,7 @@ object SemiNuages extends {
       sprenger    = new Sprenger
       regen       = new Regen
       windspiel   = new Windspiel
+      apfel       = new Apfelessen( 0 )
       meta        = new Meta
 
       // tablet

@@ -44,8 +44,8 @@ trait ColorLike extends SemiProcess {
    private val activeRef = Ref( false )
 
    // --- abstract ---
-   protected def filter( implicit tx: ProcTxn ) : Proc
-   protected def gen( implicit tx: ProcTxn ) : Proc
+   protected def filter1( implicit tx: ProcTxn ) : Proc
+   protected def gen1( implicit tx: ProcTxn ) : Proc
    protected def plate : Plate
    protected def minFade  : Double
    protected def maxFade : Double
@@ -59,24 +59,34 @@ trait ColorLike extends SemiProcess {
    }
 
    private def start( implicit tx: ProcTxn ) {
-      val flt  = filter
-      val g    = gen
-      val chan = Channel( flt, gen )
+      val flt  = filter1
+      val g    = gen1
+      val chan = Channel( flt, g )
       ch.set( Some( chan ))
 
       val pl = plate
       val insertTarget = ProcHelper.findOutEdge( pl.collector2, collMaster ).get.in
       pl.collector2 ~| chan.procFilter |> insertTarget
-      chan.procGen ~> chan.procFilter.audioInput( "in2" )
+//      chan.procGen ~> chan.procFilter.audioInput( "in2" )
       chan.procFilter.bypass
-      chan.procGen.play
+      val pDummy  = factory( "@" ).make
+      pDummy ~> chan.procFilter.audioInput( "in2" )
+//      chan.procGen.play
       chan.procFilter.play
 
+//      xfade( engageFade ) {
+//         chan.procFilter.engage
+//      }
       xfade( engageFade ) {
          chan.procFilter.engage
       }
       glide( exprand( minFade, maxFade )) {
          chan.procFilter.control( "fade" ).v = 1
+      }
+      ProcHelper.whenGlideDone( chan.procFilter, "fade" ) { implicit tx =>
+         chan.procGen ~> chan.procFilter.audioInput( "in2" )
+         chan.procGen.play
+         pDummy.dispose
       }
    }
 
@@ -91,5 +101,9 @@ trait ColorLike extends SemiProcess {
             }
          }
       }
+   }
+
+   protected def diskDone {
+      ProcTxn.spawnAtomic( implicit tx => active = false )
    }
 }
