@@ -66,7 +66,7 @@ class Regen extends WaterLike {
       import ugen._
       
       val Seq( gen1, gen2 ) = ("L" :: "R" :: Nil) map { ext =>
-         val g = (gen( "sprenger-" + ext ) {
+         val g = (gen( name + "-" + ext ) {
             val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
             val ppos = pScalar( "pos", ParamSpec( 0, 900), 1 )
             graph {

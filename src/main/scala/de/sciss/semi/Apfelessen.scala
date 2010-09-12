@@ -40,8 +40,11 @@ import Dissemination._
 object Apfelessen {
 //   val GEN_FADE_IN      = 0.1
 //   val GEN_FADE_IN      = 0.1
-   val MIN_FILTER_FADE  = 10
-   val MAX_FILTER_FADE  = 10
+   val MIN_FILTER_FADE  =  8.0
+   val MAX_FILTER_FADE  = 12.0
+   val MIN_TRIG_FREQ    = 1.0 / 140
+   val MAX_TRIG_FREQ    = 1.0 / 70
+   val TRIG_CHANGE_FREQ = 1.0 / 283
 
    val marks = Vector( 0, 508517, 906299, 1460239, 1880865, 2316152, 2720615, 3154876, 3696601,
       4239869, 4730878, 5221358, 6041236, 6706778, 7263365, 7781584, 8522199, 8809907, 9796204,
@@ -60,7 +63,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
    def name = "apfel"
    def exclusives = Set.empty[ String ] // Set( "regen" )
    def trigger : GE = {
-      Dust.kr( LFNoise0.kr.linexp( -1, 1, 1.0/70, 1.0/140 ))
+      Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
    }
 
 //   def init( implicit tx: ProcTxn ) {
@@ -69,10 +72,12 @@ class Apfelessen( idx: Int ) extends ColorLike {
 //      }
 //   }
 
+   private val urn = new Urn( (0 until marks.size - 1): _* )
+
    def plate = plates( idx )
 
    def gen1( implicit tx: ProcTxn ) : Proc = {
-      val g = (gen( "apfel" ) {
+      val g = (gen( name ) {
          val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
          val ppos = pScalar( "pos", ParamSpec( 0, 600), 1 )
          val pdur = pScalar( "dur", ParamSpec( 0.2, 600), 1 )
@@ -86,7 +91,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
             DiskIn.ar( 1, b.id ) * env * pamp.kr
          }
       }).make
-      val idx     = rand( marks.size - 1 )
+      val idx     = urn.next // rand( marks.size - 1 )
       val start   = marks( idx )
       val stop    = marks( idx + 1 )
       g.control( "pos" ).v = start.toDouble / 44100
@@ -95,7 +100,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
    }
 
    def filter1( implicit tx: ProcTxn ) : Proc = {
-      val f = (filter( "apfel-trans" ) {
+      val f = (filter( name + "-trans" ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
          graph { in1 =>
