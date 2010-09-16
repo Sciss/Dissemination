@@ -35,13 +35,13 @@ import collection.breakOut
 import DSL._
 
 object Meta {
-   var verbose = true
+   var verbose = false
 }
 
 class Meta {
    import Meta._
    
-   private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: Nil
+   private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: licht :: Nil // XXX zeven, scherben
    private val procMap: Map[ String, SemiProcess ] = procs.map( p => p.name -> p )( breakOut )
 
    def init( implicit tx: ProcTxn ) {

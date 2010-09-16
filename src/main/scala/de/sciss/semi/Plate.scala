@@ -38,7 +38,7 @@ import Dissemination._
 import java.io.{FilenameFilter, File}
 
 object Plate {
-   val verbose = true
+   val verbose = false
    
    val MIN_LOUDNESS_THRESH    = 1.0
    val MIN_LOUDNESS_COUNT_LO  = 9
@@ -331,7 +331,7 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
    }
 
    def recordDone( recPathF: File, ampInteg: Double )( implicit tx: ProcTxn ) {
-      println( this.toString + " RECORD DONE " + ampInteg )
+      if( verbose ) println( this.toString + " RECORD DONE " + ampInteg )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
       if( (ampInteg < MIN_RECORD_INTEG) || !active ) {
@@ -442,7 +442,7 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
       { success =>
          ProcTxn.spawnAtomic { implicit tx =>   // XXX spawn?
             if( success ) {
-               println( this.toString + " RENDER DONE" )
+               if( verbose ) println( this.toString + " RENDER DONE" )
                neighbour.inject( outPath )
                tmpAF.delete()
                tmpBF.delete()

@@ -56,6 +56,11 @@ object Dissemination {
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
    val HEADPHONES_INDEX    = 0
 
+   val MASTER_GAIN         = -25
+
+   val OPEN_NUAGES         = true
+   val OPEN_NODETREE       = false
+
    private val PROP_BASEPATH  = "basepath"
    private val PROP_SCPATH    = "scpath"
 
@@ -134,18 +139,21 @@ object Dissemination {
       val sif  = new ScalaInterpreterFrame( support /* ntp */ )
       val ssp  = new ServerStatusPanel()
       val sspw = ssp.makeWindow
-      val ntp  = new NodeTreePanel()
-      val ntpw = ntp.makeWindow
+      val ntp  = if( OPEN_NODETREE ) {
+         val res = new NodeTreePanel()
+         val ntpw = res.makeWindow
+         ntpw.setLocation( sspw.getX, sspw.getY + sspw.getHeight + 32 )
+         ntpw.setVisible( true )
+         Some( res )
+      } else None
       gui      = new GUI
-      ntpw.setLocation( sspw.getX, sspw.getY + sspw.getHeight + 32 )
       sspw.setVisible( true )
-      ntpw.setVisible( true )
       sif.setLocation( sspw.getX + sspw.getWidth + 32, sif.getY )
       sif.setVisible( true )
       booting = Server.boot( options = options ) {
          case ServerConnection.Preparing( srv ) => {
             ssp.server = Some( srv )
-            ntp.server = Some( srv )
+            ntp.foreach( _.server = Some( srv ))
          }
          case ServerConnection.Running( srv ) => {
             ProcDemiurg.addServer( srv )
@@ -172,13 +180,15 @@ object Dissemination {
 //      val soloBus    = Bus.audio( s, 2 )
       headphonesBus  = new AudioBus( s, HEADPHONES_INDEX, 2 )
       config         = NuagesConfig( s, Some( masterBus ), None, Some( RECORD_PATH ))
-      val f          = new NuagesFrame( config )
-      f.panel.display.setHighQuality( NUAGES_ANTIALIAS )
-      f.setSize( 640, 480 )
-      f.setLocation( ((SCREEN_BOUNDS.width - f.getWidth()) >> 1) + 100, 10 )
-      f.setVisible( true )
-      support.nuages = f
-      SemiNuages.init( s, f )
+      if( OPEN_NUAGES ) {
+         val f          = new NuagesFrame( config )
+         f.panel.display.setHighQuality( NUAGES_ANTIALIAS )
+         f.setSize( 640, 480 )
+         f.setLocation( ((SCREEN_BOUNDS.width - f.getWidth()) >> 1) + 100, 10 )
+         f.setVisible( true )
+         support.nuages = f
+      }
+      SemiNuages.init( s )
    }
 
    def quit { System.exit( 0 )}

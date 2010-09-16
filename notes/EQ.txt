@@ -1,0 +1,47 @@
+
+/*
+val bufs = Seq.tabulate(5) { ch =>
+   Buffer.alloc( s, 2048, completion = action( b =>
+      b.zeroMsg( Some( b.readMsg( "/Dissemination/rec/EQ_"+(ch+1)+".aif" )))))
+}
+*/
+
+val bufs = Seq.tabulate(5) { ch =>
+   Buffer.read( s, "/Dissemination/rec/EQ_"+(ch+1)+".aif" )
+}
+
+
+/*
+filter( "EQ" ) {
+    val pmix = pControl( "mix", ParamSpec( 0, 1 ), 0 )
+    val pamp = pControl( "amp", ParamSpec( 0, 1 ), 1 )
+    graph { in =>
+        val flt = Convolution2.ar( in, bufs.map(_.id), frameSize = 2048 ) * pamp.kr
+        val mix = pmix.kr
+        flt * mix + in * (1 - mix)
+    }
+}
+*/
+
+
+filter( "EQ" ) {
+    val pmix = pControl( "mix", ParamSpec( 0, 1 ), 0 )
+    val pamp = pControl( "amp", ParamSpec( 0, 1 ), 1 )
+    graph { in =>
+        val flt = Convolution2.ar( in, bufs.map(_.id), frameSize = 2048 ) * pamp.kr
+        val mix = pmix.kr
+        flt * mix + in * (1 - mix)
+    }
+}
+
+
+
+////////////////////// DELAY
+1 : 38
+2 : 38
+3 : 39
+4 : 35
+5 : 35
+ø 37
+
+"so for a frameSize of 2048 and a controlBlockSize of 64, this is 1983 sample frames" --> 1983 + 37 == 2020 samples delay

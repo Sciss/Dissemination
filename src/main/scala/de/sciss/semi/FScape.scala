@@ -9,6 +9,7 @@ import actors.{TIMEOUT, DaemonActor}
 
 // quickly hacked...
 object FScape {
+   val verbose = false
    var OPEN_WINDOW   = false
 
    lazy val client = {
@@ -85,7 +86,7 @@ object FScape {
                                        println( "FScape : ERROR (" + name + " -- " + err + ")" + " / " + docFile )
                                        fun( false )
                                     } else {
-                                       println( "FScape : Success (" + name + ")" )
+                                       if( verbose ) println( "FScape : Success (" + name + ")" )
                                        fun( true )
                                     }
                                  }

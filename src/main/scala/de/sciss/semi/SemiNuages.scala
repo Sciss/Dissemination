@@ -47,7 +47,7 @@ object SemiNuages extends {
    val NUM_LOOPS        = 7
    val LOOP_DUR         = 30
 
-   var f : NuagesFrame = _
+//   var f : NuagesFrame = _
    var masterSynth : Synth  = _
 
 //   var plateCollectors = IIdxSeq[ Proc ]() // = _
@@ -60,10 +60,11 @@ object SemiNuages extends {
    var windspiel: Windspiel   = _
    var apfel: Apfelessen      = _
    var phylet: Phylet         = _
+   var licht: Licht           = _
 
    var meta: Meta             = _
 
-   def init( s: Server, f: NuagesFrame ) = ProcTxn.spawnAtomic { implicit tx =>
+   def init( s: Server ) = ProcTxn.spawnAtomic { implicit tx =>
 
       // -------------- DIFFUSIONS --------------
 
@@ -723,7 +724,7 @@ object SemiNuages extends {
 //         val pmix    = pMix
          val php     = pControl( "hp", ParamSpec( 0, 1, step = 1 ), 0 )
          val psolo   = pControl( "solo", ParamSpec( 0, NUM_PLATES, step = 1 ), 0 )
-         val pamp    = pControl( "amp", ParamSpec( (-40).dbamp, 0.dbamp ), (-30).dbamp )
+         val pamp    = pControl( "amp", ParamSpec( (-40).dbamp, 0.dbamp ), MASTER_GAIN.dbamp )
          graph { inPure =>
             val in            = inPure * pamp.kr
             val inChannels    = in.numOutputs
@@ -755,6 +756,33 @@ object SemiNuages extends {
          }
       }).make
 
+      val lichtBufs = Seq.tabulate( NUM_PLATES ) { ch =>
+         Buffer.read( s, RECORD_PATH + fs + "EQ_"+(ch+1)+".aif" )
+      }
+
+      val pLicht = (filter( "licht" ) {
+         val ppos    = pAudio( "pos", ParamSpec( 0, 100 ), 0 )
+         val pwidth  = pAudio( "width", ParamSpec( 1, 100 ), 1 )
+         val pamp    = pControl( "amp", ParamSpec( 0.1, 10, ExpWarp ), (4.5).dbamp )
+
+         require( NUM_PLATES == 5 )
+
+         graph { in =>
+            val flt     = Convolution2.ar( in, lichtBufs.map(_.id), frameSize = 2048 ) * pamp.kr
+            val dlyTime = 2020 * SampleDur.ir
+            val dly     = DelayN.ar( in, dlyTime, dlyTime )
+//            val mix = pmix.kr
+//            flt * mix + in * (1 - mix)
+            val pos     = A2K.kr( ppos.ar )
+            val width   = A2K.kr( pwidth.ar )
+            val pos2    = pos - width
+            val plates: GE = 1 :: 3 :: 9 :: 11 :: 16 :: Nil
+            val mix     = Clip.kr( pos - plates, 0, 1 ).min( Clip.kr( plates - pos2, 0, 1 ))
+//mix.poll( 1 )
+            flt * mix + dly * (1 - mix)
+         }
+      }).make
+
 //      val pComp = diff( "cupola-comp" )( graph { in =>
 //         val ctrl = HPF.ar( in, 50 )
 ////         val cmp  = Compander.ar( in, ctrl, (-12).dbamp, 1, 1.0/3.0 ) * 2
@@ -762,7 +790,9 @@ object SemiNuages extends {
 //         Out.ar( 0, cmp )
 //      }).make
 
-      collMaster ~> pMaster
+//      collMaster ~> pMaster
+      collMaster ~> pLicht
+      pLicht ~> pMaster
 //      pMaster ~> pComp
 //      pComp.play
       pMaster.play
@@ -772,10 +802,11 @@ object SemiNuages extends {
       windspiel   = new Windspiel
       apfel       = new Apfelessen( 0 )
       phylet      = new Phylet( 2 )
+      licht       = new Licht( pLicht )
       meta        = new Meta
 
-      // tablet
-      this.f = f
+//      // tablet
+//      this.f = f
 
       meta.init 
 

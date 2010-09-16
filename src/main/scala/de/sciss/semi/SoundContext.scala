@@ -74,8 +74,8 @@ trait TapeSoundSettingsLike extends SoundSettings {
             val d          = Mix( VDiskIn.ar( afSpec.numChannels, bufID, speed, loop = 1 )) // Mix!
 //               val frame   = d.reply
 //               (frame.carry( pspeed.v * b.sampleRate ) / b.numFrames) ~> ppos
-            val liveFrame  = Integrator.ar( K2A.ar( speed ))
-            val livePos    = ((liveFrame / BufFrames.ir( bufID )) + startPos) % 1.0f
+//            val liveFrame  = Integrator.ar( K2A.ar( speed ))
+//            val livePos    = ((liveFrame / BufFrames.ir( bufID )) + startPos) % 1.0f
 //               livePos ~> ppos
 //            d * pamp.kr
             d * pamp.ar

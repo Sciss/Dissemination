@@ -30,7 +30,7 @@ package de.sciss.semi
 
 import de.sciss.synth
 import synth._
-import proc.{DSL, RichBus, ExpWarp, ParamSpec, Proc, ProcTxn}
+import proc.{ProcDemiurg, DSL, RichBus, ExpWarp, ParamSpec, Proc, ProcTxn}
 import ugen._
 import Util._
 import SemiNuages._
@@ -77,7 +77,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
    def plate = plates( idx )
 
    def gen1( implicit tx: ProcTxn ) : Proc = {
-      val g = (gen( name ) {
+      val g = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
          val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
          val ppos = pScalar( "pos", ParamSpec( 0, 600), 1 )
          val pdur = pScalar( "dur", ParamSpec( 0.2, 600), 1 )
@@ -100,7 +100,8 @@ class Apfelessen( idx: Int ) extends ColorLike {
    }
 
    def filter1( implicit tx: ProcTxn ) : Proc = {
-      val f = (filter( name + "-trans" ) {
+      val fltName = name + "-trans"
+      val f = (ProcDemiurg.factories.find( _.name == fltName ) getOrElse filter( fltName ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
          graph { in1 =>

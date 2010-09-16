@@ -34,7 +34,7 @@ import de.sciss.synth.ugen
 import ugen._
 import synth._
 import osc.OSCStatusMessage
-import proc.{DSL, Proc, ParamSpec, ExpWarp, AudioFileCache, Ref, ProcTxn}
+import proc.{ProcDemiurg, DSL, Proc, ParamSpec, ExpWarp, AudioFileCache, Ref, ProcTxn}
 import Util._
 import Dissemination._
 import collection.immutable.{ IndexedSeq => IIdxSeq }
@@ -45,7 +45,7 @@ import DSL._
 import SemiNuages._
 
 object Windspiel {
-   val verbose       = true
+   val verbose       = false
 
    val MIN_LOSKEW    = 0.25
    val MAX_LOSKEW    = 1.0
@@ -116,7 +116,7 @@ class Windspiel extends SemiProcess {
    def exclusives = Set.empty[ String ] 
    def trigger : GE = { // XXX
       import synth._
-      Dust.kr( LFNoise0.kr.linexp( -1, 1, 1.0/10, 1.0/60 ))
+      Dust.kr( LFNoise0.kr( 1.0 / 61 ).linexp( -1, 1, 1.0/10, 1.0/60 ))
    }
 
    private def stop( implicit tx: ProcTxn ) {
@@ -221,7 +221,7 @@ class Windspiel extends SemiProcess {
       { success =>
          ProcTxn.spawnAtomic { implicit tx =>   // XXX spawn?
             if( success ) {
-               println( this.toString + " RENDER DONE" )
+               if( verbose ) println( this.toString + " RENDER DONE" )
 //               neighbour.inject( outPath )
                createProc( outPathF /* , dur */ )
                tmpAF.delete()
@@ -238,7 +238,7 @@ class Windspiel extends SemiProcess {
       if( !active ) return
       active = false
 
-      lazy val p: Proc = (gen( "windspiel" ) {
+      lazy val p: Proc = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
          val pspeed  = pControl(  "speed", ParamSpec( 0.1f, 10, ExpWarp ), 1 )
          val pamp    = pAudio(    "amp",   ParamSpec( 0.001, 10, ExpWarp ), 1 )
          val pdur    = pScalar(   "dur",   ParamSpec( 0, 600 ), 1 )
@@ -264,7 +264,7 @@ class Windspiel extends SemiProcess {
       p.control( "amp" ).v    = AMP.dbamp
 //      p.control( "dur" ).v    = dur / speed + 0.2
       val afs = AudioFileCache.spec( outPathF.getAbsolutePath() )
-println( outPathF.getAbsolutePath() )
+// println( outPathF.getAbsolutePath() )
       p.control( "dur" ).v    = (afs.numFrames / (afs.sampleRate * speed)) + 0.2
       if( verbose ) println( "" + new java.util.Date() + " STARTING (SPARSE) " + p )
 

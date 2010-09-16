@@ -154,7 +154,7 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
 
 //      -N <cmd-filename> <input-filename> <output-filename> <sample-rate> <header-format> <sample-format> 	<...other scsynth arguments>
       
-      println( processArgs.mkString( " " ))
+      if( verbose ) println( processArgs.mkString( " " ))
       val pb = new ProcessBuilder( processArgs: _* )
         .directory( appPath.getParentFile )
         .redirectErrorStream( true )
@@ -184,7 +184,7 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
                               lastProg = prog
                            }
                         } else {
-                           System.out.println( line )
+                           if( verbose ) System.out.println( line )
                         }
                      }
                   } catch { case e: IOException => }
@@ -199,7 +199,7 @@ class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: Ran
 
             try {
                val resultCode	= p.exitValue
-               println( "scsynth terminated (" + resultCode +")" )
+               if( verbose ) println( "scsynth terminated (" + resultCode +")" )
                resultCode
             }
             catch { case e: IllegalThreadStateException => -1 } // gets thrown if we call exitValue() while sc still running
