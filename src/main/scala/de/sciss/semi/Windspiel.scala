@@ -129,6 +129,7 @@ class Windspiel extends SemiProcess {
       so.nrtOutputPath     = recPathF.getAbsolutePath() // "/Users/hhrutz/Desktop/test.aif"
       so.sampleRate        = 44100
       so.outputBusChannels = 2
+      so.programPath        = CMD_SCSYNTH
 
       val rate       = exprand( MIN_RATE, MAX_RATE )
 
@@ -193,6 +194,7 @@ class Windspiel extends SemiProcess {
       val tmpA       = tmpAF.getAbsolutePath()
       val outPath    = outPathF.getAbsolutePath()
       val recPath    = recPathF.getAbsolutePath()
+println( "PATH IS " + recPath )
       val numFrames0 = AudioFileCache.spec( recPath ).numFrames
       val numFrames  = nextPowerOfTwo( numFrames0 )
 

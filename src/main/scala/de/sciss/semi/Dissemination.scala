@@ -92,6 +92,9 @@ object Dissemination {
    val AUDIO_PATH          = BASE_PATH + fs + "audio_work" 
    val WORK_PATH           = AUDIO_PATH + fs + "work"
    val INJECT_PATH         = BASE_PATH + fs + "inject"
+   val TEMP_PATH           = BASE_PATH + fs + "tmp"
+
+   val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
    
    val options          = {
       val o = new ServerOptionsBuilder()
@@ -100,7 +103,7 @@ object Dissemination {
       } else {
          o.deviceName         = Some( "MOTU 828mk2" )
       }
-      o.programPath        = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
+      o.programPath        = CMD_SCSYNTH // properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
       o.inputBusChannels   = 10
       o.outputBusChannels  = 10
       o.audioBusChannels   = 512

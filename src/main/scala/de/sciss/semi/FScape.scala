@@ -102,7 +102,7 @@ object FScape {
                               }
                            }
 
-                           val docFile = File.createTempFile( "semi", ".fsc" ).getAbsolutePath
+                           val docFile = File.createTempFile( "semi", ".fsc", new File( TEMP_PATH )).getAbsolutePath
                            val prop    = new Properties()
                            prop.setProperty( "Class", "de.sciss.fscape.gui." + doc.className + "Dlg" )
                            doc.toProperties( prop )

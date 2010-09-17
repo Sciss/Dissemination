@@ -36,11 +36,12 @@ import javax.swing.{ SwingWorker }
 import scala.math._
 import de.sciss.osc.{ OSCBundle, OSCMessage, OSCPacket, OSCPacketCodec }
 import de.sciss.synth._
+import Dissemination._
 
 object BounceSynthContext {
    @throws( classOf[ IOException ])
    def apply( so: ServerOptionsBuilder ) : BounceSynthContext = {
-      val oscPath = File.createTempFile( "kontur", ".osc" )
+      val oscPath = File.createTempFile( "kontur", ".osc", new File( TEMP_PATH ))
       val oscFile = new RandomAccessFile( oscPath, "rw" )
       so.nrtCommandPath = oscPath.getCanonicalPath
       val context = new BounceSynthContext( so.build, oscPath, oscFile )
@@ -50,7 +51,7 @@ object BounceSynthContext {
    private var current: BounceSynthContext = null
 
    trait AbstractBundle {
-      protected var msgs     = IQueue[ OSCMessage ]()
+      protected var msgs = IQueue[ OSCMessage ]()
 
       @throws( classOf[ IOException ])
       def send: Unit

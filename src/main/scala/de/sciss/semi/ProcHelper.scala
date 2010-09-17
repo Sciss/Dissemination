@@ -31,11 +31,12 @@ package de.sciss.semi
 import de.sciss.synth.proc.{ProcEdge, DSL, ProcFilter, Proc, ProcTxn}
 import DSL._
 import java.io.File
+import Dissemination._
 
 object ProcHelper {
    val verbose = false
 
-   def createTempAudioFile = File.createTempFile( "semi", ".aif" )
+   def createTempAudioFile = File.createTempFile( "semi", ".aif", new File( TEMP_PATH ))
 
    def whenGlideDone( p: Proc, ctrlName: String )( fun: ProcTxn => Unit )( implicit tx: ProcTxn ) {
       lazy val l: Proc.Listener = new Proc.Listener {
