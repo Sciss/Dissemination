@@ -56,6 +56,8 @@ object Plate {
 
    val SHADE_PROB             = 0.25
 
+   val MAX_FILES              = 50
+
    def apply( id: Int, transit: Boolean )( implicit tx: ProcTxn ) : Plate = {
 //      val pColl   = filter( (id + 1).toString + "+" ) {
 //         val pmute = pControl( "mute", ParamSpec( 0, 1, step = 1 ), 0 )
@@ -159,9 +161,15 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
    }
 
    private val (injectIndex, injected) = {
-      val names = new File( injectPath ).listFiles( new FilenameFilter {
+      val names0 = new File( injectPath ).listFiles( new FilenameFilter {
          def accept( dir: File, name: String ) = name.endsWith( ".aif" )
       }).map( _.getName ).toIndexedSeq.sorted
+      val names = if( names0.size <= MAX_FILES ) names0 else {
+         val urn = new Urn( names0: _* )
+         val res = urn.take( MAX_FILES ).sorted
+         (names0.toSet -- res.toSet).foreach( new File( injectPath, _ ).delete() )
+         res
+      }
       val idx = names.lastOption.map( _.substring( 6, 11 ).toInt ).getOrElse( 0 )
       val contexts = names.map( wrapInjectionInContext( _ ))
       (Ref( idx ), Ref( contexts ))
