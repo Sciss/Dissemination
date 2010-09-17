@@ -4,117 +4,174 @@ import java.net.InetSocketAddress
 import de.sciss.synth.io.{AudioFileType, SampleFormat, AudioFileSpec}
 import java.util.Properties
 import de.sciss.osc.{OSCMessage, TCP, OSCClient}
-import java.io.{FileOutputStream, File}
 import actors.{TIMEOUT, DaemonActor}
+import Dissemination._
+import java.io.{IOException, FileOutputStream, File}
 
-// quickly hacked...
+// (too?) quickly hacked...
 object FScape {
    val verbose       = false
    var OPEN_WINDOW   = false
-   val MAX_JOBS      = 10 
+   val MAX_JOBS      = 1000 
 
-   lazy val client = {
-      val res = OSCClient( TCP )
-      res.target = new InetSocketAddress( "127.0.0.1", 0x4653 )
-      res.action = (msg, addr, when) => FScapeActor ! msg
-      res.start
-      res
-   }
+//   @volatile var client: OSCClient = null
+//   @volatile var clientReady = false
 
    private case class Process( name: String, doc: Doc, fun: Boolean => Unit )
-   private case object Connected
+   private case class ClientReady( c: OSCClient )
+   private case object CreateClient
 
-   private object FScapeActor extends DaemonActor {
+   private object OSCActor extends DaemonActor {
+      start
+
+      def act {
+         loop {
+            react {
+               case CreateClient => {
+                  if( verbose ) printInfo( "CreateClient received" )
+                  Thread.sleep( 5000 )
+                  val c = OSCClient( TCP )
+                  c.target = new InetSocketAddress( "127.0.0.1", 0x4653 )
+                  var count = 20
+                  var ok = false
+                  while( count > 0 && !ok ) {
+                     count -= 1
+                     try {
+                        c.start
+                        c.action = (msg, addr, when) => JobActor ! msg
+//                        client = c
+//                        clientReady = true
+                        JobActor ! ClientReady( c )
+                        ok = true
+                        if( verbose ) printInfo( "Connect done" )
+                     }
+                     catch {
+                        case e =>
+                           if( verbose ) printInfo( "Connect failed. Sleep" )
+                           Thread.sleep( 1000 )
+//                        reactWithin( 1000 ) { case TIMEOUT => }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private object JobActor extends DaemonActor {
       var syncID = -1
 
       start
 
       def act {
-         var numJobs = 0
-         loop { react {
-         case Process( name, doc, fun ) => try {
-            def timedOut( msg: OSCMessage ) {
-               printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )
-               fun( false )
+         var client: OSCClient = null
+         loop {
+            if( verbose ) printInfo( "restartFScape" )
+            if( client != null ) {
+               client.dispose
+               client = null
             }
+            val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "RestartFScape.sh" )
+            pb.start()
+            OSCActor ! CreateClient
+            react {
+               case ClientReady( c ) =>
+                  client = c
+                  if( verbose ) printInfo( "ClientReady received" )
+                  var numJobs = 0
+                  loopWhile( numJobs < MAX_JOBS ) {
+                     react {
+                        case Process( name, doc, fun ) /* if( clientReady ) */ => try {
+                           numJobs += 1
+                           printInfo( "GOT JOB (" + name + ")" )
 
-            def query( path: String, properties: Seq[ String ], timeOut: Long = 4000L )( handler: Seq[ Any ] => Unit ) {
-               syncID += 1
-               val sid = syncID
-               val msg = OSCMessage( path, ("query" +: syncID +: properties): _* )
-               client ! msg
-               reactWithin( timeOut ) {
-                  case TIMEOUT => timedOut( msg )
-                  case OSCMessage( "/query.reply", `sid`, values @ _* ) => handler( values )
-               }
-            }
+                           def timedOut( msg: OSCMessage ) {
+                              printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )
+                              fun( false )
+                              numJobs = MAX_JOBS - 10 // this is an indicator of a problem
+                           }
 
-            val docFile = File.createTempFile( "semi", ".fsc" ).getAbsolutePath
-            val prop    = new Properties()
-            prop.setProperty( "Class", "de.sciss.fscape.gui." + doc.className + "Dlg" )
-            doc.toProperties( prop )
-            val os      = new FileOutputStream( docFile )
-            prop.store( os, "Dissemination" )
-            os.close
-            client ! OSCMessage( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
-            query( "/doc", "count" :: Nil ) {
-               case Seq( num: Int ) => {
-                  var idx = 0
-                  var found = false
-                  loopWhile( !found && (idx < num) ) {
-                     query( "/doc/index/" + idx, "id" :: "file" :: Nil ) {
-                        case Seq( id, `docFile` ) => {
-                           val addr = "/doc/id/" + id
-                           found = true
-                           client ! OSCMessage( addr, "start" )
-                           query( "/main", "version" :: Nil ) { // tricky sync
-                              case _ => {
-                                 var progress   = 0f
-                                 var running    = 1
-                                 var err        = ""
+                           def query( path: String, properties: Seq[ String ], timeOut: Long = 4000L )( handler: Seq[ Any ] => Unit ) {
+                              syncID += 1
+                              val sid = syncID
+                              val msg = OSCMessage( path, ("query" +: syncID +: properties): _* )
+                              client ! msg
+                              reactWithin( timeOut ) {
+                                 case TIMEOUT => timedOut( msg )
+                                 case OSCMessage( "/query.reply", `sid`, values @ _* ) => handler( values )
+                              }
+                           }
 
-                                 loopWhile( running != 0 ) {
-                                    reactWithin( 1000L ) {
-                                       case TIMEOUT => query( addr, "running" :: "progression" :: "error" :: Nil ) {
-                                          case Seq( r: Int, p: Float, e: String ) => {
-                                             progress = p
-//                                             println( "PROGRESS = " + (p * 100).toInt )
-                                             running  = r
-                                             err      = e
+                           val docFile = File.createTempFile( "semi", ".fsc" ).getAbsolutePath
+                           val prop    = new Properties()
+                           prop.setProperty( "Class", "de.sciss.fscape.gui." + doc.className + "Dlg" )
+                           doc.toProperties( prop )
+                           val os      = new FileOutputStream( docFile )
+                           prop.store( os, "Dissemination" )
+                           os.close
+                           client ! OSCMessage( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
+                           query( "/doc", "count" :: Nil ) {
+                              case Seq( num: Int ) => {
+                                 var idx = 0
+                                 var found = false
+                                 loopWhile( !found && (idx < num) ) {
+                                    query( "/doc/index/" + idx, "id" :: "file" :: Nil ) {
+                                       case Seq( id, `docFile` ) => {
+                                          val addr = "/doc/id/" + id
+                                          found = true
+                                          client ! OSCMessage( addr, "start" )
+                                          query( "/main", "version" :: Nil ) { // tricky sync
+                                             case _ => {
+                                                var progress   = 0f
+                                                var running    = 1
+                                                var err        = ""
+
+                                                loopWhile( running != 0 ) {
+                                                   reactWithin( 1000L ) {
+                                                      case TIMEOUT => query( addr, "running" :: "progression" :: "error" :: Nil ) {
+                                                         case Seq( r: Int, p: Float, e: String ) => {
+                                                            progress = p
+               //                                             println( "PROGRESS = " + (p * 100).toInt )
+                                                            running  = r
+                                                            err      = e
+                                                         }
+                                                      }
+                                                   }
+                                                } andThen {
+                                                   client ! OSCMessage( addr, "close" )
+                                                   if( err != "" ) {
+                                                      printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
+                                                      fun( false )
+                                                   } else {
+                                                      if( verbose ) printInfo( "Success (" + name + ")" )
+                                                      fun( true )
+                                                   }
+                                                }
+                                             }
                                           }
                                        }
+                                       case _ => idx += 1
                                     }
                                  } andThen {
-                                    client ! OSCMessage( addr, "close" )
-                                    if( err != "" ) {
-                                       printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
+                                    if( !found ) {
+                                       printInfo( "?! File not found (" + name + " / " + docFile + ")" )
                                        fun( false )
-                                    } else {
-                                       if( verbose ) printInfo( "Success (" + name + ")" )
-                                       fun( true )
                                     }
                                  }
                               }
                            }
+                        } catch {
+                           case e: IOException =>
+                              printInfo( "Caught exception : " + e )
+            //                     printInfo( "ACTIVE ? " + client.isActive + " ; CONNECTED ? " + client.isConnected )
+                              fun( false )
                         }
-                        case _ => idx += 1
-                     }
-                  } andThen {
-                     if( !found ) {
-                        printInfo( "?! File not found (" + name + " / " + docFile + ")" )
-                        fun( false )
+                        case _ =>
                      }
                   }
-               }
             }
-         } catch {
-            case e =>
-               printInfo( "Caught exception : " + e )
-               println( "ACTIVE ? " + client.isActive + " ; CONNECTED ? " + client.isConnected )
-               fun( false )
-         }  
-         case _ =>
-      }}}
+         }
+      }
    }
 
    private def printInfo( msg: String ) {
@@ -122,7 +179,7 @@ object FScape {
    }
 
    def process( name: String, doc: Doc )( fun: Boolean => Unit ) {
-      FScapeActor ! Process( name, doc, fun )
+      JobActor ! Process( name, doc, fun )
    }
 
    def processChain( name: String, docs: Seq[ Doc ])( fun: Boolean => Unit ) {

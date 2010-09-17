@@ -61,6 +61,9 @@ object Dissemination {
    val OPEN_NUAGES         = true
    val OPEN_NODETREE       = false
 
+   val CMD_KILL_ALL        = "/usr/bin/killall"
+   val CMD_OPEN            = "/usr/bin/open"
+
    private val PROP_BASEPATH  = "basepath"
    private val PROP_SCPATH    = "scpath"
 
