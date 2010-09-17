@@ -96,7 +96,7 @@ class Sprenger extends WaterLike {
 
       val Seq( gen1, gen2 )= ("L" :: "R" :: Nil) map { ext =>
          val g = (gen( name + "-" + ext ) {
-            val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 12.dbamp )
+            val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 15.dbamp )
             val ppos = pScalar( "pos", ParamSpec( 0, 600), 1 )
             val pdur = pScalar( "dur", ParamSpec( 1, 600), 1 )
             graph {

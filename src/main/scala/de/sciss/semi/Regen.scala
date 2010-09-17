@@ -74,7 +74,9 @@ class Regen extends WaterLike {
                val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
                val b          = bufCue( path, startFrame )
                val disk       = DiskIn.ar( 1, b.id ) * pamp.kr
-               val done       = Done.kr( disk )
+// XXX DiskIn does _not_ set a done flag!!
+//               val done       = Done.kr( disk )
+               val done = DetectSilence.ar( disk, dur = 1.0 )
                done.react { diskDone( ext )}
                disk
             }

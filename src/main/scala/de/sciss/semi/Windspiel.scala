@@ -171,7 +171,7 @@ class Windspiel extends SemiProcess {
           bc.timebase += dt
       }
 
-      bc.timebase    = stopTime + 0.1
+      bc.timebase    = (stopTime + 0.1).max( bc.timebase )
       bc.perform( bc.add( OSCStatusMessage ))
       val worker     = bc.render
       worker.addPropertyChangeListener( new PropertyChangeListener {
