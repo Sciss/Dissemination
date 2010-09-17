@@ -32,8 +32,8 @@ import java.awt.event.{ActionEvent, ActionListener}
 import Dissemination._
 import SemiNuages._
 import de.sciss.synth.proc.ProcTxn
-import java.awt.{BorderLayout, FlowLayout}
-import javax.swing.{JCheckBox, JLabel, GroupLayout, JPanel, AbstractButton, JToggleButton, ButtonGroup, JFrame}
+import javax.swing.{JButton, JCheckBox, JLabel, GroupLayout, JPanel, AbstractButton, JToggleButton, ButtonGroup, JFrame}
+import java.awt.{Font, BorderLayout, FlowLayout}
 
 class GUI {
    // hp
@@ -150,10 +150,19 @@ class GUI {
          soloListener( ggSolo, i + 1 )
       }
 
+val ggShutdown = new JButton( "Shutdown" )
+ggShutdown.setFont( new Font( "SansSerif", Font.PLAIN, 24 ))
+ggShutdown.addActionListener( new ActionListener {
+   def actionPerformed( e: ActionEvent ) {
+      Dissemination.shutDownComputer
+   }
+})
+
       frame.setResizable( false )
       val cp   = frame.getContentPane()
       cp.add( monitorPane, BorderLayout.SOUTH )
       cp.add( procPane, BorderLayout.NORTH )
+cp.add( ggShutdown, BorderLayout.CENTER )
       frame.pack()
       frame.setLocation( 10, SCREEN_BOUNDS.height - (frame.getHeight() + 10) )
       frame.setVisible( true )

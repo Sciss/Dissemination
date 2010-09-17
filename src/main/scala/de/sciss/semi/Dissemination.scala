@@ -196,6 +196,11 @@ object Dissemination {
 
    def quit { System.exit( 0 )}
 
+   def shutDownComputer {
+      val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "shutdown.sh" )
+      pb.start()
+   }
+
    private def shutDown { // sync.synchronized { }
       if( (s != null) && (s.condition != Server.Offline) ) {
          s.quit

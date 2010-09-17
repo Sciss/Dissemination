@@ -27,44 +27,6 @@ extends JFrame( "Scala Interpreter" ) {
 """// Press '""" + KeyEvent.getKeyModifiersText( txnKeyStroke.getModifiers() ) + " + " +
       KeyEvent.getKeyText( txnKeyStroke.getKeyCode() ) + """' to execute transactionally.
 
-val so = new ServerOptionsBuilder
-so.nrtOutputPath = "/Users/hhrutz/Desktop/test.aiff"
-so.sampleRate = 44100
-so.outputBusChannels = 2
-
-import Float.{ PositiveInfinity => inf }
-case class Span( start: Long, stop: Long ) { def length = stop - start }
-
-val path = "/Users/hhrutz/Documents/Cupola/rec/Windspiel2.aif"
-
-val bc = BounceSynthContext( so )
-
-import Util._
-
-val df3 = SynthDef( "WindVoice" ) {
-   val bufID     = "buf".ir
-   val rate      = "rate".kr( 1 )
-   val dur       = "dur".ir
-   val play      = VDiskIn.ar( 2, bufID, rate )
-   val env       = Line.ar( 1, 0, dur, freeSelf )
-   Out.ar( 0, play * env )
-}
-bc.perform( bc.add( df3.recvMsg ), 0.0 )
-
-val w = ProcDemiurg.worlds(s)
-val fact = ProcDemiurg.factories
-val test = fact.find( _.name == "test" ).get
-val n = Dissemination.NUM_PLATES
-val tests = (0 until n).map( i => {
-    val p = test.make
-    p.control( "phas" ).v = i.linlin( 0, n + 1, 1, 0 )
-    p.control( "f1" ).v = 0.4
-    p.control( "f2" ).v = (i * 2 + 64).midicps
-    p.control( "q" ).v  = 50
-    p ~> SemiNuages.plates( i ).collector
-    p.play
-    p
-})
 """
 
       pane.initialCode = Some(
