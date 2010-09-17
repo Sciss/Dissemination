@@ -83,7 +83,7 @@ object FScape {
                      react {
                         case Process( name, doc, fun ) /* if( clientReady ) */ => try {
                            numJobs += 1
-                           printInfo( "GOT JOB (" + name + ")" )
+                           if( verbose ) printInfo( "GOT JOB (" + name + ")" )
 
                            def timedOut( msg: OSCMessage ) {
                               printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )

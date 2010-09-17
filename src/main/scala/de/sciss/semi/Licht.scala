@@ -42,7 +42,7 @@ class Licht( proc: Proc )  extends SemiProcess {
 
    private def start( implicit tx: ProcTxn ) {
       if( verbose ) println( "" + new java.util.Date() + " : Licht AN" )
-      glide( exprand( MIN_FADE, MAX_FADE )) {
+      glide( rrand( MIN_FADE, MAX_FADE )) { // exprand
          val pcon    = proc.control( "pos" )
          val width   = rrand( MIN_WIDTH, MAX_WIDTH )
          pcon.v = if( pcon.v == 0.0 ) width + 18 else 0
