@@ -194,7 +194,7 @@ class Windspiel extends SemiProcess {
       val tmpA       = tmpAF.getAbsolutePath()
       val outPath    = outPathF.getAbsolutePath()
       val recPath    = recPathF.getAbsolutePath()
-println( "PATH IS " + recPath )
+//println( "PATH IS " + recPath )
       val numFrames0 = AudioFileCache.spec( recPath ).numFrames
       val numFrames  = nextPowerOfTwo( numFrames0 )
 

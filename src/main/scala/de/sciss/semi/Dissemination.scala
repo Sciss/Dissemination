@@ -92,7 +92,7 @@ object Dissemination {
    val AUDIO_PATH          = BASE_PATH + fs + "audio_work" 
    val WORK_PATH           = AUDIO_PATH + fs + "work"
    val INJECT_PATH         = BASE_PATH + fs + "inject"
-   val TEMP_PATH           = BASE_PATH + fs + "tmp"
+   val TEMP_PATH           = System.getProperty( "java.io.tmpdir" ) // BASE_PATH + fs + "tmp"
 
    val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
    
