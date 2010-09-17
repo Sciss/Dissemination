@@ -9,8 +9,9 @@ import actors.{TIMEOUT, DaemonActor}
 
 // quickly hacked...
 object FScape {
-   val verbose = false
+   val verbose       = false
    var OPEN_WINDOW   = false
+   val MAX_JOBS      = 10 
 
    lazy val client = {
       val res = OSCClient( TCP )
@@ -21,16 +22,19 @@ object FScape {
    }
 
    private case class Process( name: String, doc: Doc, fun: Boolean => Unit )
+   private case object Connected
 
    private object FScapeActor extends DaemonActor {
       var syncID = -1
 
       start
 
-      def act = loop { react {
-         case Process( name, doc, fun ) => {
+      def act {
+         var numJobs = 0
+         loop { react {
+         case Process( name, doc, fun ) => try {
             def timedOut( msg: OSCMessage ) {
-               println( "FScape : TIMEOUT (" + name + " -- " + msg + ")" )
+               printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )
                fun( false )
             }
 
@@ -83,10 +87,10 @@ object FScape {
                                  } andThen {
                                     client ! OSCMessage( addr, "close" )
                                     if( err != "" ) {
-                                       println( "FScape : ERROR (" + name + " -- " + err + ")" + " / " + docFile )
+                                       printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
                                        fun( false )
                                     } else {
-                                       if( verbose ) println( "FScape : Success (" + name + ")" )
+                                       if( verbose ) printInfo( "Success (" + name + ")" )
                                        fun( true )
                                     }
                                  }
@@ -97,15 +101,24 @@ object FScape {
                      }
                   } andThen {
                      if( !found ) {
-                        println( "?! File not found (" + name + " / " + docFile + ")" )
+                        printInfo( "?! File not found (" + name + " / " + docFile + ")" )
                         fun( false )
                      }
                   }
                }
             }
-         }
+         } catch {
+            case e =>
+               printInfo( "Caught exception : " + e )
+               println( "ACTIVE ? " + client.isActive + " ; CONNECTED ? " + client.isConnected )
+               fun( false )
+         }  
          case _ =>
-      }}
+      }}}
+   }
+
+   private def printInfo( msg: String ) {
+      println( "" + new java.util.Date() + " : FScape : " + msg )
    }
 
    def process( name: String, doc: Doc )( fun: Boolean => Unit ) {
