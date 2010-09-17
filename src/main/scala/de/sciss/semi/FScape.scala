@@ -88,7 +88,7 @@ object FScape {
                            def timedOut( msg: OSCMessage ) {
                               printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )
                               fun( false )
-                              numJobs = MAX_JOBS - 10 // this is an indicator of a problem
+                              numJobs = math.max( numJobs, MAX_JOBS - 10 ) // this is an indicator of a problem
                            }
 
                            def query( path: String, properties: Seq[ String ], timeOut: Long = 4000L )( handler: Seq[ Any ] => Unit ) {
