@@ -33,9 +33,12 @@ import de.sciss.synth.Constant
 import de.sciss.synth.proc.{Proc, DSL, ProcTxn}
 import collection.breakOut
 import DSL._
+import java.util.TimerTask
+import Dissemination._
 
 object Meta {
-   var verbose = false
+   var verbose       = false
+   val AUTO_RESTART  = 3 * 60 * 60 * 1000L   // each three hours
 }
 
 class Meta {
@@ -79,5 +82,16 @@ class Meta {
          }
       }).make
       ptrig.play
+
+      val tim = new java.util.Timer()
+      tim.schedule( new TimerTask {
+         def run { ProcTxn.atomic { implicit tx => xfade( 15 ) { pMaster.stop }}}
+      }, AUTO_RESTART )
+      tim.schedule( new TimerTask {
+         def run {
+            val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "RestartDissem.sh" )
+            pb.start()
+         }
+      }, AUTO_RESTART + 16000L )
    }
 }
