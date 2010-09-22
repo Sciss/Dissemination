@@ -40,6 +40,8 @@ object Regen {
    val INOUT_MIN  = 32.0
    val INOUT_MAX  = 64.0
    val SHORT_FADE = 3.0
+   val MIN_DUR    = 3 * 60.0
+   val MAX_DUR    = 5 * 60.0
 }
 
 class Regen extends WaterLike {
@@ -69,6 +71,7 @@ class Regen extends WaterLike {
          val g = (gen( name + "-" + ext ) {
             val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
             val ppos = pScalar( "pos", ParamSpec( 0, 900), 1 )
+            val pdur = pScalar( "dur", ParamSpec( 1, 600), 1 )
             graph {
                val path       = AUDIO_PATH + fs + "080227_WeimarRegenFensterAT-" + ext + ".aif"
                val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
@@ -76,12 +79,14 @@ class Regen extends WaterLike {
                val disk       = DiskIn.ar( 1, b.id ) * pamp.kr
 // XXX DiskIn does _not_ set a done flag!!
 //               val done       = Done.kr( disk )
-               val done = DetectSilence.ar( disk, dur = 1.0 )
+               val done =  DetectSilence.ar( disk, dur = 1.0 ) + 
+                           Done.kr( Line.kr( dur = pdur.ir ))
                done.react { diskDone( ext )}
                disk
             }
          }).make
          g.control( "pos" ).v = rrand( 0.0, 300.0 )
+         g.control( "dur" ).v = exprand( MIN_DUR, MAX_DUR )
          g
       }
       (gen1, gen2)

@@ -56,7 +56,7 @@ object Dissemination {
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
    val HEADPHONES_INDEX    = 0
 
-   val MASTER_GAIN         = -25
+   val MASTER_GAIN         = -24
 
    val OPEN_NUAGES         = true
    val OPEN_NODETREE       = false
