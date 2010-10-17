@@ -61,6 +61,7 @@ object Dissemination {
    private val PROP_BASEPATH  = "basepath"
    private val PROP_SCPATH    = "scpath"
    private val PROP_GRAZ      = "graz"
+   private val PROP_STARTMETA = "startmeta"
 
    val properties          = {
       val file = new File( "dissemination-settings.xml" )
@@ -90,6 +91,7 @@ object Dissemination {
    val TEMP_PATH           = System.getProperty( "java.io.tmpdir" ) // BASE_PATH + fs + "tmp"
 
    val GRAZ                = properties.getProperty( PROP_GRAZ, "false" ).toBoolean // false
+   val START_META          = properties.getProperty( PROP_STARTMETA, "true" ).toBoolean
 
    val NUM_PLATES          = if( GRAZ ) 7 else 5
    val START_WITH_TRANSIT  = false // GRAZ

@@ -92,6 +92,17 @@ class GUI {
          }
       })
 
+      val procLBHeli = new JLabel( "Helicopter:" )
+      val procGGHeli = new JCheckBox()
+      procGGHeli.addActionListener( new ActionListener {
+         def actionPerformed( e: ActionEvent ) {
+            val onOff = procGGHeli.isSelected()
+            ProcTxn.atomic { implicit tx =>
+               helicopter.foreach( _.active = onOff )
+            }
+         }
+      })
+
       val procLBWindspiel = new JLabel( "Windspiel:" )
       val procGGWindspiel = new JCheckBox()
       procGGWindspiel.addActionListener( new ActionListener {
@@ -109,6 +120,7 @@ class GUI {
             .addComponent( procLBSprenger )
             .addComponent( procLBRegen )
             .addComponent( procLBZeven )
+            .addComponent( procLBHeli )
             .addComponent( procLBWindspiel )
          )
          .addGroup( procLay.createParallelGroup()
@@ -116,6 +128,7 @@ class GUI {
             .addComponent( procGGSprenger )
             .addComponent( procGGRegen )
             .addComponent( procGGZeven )
+            .addComponent( procGGHeli )
             .addComponent( procGGWindspiel )
          )
       )
@@ -136,6 +149,10 @@ class GUI {
          .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBZeven )
             .addComponent( procGGZeven )
+         )
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
+            .addComponent( procLBHeli )
+            .addComponent( procGGHeli )
          )
          .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBWindspiel )

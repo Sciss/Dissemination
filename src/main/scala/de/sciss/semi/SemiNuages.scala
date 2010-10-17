@@ -61,6 +61,7 @@ object SemiNuages extends {
    var apfel: Apfelessen      = _
    var phylet: Phylet         = _
    var zeven: Zeven           = _
+   var helicopter: Option[ Helicopter ] = None
    var licht: Licht           = _
 
    var meta: Meta             = _
@@ -809,13 +810,14 @@ object SemiNuages extends {
       apfel       = new Apfelessen( nonTransits( 0 ))
       phylet      = new Phylet( nonTransits( 1 ))
       zeven       = new Zeven( nonTransits( 2 ))
+      if( nonTransits.size > 3 ) helicopter = Some( new Helicopter( nonTransits( 3 )))
       licht       = new Licht( pLicht )
       meta        = new Meta
 
 //      // tablet
 //      this.f = f
 
-//      meta.init 
+      if( START_META ) meta.init 
 
 //s.dumpOSC(1)
    }
