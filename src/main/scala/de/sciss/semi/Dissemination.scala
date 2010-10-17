@@ -42,18 +42,12 @@ import java.util.Properties
 object Dissemination {
    val fs = File.separator
 
-   val GRAZ                = false
-
-   val NUM_PLATES          = if( GRAZ ) 7 else 5
-   val START_WITH_TRANSIT  = GRAZ
 //   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
    val INTERNAL_AUDIO      = false // true
    val NUAGES_ANTIALIAS    = false
    val MASTER_INDEX        = 2
    val SAMPLE_RATE         = 44100.0
 
-   val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
-   val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
    val HEADPHONES_INDEX    = 0
 
    val MASTER_GAIN         = -24
@@ -66,6 +60,7 @@ object Dissemination {
 
    private val PROP_BASEPATH  = "basepath"
    private val PROP_SCPATH    = "scpath"
+   private val PROP_GRAZ      = "graz"
 
    val properties          = {
       val file = new File( "dissemination-settings.xml" )
@@ -93,6 +88,13 @@ object Dissemination {
    val WORK_PATH           = AUDIO_PATH + fs + "work"
    val INJECT_PATH         = BASE_PATH + fs + "inject"
    val TEMP_PATH           = System.getProperty( "java.io.tmpdir" ) // BASE_PATH + fs + "tmp"
+
+   val GRAZ                = properties.getProperty( PROP_GRAZ, "false" ).toBoolean // false
+
+   val NUM_PLATES          = if( GRAZ ) 7 else 5
+   val START_WITH_TRANSIT  = false // GRAZ
+   val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
+   val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
 
    val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
    

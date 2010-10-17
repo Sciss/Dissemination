@@ -765,7 +765,7 @@ object SemiNuages extends {
          val pwidth  = pAudio( "width", ParamSpec( 1, 100 ), 1 )
          val pamp    = pControl( "amp", ParamSpec( 0.1, 10, ExpWarp ), (4.5).dbamp )
 
-         require( NUM_PLATES == 5 )
+         require( NUM_PLATES == 5 || NUM_PLATES == 7 )
 
          graph { in =>
             val flt     = Convolution2.ar( in, lichtBufs.map(_.id), frameSize = 2048 ) * pamp.kr
@@ -776,7 +776,10 @@ object SemiNuages extends {
             val pos     = A2K.kr( ppos.ar )
             val width   = A2K.kr( pwidth.ar )
             val pos2    = pos - width
-            val plates: GE = 1 :: 3 :: 9 :: 11 :: 16 :: Nil
+            val plates: GE = NUM_PLATES match {
+               case 5 => 1 :: 3 :: 9 :: 11 :: 16 :: Nil
+               case 7 => 1.0 :: 3.5 :: 6.0 :: 8.5 :: 11.0 :: 13.5 :: 16.0 :: Nil
+            }
             val mix     = Clip.kr( pos - plates, 0, 1 ).min( Clip.kr( plates - pos2, 0, 1 ))
 //mix.poll( 1 )
             flt * mix + dly * (1 - mix)
@@ -800,8 +803,10 @@ object SemiNuages extends {
       sprenger    = new Sprenger
       regen       = new Regen
       windspiel   = new Windspiel
-      apfel       = new Apfelessen( 0 )
-      phylet      = new Phylet( 2 )
+      val nonTransits = PLATE_TRANSITS.zipWithIndex collect { case (false, idx) => idx }
+println( "NON-TRANSITS : " + nonTransits )
+      apfel       = new Apfelessen( nonTransits( 0 ))
+      phylet      = new Phylet( nonTransits( 1 ))
       licht       = new Licht( pLicht )
       meta        = new Meta
 
