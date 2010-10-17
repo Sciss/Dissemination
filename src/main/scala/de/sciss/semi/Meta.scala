@@ -44,7 +44,7 @@ object Meta {
 class Meta {
    import Meta._
    
-   private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: licht :: Nil // XXX zeven, scherben
+   private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: zeven :: licht :: Nil // XXX scherben
    private val procMap: Map[ String, SemiProcess ] = procs.map( p => p.name -> p )( breakOut )
 
    def init( implicit tx: ProcTxn ) {

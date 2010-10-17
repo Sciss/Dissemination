@@ -81,6 +81,17 @@ class GUI {
          }
       })
 
+      val procLBZeven = new JLabel( "Zeven:" )
+      val procGGZeven = new JCheckBox()
+      procGGZeven.addActionListener( new ActionListener {
+         def actionPerformed( e: ActionEvent ) {
+            val onOff = procGGZeven.isSelected()
+            ProcTxn.atomic { implicit tx =>
+               zeven.active = onOff
+            }
+         }
+      })
+
       val procLBWindspiel = new JLabel( "Windspiel:" )
       val procGGWindspiel = new JCheckBox()
       procGGWindspiel.addActionListener( new ActionListener {
@@ -97,12 +108,14 @@ class GUI {
             .addComponent( procLBPlate )
             .addComponent( procLBSprenger )
             .addComponent( procLBRegen )
+            .addComponent( procLBZeven )
             .addComponent( procLBWindspiel )
          )
          .addGroup( procLay.createParallelGroup()
             .addComponent( procGGPlate )
             .addComponent( procGGSprenger )
             .addComponent( procGGRegen )
+            .addComponent( procGGZeven )
             .addComponent( procGGWindspiel )
          )
       )
@@ -119,6 +132,10 @@ class GUI {
          .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBRegen )
             .addComponent( procGGRegen )
+         )
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
+            .addComponent( procLBZeven )
+            .addComponent( procGGZeven )
          )
          .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBWindspiel )

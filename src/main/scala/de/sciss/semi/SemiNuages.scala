@@ -60,6 +60,7 @@ object SemiNuages extends {
    var windspiel: Windspiel   = _
    var apfel: Apfelessen      = _
    var phylet: Phylet         = _
+   var zeven: Zeven           = _
    var licht: Licht           = _
 
    var meta: Meta             = _
@@ -804,16 +805,17 @@ object SemiNuages extends {
       regen       = new Regen
       windspiel   = new Windspiel
       val nonTransits = PLATE_TRANSITS.zipWithIndex collect { case (false, idx) => idx }
-println( "NON-TRANSITS : " + nonTransits )
+//println( "NON-TRANSITS : " + nonTransits )
       apfel       = new Apfelessen( nonTransits( 0 ))
       phylet      = new Phylet( nonTransits( 1 ))
+      zeven       = new Zeven( nonTransits( 2 ))
       licht       = new Licht( pLicht )
       meta        = new Meta
 
 //      // tablet
 //      this.f = f
 
-      meta.init 
+//      meta.init 
 
 //s.dumpOSC(1)
    }

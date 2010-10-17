@@ -59,6 +59,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
    protected def minFade      = MIN_FILTER_FADE
    protected def maxFade      = MAX_FILTER_FADE
    protected def engageFade   = 0.1
+   protected def delayGen     = true
 
    def name = "apfel"
    def exclusives = Set.empty[ String ] // Set( "regen" )

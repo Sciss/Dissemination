@@ -51,6 +51,8 @@ trait ColorLike extends SemiProcess {
    protected def maxFade : Double
    protected def engageFade : Double
 
+   protected def delayGen : Boolean
+
    def active( implicit tx: ProcTxn ) = activeRef()
    def active_=( onOff: Boolean )( implicit tx: ProcTxn ) {
       val wasActive = activeRef.swap( onOff )
@@ -69,7 +71,11 @@ trait ColorLike extends SemiProcess {
       pl.collector2 ~| chan.procFilter |> insertTarget
 //      chan.procGen ~> chan.procFilter.audioInput( "in2" )
       chan.procFilter.bypass
-      val pDummy  = factory( "@" ).make
+
+      val pDummy  = if( delayGen ) {
+         factory( "@" ).make
+      } else chan.procGen
+      
       pDummy ~> chan.procFilter.audioInput( "in2" )
 //      chan.procGen.play
       chan.procFilter.play
@@ -83,7 +89,8 @@ trait ColorLike extends SemiProcess {
       glide( exprand( minFade, maxFade )) {
          chan.procFilter.control( "fade" ).v = 1
       }
-      ProcHelper.whenGlideDone( chan.procFilter, "fade" ) { implicit tx =>
+
+      if( delayGen ) ProcHelper.whenGlideDone( chan.procFilter, "fade" ) { implicit tx =>
          chan.procGen ~> chan.procFilter.audioInput( "in2" )
          chan.procGen.play
          pDummy.dispose

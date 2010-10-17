@@ -37,23 +37,24 @@ import DSL._
 import Util._
 
 object Zeven {
-   val MIN_FILTER_FADE  =   8.0 // s
-   val MAX_FILTER_FADE  =  12.0 // s
-   val MIN_DUR          =   4.0 // s
-   val MAX_DUR          =  20.0 // s
+   val MIN_FILTER_FADE  =  18.0 // s
+   val MAX_FILTER_FADE  =  30.0 // s
+   val MIN_DUR          =  45.0 // s
+   val MAX_DUR          =  60.0 // s
    val FILTER_GAIN      = -21.0 // dB
-   val TAPE_GAIN        =   4.5 // dB
-   val MIN_TRIG_FREQ    = 1.0 / 180
-   val MAX_TRIG_FREQ    = 1.0 / 90
+   val TAPE_GAIN        =   6.0 // dB
+   val MIN_TRIG_FREQ    = 1.0 / 300
+   val MAX_TRIG_FREQ    = 1.0 / 180
    val TRIG_CHANGE_FREQ = 1.0 / 607
 }
 
 class Zeven( idx: Int ) extends ColorLike {
-   import Phylet._
+   import Zeven._
 
    protected def minFade      = MIN_FILTER_FADE
    protected def maxFade      = MAX_FILTER_FADE
    protected def engageFade   = 0.1
+   protected def delayGen     = false
 
    def name = "zeven"
    def exclusives = Set.empty[ String ]
@@ -61,37 +62,25 @@ class Zeven( idx: Int ) extends ColorLike {
       Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
    }
 
-   private val urn = new Urn( (0 until marks.size - 1): _* )
-
    def plate = plates( idx )
 
    def gen1( implicit tx: ProcTxn ) : Proc = {
       val g = (gen( name ) {
          val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), TAPE_GAIN.dbamp )
-         val ppos = pScalar( "pos", ParamSpec( 0, 1800), 1 )
-         val pdur = pScalar( "dur", ParamSpec( 0.2, 600), 1 )
+         val ppos = pScalar(  "pos", ParamSpec( 0, 1800), 1 )
+         val pdur = pScalar(  "dur", ParamSpec( 0.2, 600), 1 )
          graph {
-            val path       = AUDIO_PATH + fs + "PhyletischesMuseumGlass080929HPFLoop-M.aif"
+            val path       = AUDIO_PATH + fs + "MiscZeven01Ed2-M.aif"
             val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
             val b          = bufCue( path, startFrame )
-            val env        = EnvGen.kr( Env.linen( 0.02, pdur.ir - (0.02 + 0.5), 0.5 ))
+            val env = Line.kr( dur = pdur.ir )
             val done       = Done.kr( env )
             done.react( diskDone )
-            DiskIn.ar( 1, b.id ) * env * pamp.kr
+            DiskIn.ar( 1, b.id, loop = 1 ) /* * env */ * pamp.kr
          }
       }).make
-      val idx     = urn.next
-      val dur0    = exprand( MIN_DUR, MAX_DUR )
-      val start   = marks( idx )
-      var idx2    = idx
-      var dur     = 0.0
-      do {
-         idx2  += 1
-         val stop = marks( idx2 )
-         dur    = (stop - start).toDouble / 44100
-      } while( (idx2 < marks.size - 1) && (dur < dur0) )
-      g.control( "pos" ).v = start.toDouble / 44100
-      g.control( "dur" ).v = dur
+      g.control( "pos" ).v = rrand( 0.0, 1800.0 )
+      g.control( "dur" ).v = exprand( MIN_DUR, MAX_DUR )
       g
    }
 
@@ -100,21 +89,36 @@ class Zeven( idx: Int ) extends ColorLike {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
          graph { in1 =>
+//            val in2        = pin2.ar
+//            require( in1.numOutputs == in2.numOutputs )
+//            val fade       = pfade.ar.linlin( 0, 1, -1, 1 )
+//            val peakTrig   = Impulse.kr( 10 )
+//            val dc         = DC.ar( 1 )
+//            val peak1      = Peak.ar( in1, peakTrig )
+//            val ramp1      = Ramp.ar( peak1, 0.1 )
+//            val dc1        = LinXFade2.ar( ramp1, dc, fade )
+//            val sig1       = LinXFade2.ar( in1, dc1, fade )
+//            val peak2      = Peak.ar( in2, peakTrig )
+//            val ramp2      = Ramp.ar( peak2, 0.1 )
+//            val dc2        = LinXFade2.ar( dc, ramp2, fade )
+//            val sig2       = LinXFade2.ar( dc2, in2, fade )
+//            sig1 * sig2
             val in2        = pin2.ar
             require( in1.numOutputs == in2.numOutputs )
             val fade       = pfade.ar
-//            val bufIDs     = List.fill( in1.numOutputs )( bufEmpty( 1024 ).id )
-//            val chain1		= FFT( bufIDs, in1 )
-//            val thresh     = A2K.kr( fade ).linexp( 0, 1, 1.0e1, 1.0e-3 )
-//            val chain2     = PV_MagBelow( chain1, thresh )
-//            val flt			= IFFT( chain2 ) + in2
-            val fltGain = A2K.kr( fade ).linlin( 0, 1, 0, FILTER_GAIN )
-            var sig  = in1
-            sig      = BPeakEQ.ar( sig, 2336, 0.2, fltGain )
-            sig      = BPeakEQ.ar( sig, 3709, 0.2, fltGain )
-            sig      = BPeakEQ.ar( sig, 5606, 0.2, fltGain )
-            sig      = BPeakEQ.ar( sig, 2428, 1.0, fltGain )
-            sig + in2
+            val fade1      = fade.linlin( 0, 1.0/3, -1, 1 ).clip2( 1 )
+            val fade2      = fade.linlin( 2.0/3, 1, 1, -1 ).clip2( 1 )
+            val fade3      = fade.linlin( 1.0/3, 2.0/3, -1, 1 ).clip2( 1 )
+
+            val dlyTime    = 0.01
+            val dly1       = DelayN.ar( in1, dlyTime, dlyTime )
+            val dly2       = DelayN.ar( in2, dlyTime, dlyTime )
+            val norm1      = Normalizer.ar( in1, dur = dlyTime ) * dly2
+            val norm2      = Normalizer.ar( in2, dur = dlyTime ) * dly1
+            val normFade1  = LinXFade2.ar( dly1, norm1, fade1 )
+            val normFade2  = LinXFade2.ar( dly2, norm2, fade2 )
+            val sig        = LinXFade2.ar( normFade1, normFade2, fade3 )
+            sig
          }
       }).make
       f
