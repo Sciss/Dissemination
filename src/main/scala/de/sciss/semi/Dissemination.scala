@@ -30,7 +30,6 @@ package de.sciss.semi
 
 import javax.swing.{WindowConstants, JFrame}
 import de.sciss.synth.swing.{ServerStatusPanel, NodeTreePanel}
-import de.sciss.synth.proc.ProcDemiurg
 import de.sciss.synth._
 import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
@@ -38,6 +37,8 @@ import collection.immutable.{ IndexedSeq => IIdxSeq }
 import de.sciss.osc.TCP
 import java.io.{FileOutputStream, FileInputStream, File}
 import java.util.Properties
+import proc.{ProcTxn, ProcDemiurg}
+import actors.Actor
 
 object Dissemination {
    val fs = File.separator
@@ -198,7 +199,15 @@ object Dissemination {
          f.setVisible( true )
          support.nuages = f
       }
-      SemiNuages.init( s )
+
+      Actor.actor {
+         ProcTxn.atomic { implicit tx => 
+            SemiNuages.init( s )
+         }
+         if( START_META ) ProcTxn.atomic { implicit tx =>
+            SemiNuages.meta.init
+         }
+      }
    }
 
    def quit { System.exit( 0 )}

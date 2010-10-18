@@ -66,7 +66,7 @@ object SemiNuages extends {
 
    var meta: Meta             = _
 
-   def init( s: Server ) = ProcTxn.spawnAtomic { implicit tx =>
+   def init( s: Server )( implicit tx: ProcTxn ) {
 
       // -------------- DIFFUSIONS --------------
 
@@ -817,7 +817,7 @@ object SemiNuages extends {
 //      // tablet
 //      this.f = f
 
-      if( START_META ) meta.init 
+//      if( START_META ) meta.init
 
 //s.dumpOSC(1)
    }
