@@ -38,7 +38,7 @@ import Dissemination._
 
 object Meta {
    var verbose       = false
-   val AUTO_RESTART  = 3 * 60 * 60 * 1000L   // each three hours
+   val AUTO_RESTART  = (2.4 * 60 * 60 * 1000L).toLong   // each three hours XXX now: 2.4 hours
 }
 
 class Meta {
