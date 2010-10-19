@@ -780,7 +780,8 @@ object SemiNuages extends {
             val pos2    = pos - width
             val plates: GE = NUM_PLATES match {
                case 5 => 1 :: 3 :: 9 :: 11 :: 16 :: Nil
-               case 7 => 1.0 :: 3.5 :: 6.0 :: 8.5 :: 11.0 :: 13.5 :: 16.0 :: Nil
+//               case 7 => 1.0 :: 3.5 :: 6.0 :: 8.5 :: 11.0 :: 13.5 :: 16.0 :: Nil
+               case 7 => 1.0 :: 3.0 :: 5.0 :: 8.5 :: 12.0 :: 14.0 :: 16.0 :: Nil
             }
             val mix     = Clip.kr( pos - plates, 0, 1 ).min( Clip.kr( plates - pos2, 0, 1 ))
 //mix.poll( 1 )

@@ -51,8 +51,6 @@ object Dissemination {
 
    val HEADPHONES_INDEX    = 0
 
-   val MASTER_GAIN         = -24
-
    val OPEN_NUAGES         = true
    val OPEN_NODETREE       = false
 
@@ -63,6 +61,7 @@ object Dissemination {
    private val PROP_SCPATH    = "scpath"
    private val PROP_GRAZ      = "graz"
    private val PROP_STARTMETA = "startmeta"
+   private val PROP_MASTERGAIN= "mastergain"
 
    val properties          = {
       val file = new File( "dissemination-settings.xml" )
@@ -84,6 +83,8 @@ object Dissemination {
       prop
    }
 
+   val MASTER_GAIN         = properties.getProperty( PROP_MASTERGAIN, "-24" ).toDouble
+
    val BASE_PATH           = properties.getProperty( PROP_BASEPATH )
    val RECORD_PATH         = BASE_PATH + fs + "rec"
    val AUDIO_PATH          = BASE_PATH + fs + "audio_work" 
@@ -95,8 +96,12 @@ object Dissemination {
    val START_META          = properties.getProperty( PROP_STARTMETA, "true" ).toBoolean
 
    val NUM_PLATES          = if( GRAZ ) 7 else 5
-   val START_WITH_TRANSIT  = false // GRAZ
-   val PLATE_TRANSITS      = IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == START_WITH_TRANSIT )
+//   val START_WITH_TRANSIT  = false // GRAZ
+   val PLATE_TRANSITS      = if( GRAZ ) {
+      IIdxSeq.tabulate( NUM_PLATES )( i => i < 2 || (NUM_PLATES - 1 - i) < 2 )  
+   } else {
+      IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == false ) // START_WITH_TRANSIT
+   }
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
 
    val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
