@@ -765,7 +765,8 @@ object SemiNuages extends {
       val pLicht = (filter( "licht" ) {
          val ppos    = pAudio( "pos", ParamSpec( 0, 100 ), 0 )
          val pwidth  = pAudio( "width", ParamSpec( 1, 100 ), 1 )
-         val pamp    = pControl( "amp", ParamSpec( 0.1, 10, ExpWarp ), (4.5).dbamp )
+         val lichtGain = if( GRAZ ) 3.0 else 4.5
+         val pamp    = pControl( "amp", ParamSpec( 0.1, 10, ExpWarp ), lichtGain.dbamp )
 
          require( NUM_PLATES == 5 || NUM_PLATES == 7 )
 

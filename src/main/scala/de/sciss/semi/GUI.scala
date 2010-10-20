@@ -114,6 +114,17 @@ class GUI {
          }
       })
 
+      val procLBLicht = new JLabel( "Licht:" )
+      val procGGLicht = new JCheckBox()
+      procGGLicht.addActionListener( new ActionListener {
+         def actionPerformed( e: ActionEvent ) {
+            val onOff = procGGLicht.isSelected()
+            ProcTxn.atomic { implicit tx =>
+               licht.active = onOff
+            }
+         }
+      })
+
       procLay.setHorizontalGroup( procLay.createSequentialGroup()
          .addGroup( procLay.createParallelGroup()
             .addComponent( procLBPlate )
@@ -122,6 +133,7 @@ class GUI {
             .addComponent( procLBZeven )
             .addComponent( procLBHeli )
             .addComponent( procLBWindspiel )
+            .addComponent( procLBLicht )
          )
          .addGroup( procLay.createParallelGroup()
             .addComponent( procGGPlate )
@@ -130,6 +142,7 @@ class GUI {
             .addComponent( procGGZeven )
             .addComponent( procGGHeli )
             .addComponent( procGGWindspiel )
+            .addComponent( procGGLicht )
          )
       )
 
@@ -157,6 +170,10 @@ class GUI {
          .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
             .addComponent( procLBWindspiel )
             .addComponent( procGGWindspiel )
+         )
+         .addGroup( procLay.createParallelGroup( GroupLayout.Alignment.BASELINE )
+            .addComponent( procLBLicht )
+            .addComponent( procGGLicht )
          )
       )
 
