@@ -8,28 +8,29 @@ import de.sciss.scalainterpreter.{LogPane, CodePane, NamedParam, Interpreter, In
 class ScalaInterpreterFrame(support: REPLSupport)
   extends JFrame("Scala Interpreter") {
 
-  val paneCfg = InterpreterPane.Config()
-  val intpCfg = Interpreter.Config()
+  private val txnKeyStroke = {
+     val ms = Toolkit.getDefaultToolkit.getMenuShortcutKeyMask
+     KeyStroke.getKeyStroke( KeyEvent.VK_T, ms )
+  }
+  private var txnCount = 0
+
+  // private val paneCfg = InterpreterPane.Config()
+  private val intpCfg = Interpreter.Config()
   intpCfg.bindings :+= NamedParam("support", support)
   intpCfg.imports = Seq(
     "math._", "de.sciss.synth._", "de.sciss.synth.ugen._", "de.sciss.synth.swing._", "de.sciss.synth.proc._",
     "de.sciss.synth.proc.DSL._", "de.sciss.semi._", "support._"
   )
-  val codeCfg = CodePane.Config()
+  private val codeCfg = CodePane.Config()
   codeCfg.text = """// Press '""" + KeyEvent.getKeyModifiersText(txnKeyStroke.getModifiers) + " + " +
     KeyEvent.getKeyText(txnKeyStroke.getKeyCode) +
     """' to execute transactionally.
       | """.stripMargin
   codeCfg.keyMap += txnKeyStroke -> (() => txnExecute())
 
-  val intp      = Interpreter(intpCfg)
-  val codePane  = CodePane(codeCfg)
+  private val intp      = Interpreter(intpCfg)
+  private val codePane  = CodePane(codeCfg)
   InterpreterPane.wrap(intp, codePane)
-
-   private val txnKeyStroke = {
-      val ms = Toolkit.getDefaultToolkit.getMenuShortcutKeyMask
-      KeyStroke.getKeyStroke( KeyEvent.VK_T, ms )
-   }
 
    // ---- constructor ----
    {
@@ -79,8 +80,6 @@ class ScalaInterpreterFrame(support: REPLSupport)
      setLocationRelativeTo(null)
      setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
    }
-
-  private var txnCount = 0
 
   def txnExecute() {
     codePane.getSelectedTextOrCurrentLine.foreach { txt =>

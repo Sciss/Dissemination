@@ -3,7 +3,8 @@
 <properties>
 <comment>Dissemination Settings</comment>
 <entry key="basepath">/Dissemination</entry>
-<entry key="scpath">/Applications/SuperCollider3/common/build</entry>
+<!-- <entry key="scpath">/Applications/SuperCollider_3.4.4/</entry> -->
+<entry key="scpath">/Applications/SuperCollider_3.6.5/</entry>
 <entry key="graz">true</entry>
 <entry key="mastergain">-18</entry>
 </properties>

@@ -150,7 +150,7 @@ object Dissemination {
     // --> http://scala-programming-language.1934581.n4.nabble.com/Scala-Actors-Starvation-td2281657.html
     System.setProperty("actors.enableForkJoin", "false")
 
-    val sif   = new ScalaInterpreterFrame( support /* ntp */ )
+    val sif   = new ScalaInterpreterFrame(support /* ntp */)
     val ssp   = new JServerStatusPanel()
     val sspw  = ssp.makeWindow
     val ntp   = if (OPEN_NODETREE) {

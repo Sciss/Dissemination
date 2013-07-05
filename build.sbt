@@ -25,7 +25,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
 seq(appbundle.settings: _*)
 
-// appbundle.icon := Some(file("application.icns"))
+appbundle.icon := Some(file("application.icns"))
 
 appbundle.target <<= baseDirectory
 
