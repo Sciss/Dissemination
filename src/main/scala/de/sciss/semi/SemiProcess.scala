@@ -31,11 +31,21 @@ package de.sciss.semi
 import de.sciss.synth.proc.ProcTxn
 import de.sciss.synth.GE
 
+/** A dissemination process handle. */
 trait SemiProcess {
-   def active( implicit tx: ProcTxn ) : Boolean
-   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) : Unit
-   def name : String
-   def exclusives : Set[ String ]
-   
-   def trigger : GE
+  /** Whether the process is currently active or not. */
+  def active(implicit tx: ProcTxn): Boolean
+  /** Activates or deactivates the process. */
+  def active_=(onOff: Boolean)(implicit tx: ProcTxn): Unit
+
+  /** Name of the process (independent of channel). */
+  def name      : String
+
+  //  /** Name of the process, including channel information */
+  //  def nameCh  : String
+
+  /** A set of processes (given as names) which cannot appear concurrent with this process. */
+  def exclusives: Set[String]
+
+  def trigger: GE
 }

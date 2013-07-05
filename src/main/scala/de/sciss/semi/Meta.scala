@@ -39,15 +39,18 @@ object Meta {
    var verbose       = false
    val AUTO_RESTART  = (2.4 * 60 * 60 * 1000L).toLong   // each three hours XXX now: 2.4 hours
 }
-
+/** `Meta` controls the overall structure, it starts and stops processes. */
 class Meta {
   import Meta._
 
-  private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: zeven :: licht ::
-    helicopter.map(List(_)).getOrElse(Nil)
+  /** List of processes involved. */
+  val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: zeven :: licht :: helicopter.toList
   // XXX scherben
+
+  // maps from process names to processes
   private val procMap: Map[String, SemiProcess] = procs.map(p => p.name -> p)(breakOut)
 
+  /** Starts the meta process. */
   def init()(implicit tx: ProcTxn) {
     val ptrig = diff("meta") {
       graph {
@@ -59,22 +62,29 @@ class Meta {
           //                     ProcTxn.spawnAtomic { implicit tx => proc.active = false }
           //                  }
           //               }
-          val onTrig = tr.max(0)
+          val onTrig  =   tr .max(0)
           val offTrig = (-tr).max(0)
           onTrig.react {
             if (verbose) println("ACTIVATING " + proc.name)
-            ProcTxn.spawnAtomic {
-              implicit tx =>
-                if (!proc.exclusives.exists(name =>
-                  procMap.get(name).exists(_.active)
-                )) proc.active_=(onOff = true)
+            ProcTxn.spawnAtomic { implicit tx =>
+              val conflict = proc.exclusives.exists(name => procMap.get(name).exists(_.active))
+              if (!conflict) {
+                // if (!proc.active) {
+                  proc.active_=(onOff = true)
+                  // Analysis.log(    s"start-proc ${proc.name}")
+                // }
+              } else {
+                Analysis.log(s"block-start-proc ${proc.name}")
+              }
             }
           }
           offTrig.react {
             if (verbose) println("DEACTIVATING " + proc.name)
             ProcTxn.spawnAtomic { implicit tx =>
-              //                     if( procs.exists( p => p != proc && p.active ))
-              proc.active_=(onOff = false)
+              // if( procs.exists( p => p != proc && p.active ))
+              // if (proc.active) {
+                proc.active_=(onOff = false)
+              // }
             }
           }
         }

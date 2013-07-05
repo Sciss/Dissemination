@@ -32,7 +32,6 @@ import Dissemination._
 import SemiNuages._
 import de.sciss.synth.proc.{DSL, ProcTxn, Ref, Proc}
 import DSL._
-import Util._
 
 object WaterLike {
    case class Channel( idx: Int, procFilter: Proc, procGen: Proc )
@@ -41,82 +40,76 @@ object WaterLike {
 //   case object Right extends Side( "R" )
 }
 
-trait WaterLike extends SemiProcess {
+trait WaterLike extends MiddleProcess {
    import WaterLike._
-   
-   private val urn = new Urn( 0 until NUM_PLATES: _* )
 
-   protected val ch1: Ref[ Option[ Channel ]] = Ref( None )
-   protected val ch2: Ref[ Option[ Channel ]] = Ref( None )
-   private val activeRef = Ref( false )
+  private val urn = new Urn(0 until NUM_PLATES: _*)
 
-   // --- abstract ---
-   protected def filters( implicit tx: ProcTxn ) : (Proc, Proc)
-   protected def gens( implicit tx: ProcTxn ) : (Proc, Proc)
-   protected def minFade : Double
-   protected def maxFade : Double
-   protected def engageFade : Double
-   
-   def active( implicit tx: ProcTxn ) = activeRef()
-   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) {
-      val wasActive = activeRef.swap( onOff )
-      if( wasActive == onOff ) return
-      if( onOff ) start else stop
-   }
+  protected val ch1: Ref[Option[Channel]] = Ref(None)
+  protected val ch2: Ref[Option[Channel]] = Ref(None)
 
-   private def start( implicit tx: ProcTxn ) {
-      val Seq( idx1, idx2 ) = urn.take( 2 )
-//      ch1.set( ch1v )
-//      ch2.set( ch2v )
+  // --- abstract ---
+  protected def filters(implicit tx: ProcTxn): (Proc, Proc)
+  protected def gens   (implicit tx: ProcTxn): (Proc, Proc)
 
-//      val cuts0 = cutOut( Vector( 0.0 -> 567.74122 ), 45, 27, 67 )
-//      cutsRef.set( cuts0.tail )
-//      val cut = cuts0.head
-//      val chan1 = createOne( idx1, "L", cut )
-//      val chan2 = createOne( idx2, "R", cut )
-//      ch1.set( Some( chan1 ))
-//      ch2.set( Some( chan2 ))
+  protected def start()(implicit tx: ProcTxn) {
+    val Seq(idx1, idx2) = urn.take(2)
+    //      ch1.set( ch1v )
+    //      ch2.set( ch2v )
 
-      val (flt1, flt2)  = filters
-      val (gen1, gen2)  = gens
-      val chan1         = Channel( idx1, flt1, gen1 )
-      ch1.set( Some( chan1 ))
-      val chan2         = Channel( idx2, flt2, gen2 )
-      ch2.set( Some( chan2 ))
-      val chans         = chan1 :: chan2 :: Nil
+    //      val cuts0 = cutOut( Vector( 0.0 -> 567.74122 ), 45, 27, 67 )
+    //      cutsRef.set( cuts0.tail )
+    //      val cut = cuts0.head
+    //      val chan1 = createOne( idx1, "L", cut )
+    //      val chan2 = createOne( idx2, "R", cut )
+    //      ch1.set( Some( chan1 ))
+    //      ch2.set( Some( chan2 ))
 
-      chans foreach { ch =>
-         val plate = plates( ch.idx )
-         val insertTarget = ProcHelper.findOutEdge( plate.collector2, collMaster ).get.in
-         plate.collector2 ~| ch.procFilter |> insertTarget
-         ch.procGen ~> ch.procFilter.audioInput( "in2" )
-         ch.procFilter.bypass
-         ch.procGen.play
-         ch.procFilter.play
+    val (flt1, flt2) = filters
+    val (gen1, gen2) = gens
+    val chan1 = Channel(idx1, flt1, gen1)
+    ch1.set(Some(chan1))
+    val chan2 = Channel(idx2, flt2, gen2)
+    ch2.set(Some(chan2))
+    val chans = chan1 :: chan2 :: Nil
+
+    chans foreach { ch =>
+      val plate = plates(ch.idx)
+      val insertTarget = ProcHelper.findOutEdge(plate.collector2, collMaster).get.in
+      plate.collector2 ~| ch.procFilter |> insertTarget
+      ch.procGen ~> ch.procFilter.audioInput("in2")
+      ch.procFilter .bypass
+      ch.procGen    .play
+      ch.procFilter .play
+    }
+
+    chans.zipWithIndex.foreach { case (ch, idx) =>
+      xfade(engageFade) {
+        ch.procFilter.engage
       }
-
-      chans foreach { ch =>
-         xfade( engageFade ) {
-            ch.procFilter.engage
-         }
-         glide( exprand( minFade, maxFade )) {
-            ch.procFilter.control( "fade" ).v_=(1)
-         }
+      val fdt = fadeTime()
+      glide(fdt) {
+        ch.procFilter.control("fade").v_=(1)
       }
-   }
+      Analysis.log(s"fade-in-channel $idx ${(fdt * 44100L).toLong} $name")
+    }
+  }
 
-   private def stop( implicit tx: ProcTxn ) {
-//      ProcHelper.stopAndDispose( )
-      val fdt = exprand( minFade, maxFade )
-      val chan1O = ch1.swap( None )
-      val chan2O = ch2.swap( None )
-      glide( fdt ) {
-         chan1O :: chan2O :: Nil foreach( _.foreach { ch =>
-            ch.procFilter.control( "fade" ).v_=(0)
-            ProcHelper.whenGlideDone( ch.procFilter, "fade" ) { implicit tx =>
-               ProcHelper.stopAndDispose( engageFade, ch.procFilter, postFun = ch.procGen.dispose( _ ))
-            }
-         })
+  protected def stop()(implicit tx: ProcTxn) {
+    //      ProcHelper.stopAndDispose( )
+    val fdt     = fadeTime()
+    val chan1O  = ch1.swap(None)
+    val chan2O  = ch2.swap(None)
+    glide(fdt) {
+      (chan1O :: chan2O :: Nil).zipWithIndex.foreach {
+        case (Some(ch), idx) =>
+          Analysis.log(s"fade-out-channel $idx ${(fdt * 44100L).toLong} $name")
+          ch.procFilter.control("fade").v_=(0)
+          ProcHelper.whenGlideDone(ch.procFilter, "fade") { implicit tx =>
+            ProcHelper.stopAndDispose(engageFade, ch.procFilter, postFun = ch.procGen.dispose(_))
+          }
+        case _ =>
       }
-   }
+    }
+  }
 }

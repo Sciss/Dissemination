@@ -76,23 +76,24 @@ object Phylet {
       62547889, 62674941, 62774386, 62962781, 63132847, 63173620 )
 }
 
-class Phylet( idx: Int ) extends ColorLike {
-   import Phylet._
+class Phylet(val idx: Int) extends ColorLike {
 
-   protected def minFade      = MIN_FILTER_FADE
-   protected def maxFade      = MAX_FILTER_FADE
-   protected def engageFade   = 0.1
-   protected def delayGen     = true
+  import Phylet._
 
-   def name = "phylet"
-   def exclusives = Set.empty[ String ]
-   def trigger : GE = {
-      Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
-   }
+  protected def minFade     = MIN_FILTER_FADE
+  protected def maxFade     = MAX_FILTER_FADE
+  protected def engageFade  = 0.1
+  protected def delayGen    = true
+
+  def name = "phylet"
+
+  def exclusives = Set.empty[String]
+
+  def trigger: GE = {
+    Dust.kr(LFNoise0.kr(TRIG_CHANGE_FREQ).linexp(-1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ))
+  }
 
   private val urn = new Urn(0 until marks.size - 1: _*)
-
-   def plate = plates( idx )
 
    def gen1( implicit tx: ProcTxn ) : Proc = {
       val g = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {

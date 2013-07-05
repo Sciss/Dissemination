@@ -48,27 +48,27 @@ object Zeven {
    val TRIG_CHANGE_FREQ = 1.0 / 607
 }
 
-class Zeven( idx: Int ) extends ColorLike {
-   import Zeven._
+class Zeven(val idx: Int) extends ColorLike {
+  import Zeven._
 
-   protected def minFade      = MIN_FILTER_FADE
-   protected def maxFade      = MAX_FILTER_FADE
-   protected def engageFade   = 0.1
-   protected def delayGen     = false
+  protected def minFade     = MIN_FILTER_FADE
+  protected def maxFade     = MAX_FILTER_FADE
+  protected def engageFade  = 0.1
+  protected def delayGen    = false
 
-   def name = "zeven"
-   def exclusives = Set.empty[ String ]
-   def trigger : GE = {
-      Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
-   }
+  def name = "zeven"
 
-   def plate = plates( idx )
+  def exclusives = Set.empty[String]
 
-   def gen1( implicit tx: ProcTxn ) : Proc = {
+  def trigger: GE = {
+    Dust.kr(LFNoise0.kr(TRIG_CHANGE_FREQ).linexp(-1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ))
+  }
+
+  def gen1(implicit tx: ProcTxn): Proc = {
       val g = gen(name) {
         val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), TAPE_GAIN.dbamp)
-        val ppos = pScalar("pos", ParamSpec(0, 1800), 1)
-        val pdur = pScalar("dur", ParamSpec(0.2, 600), 1)
+        val ppos = pScalar ("pos", ParamSpec(0, 1800), 1)
+        val pdur = pScalar ("dur", ParamSpec(0.2, 600), 1)
         graph {
           val path = AUDIO_PATH + fs + "MiscZeven01Ed2-M.aif"
           val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames

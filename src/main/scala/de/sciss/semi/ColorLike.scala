@@ -31,36 +31,30 @@ package de.sciss.semi
 import SemiNuages._
 import de.sciss.synth.proc.{DSL, Ref, ProcTxn, Proc}
 import DSL._
-import Util._
 
 object ColorLike {
   case class Channel(procFilter: Proc, procGen: Proc)
 }
 
-trait ColorLike extends SemiProcess {
+trait ColorLike extends MiddleProcess {
   import ColorLike._
 
   protected val ch      = Ref(Option.empty[Channel])
-  private val activeRef = Ref(false)
 
   // --- abstract ---
   protected def filter1(implicit tx: ProcTxn): Proc
   protected def gen1   (implicit tx: ProcTxn): Proc
 
-  protected def plate     : Plate
-  protected def minFade   : Double
-  protected def maxFade   : Double
-  protected def engageFade: Double
+  // protected def plate     : Plate
   protected def delayGen  : Boolean
 
-  def active(implicit tx: ProcTxn) = activeRef()
-  def active_=(onOff: Boolean)(implicit tx: ProcTxn) {
-    val wasActive = activeRef.swap(onOff)
-    if (wasActive == onOff) return
-    if (onOff) start() else stop()
-  }
+  protected def idx: Int
 
-  private def start()( implicit tx: ProcTxn ) {
+  // final def nameCh = s"$name-$idx"
+
+  final protected def plate = plates(idx)
+
+  protected def start()( implicit tx: ProcTxn ) {
     val flt   = filter1
     val g     = gen1
     val chan  = Channel(flt, g)
@@ -86,9 +80,12 @@ trait ColorLike extends SemiProcess {
     xfade(engageFade) {
       chan.procFilter.engage
     }
-    glide(exprand(minFade, maxFade)) {
+
+    val fdt = fadeTime()
+    glide(fdt) {
       chan.procFilter.control("fade").v_=(1)
     }
+    Analysis.log(s"fade-in ${(fdt * 44100L).toLong} $name")
 
     if (delayGen) ProcHelper.whenGlideDone(chan.procFilter, "fade") { implicit tx =>
       chan.procGen ~> chan.procFilter.audioInput("in2")
@@ -97,8 +94,8 @@ trait ColorLike extends SemiProcess {
     }
   }
 
-  private def stop()(implicit tx: ProcTxn) {
-    val fdt   = exprand(minFade, maxFade)
+  protected def stop()(implicit tx: ProcTxn) {
+    val fdt   = fadeTime()
     val chanO = ch.swap(None)
     glide(fdt) {
       chanO.foreach { ch =>
@@ -108,9 +105,12 @@ trait ColorLike extends SemiProcess {
         }
       }
     }
+    Analysis.log(s"fade-out ${(fdt * 44100L).toLong} $name")
   }
 
   protected def diskDone() {
-    ProcTxn.spawnAtomic(implicit tx => active_=(onOff = false))
+    ProcTxn.spawnAtomic(implicit tx =>
+      active_=(onOff = false)
+    )
   }
 }

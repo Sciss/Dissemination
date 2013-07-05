@@ -20,3 +20,7 @@ Missing
 ## Tested
 
 Last tested July 2013, using SuperCollider 3.6.5, FScape as of that time.
+
+## Notes
+
+ - The `"CAUGHT: ... IllegalArgumentException"` originates from the Wolkenpumpe visualization and can be ignored

@@ -48,23 +48,23 @@ object Helicopter {
    val TRIG_CHANGE_FREQ = 1.0 / 607
 }
 
-class Helicopter( idx: Int ) extends ColorLike {
-   import Helicopter._
+class Helicopter(val idx: Int) extends ColorLike {
+  import Helicopter._
 
-   protected def minFade      = MIN_FILTER_FADE
-   protected def maxFade      = MAX_FILTER_FADE
-   protected def engageFade   = 0.1
-   protected def delayGen     = true
+  protected def minFade     = MIN_FILTER_FADE
+  protected def maxFade     = MAX_FILTER_FADE
+  protected def engageFade  = 0.1
+  protected def delayGen    = true
 
-   def name = "Helicopter"
-   def exclusives = Set.empty[ String ]
-   def trigger : GE = {
-      Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
-   }
+  def name = "Helicopter"
 
-   def plate = plates( idx )
+  def exclusives = Set.empty[String]
 
-   def gen1( implicit tx: ProcTxn ) : Proc = {
+  def trigger: GE = {
+    Dust.kr(LFNoise0.kr(TRIG_CHANGE_FREQ).linexp(-1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ))
+  }
+
+  def gen1( implicit tx: ProcTxn ) : Proc = {
       val g = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
          val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), TAPE_GAIN.dbamp )
          val ppos = pScalar( "pos", ParamSpec( 0, 1800), 1 )
@@ -79,9 +79,9 @@ class Helicopter( idx: Int ) extends ColorLike {
             DiskIn.ar( 1, b.id, loop = 1 ) * env * pamp.kr
          }
       }).make
-      g.control( "pos" ).v_=(rrand( 0.0, 117.0 ))
-      g.control( "dur" ).v_=(exprand( MIN_DUR, MAX_DUR ) + 2.0)
-      g
+     g.control("pos").v_=(rrand(0.0, 117.0))
+     g.control("dur").v_=(exprand(MIN_DUR, MAX_DUR) + 2.0)
+     g
    }
 
    def filter1( implicit tx: ProcTxn ) : Proc = {

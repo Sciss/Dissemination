@@ -52,7 +52,7 @@ object Apfelessen {
       19282908, 20034970, 20509064, 20905410, 21265568, 22108634, 22343952, 22685859, 23053207 )
 }
 
-class Apfelessen(idx: Int) extends ColorLike {
+class Apfelessen(val idx: Int) extends ColorLike {
   import Apfelessen._
 
   protected def minFade = MIN_FILTER_FADE
@@ -77,9 +77,7 @@ class Apfelessen(idx: Int) extends ColorLike {
 
   private val urn = new Urn(0 until marks.size - 1: _*)
 
-  def plate = plates(idx)
-
-  def gen1( implicit tx: ProcTxn ) : Proc = {
+  def gen1(implicit tx: ProcTxn): Proc = {
     val g = (ProcDemiurg.factories.find(_.name == name) getOrElse gen(name) {
       val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), 3.dbamp)
       val ppos = pScalar ("pos", ParamSpec(0  , 600), 1)
@@ -94,7 +92,8 @@ class Apfelessen(idx: Int) extends ColorLike {
         DiskIn.ar(1, b.id) * env * pamp.kr
       }
     }).make
-    val idx   = urn.next() // rand( marks.size - 1 )
+    val idx   = urn.next()
+    Analysis.log(s"apfel-urn $idx")
     val start = marks(idx)
     val stop  = marks(idx + 1)
     g.control("pos").v_=(start.toDouble / 44100)
