@@ -34,14 +34,15 @@ import de.sciss.synth.proc.{DSL, ProcTxn, Ref, Proc}
 import DSL._
 
 object WaterLike {
-   case class Channel( idx: Int, procFilter: Proc, procGen: Proc )
-//   protected abstract sealed class Side( val extension: String )
-//   case object Left extends Side( "L" )
-//   case object Right extends Side( "R" )
+  case class Channel(idx: Int, procFilter: Proc, procGen: Proc)
+
+  //   protected abstract sealed class Side( val extension: String )
+  //   case object Left extends Side( "L" )
+  //   case object Right extends Side( "R" )
 }
 
 trait WaterLike extends MiddleProcess {
-   import WaterLike._
+  import WaterLike._
 
   private val urn = new Urn(0 until NUM_PLATES: _*)
 

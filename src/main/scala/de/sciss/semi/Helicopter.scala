@@ -79,8 +79,13 @@ class Helicopter(val idx: Int) extends ColorLike {
             DiskIn.ar( 1, b.id, loop = 1 ) * env * pamp.kr
          }
       }).make
-     g.control("pos").v_=(rrand(0.0, 117.0))
-     g.control("dur").v_=(exprand(MIN_DUR, MAX_DUR) + 2.0)
+
+    val pos = rrand(0.0, 117.0)
+    val dur = exprand(MIN_DUR, MAX_DUR) + 2.0
+     g.control("pos").v_=(pos)
+     g.control("dur").v_=(dur)
+
+    Analysis.log(s"$name-gen1 pos $pos dur $dur")
      g
    }
 

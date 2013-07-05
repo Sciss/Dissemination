@@ -30,7 +30,6 @@ package de.sciss.semi
 
 import de.sciss.synth._
 import ugen._
-import SemiNuages._
 import Dissemination._
 import de.sciss.synth.proc.{DSL, ProcTxn, Proc, ExpWarp, ParamSpec}
 import DSL._
@@ -79,9 +78,13 @@ class Zeven(val idx: Int) extends ColorLike {
           DiskIn.ar(1, b.id, loop = 1) /* * env */ * pamp.kr
         }
       }.make
-     g.control("pos").v_=(rrand(0.0, 1800.0))
-     g.control("dur").v_=(exprand(MIN_DUR, MAX_DUR))
-     g
+    val pos = rrand(0.0, 1800.0)
+    val dur = exprand(MIN_DUR, MAX_DUR)
+     g.control("pos").v_=(pos)
+     g.control("dur").v_=(dur)
+
+    Analysis.log(s"$name-gen1 pos $pos dur $dur")
+    g
    }
 
    def filter1( implicit tx: ProcTxn ) : Proc = {

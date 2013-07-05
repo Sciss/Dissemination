@@ -93,11 +93,14 @@ class Apfelessen(val idx: Int) extends ColorLike {
       }
     }).make
     val idx   = urn.next()
-    Analysis.log(s"apfel-urn $idx")
     val start = marks(idx)
     val stop  = marks(idx + 1)
-    g.control("pos").v_=(start.toDouble / 44100)
-    g.control("dur").v_=((stop - start).toDouble / 44100)
+    val pos   = start.toDouble / 44100
+    val dur   = (stop - start).toDouble / 44100
+    g.control("pos").v_=(pos)
+    g.control("dur").v_=(dur)
+
+    Analysis.log(s"$name-gen1 idx $idx pos $pos dur $dur")
     g
   }
 

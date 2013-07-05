@@ -49,50 +49,56 @@ object Sprenger {
 }
 
 class Sprenger extends WaterLike {
-   import Sprenger._
+  import Sprenger._
 
-   private val cutsRef = Ref( Seq.empty[ (Double, Double) ])
+  private val cutsRef = Ref(Seq.empty[(Double, Double)])
 
-   protected def minFade      = INOUT_MIN
-   protected def maxFade      = INOUT_MAX
-   protected def engageFade   = SHORT_FADE
+  protected def minFade     = INOUT_MIN
+  protected def maxFade     = INOUT_MAX
+  protected def engageFade  = SHORT_FADE
 
-   def name = "sprenger"
-   def exclusives = Set( "regen" ) 
-   def trigger : GE = { // XXX
-      import synth._
-      Dust.kr( 1.0 / 360 )
-   }
+  def name        = "sprenger"
+  def exclusives  = Set("regen")
 
-   @tailrec
-   private def cutOut( pieces: IIdxSeq[ (Double, Double) ], minKeep: Double, minSkip: Double, maxSkip: Double ) : IIdxSeq[ (Double, Double) ] = {
-      val minPcsLen  = minKeep + minKeep + minSkip
-      val f = pieces.filter( tup => tup._2 - tup._1 >= minPcsLen )
-      if( f.size == 0 ) return pieces
-      val piece = f( rand( f.size ))
-      val idx = pieces.indexOf( piece )
-      val pieceDur = piece._2 - piece._1
-      val cutDur = exprand( minSkip, math.min( pieceDur - (minKeep + minKeep), maxSkip ))
-      val cutPos = exprand( minKeep, pieceDur - (minKeep + cutDur) )
-      val pc1 = piece._1 -> (piece._1 + cutPos)
-      val pc2 = piece._1 + cutPos + cutDur -> piece._2
-      cutOut( pieces.patch( idx, pc1 :: pc2 :: Nil, 1 ), MIN_KEEP, MIN_SKIP, MAX_SKIP )
-   }
+  def trigger: GE = {
+    // XXX
+    import synth._
+    Dust.kr(1.0 / 360)
+  }
 
-   protected def filters( implicit tx: ProcTxn ) : (Proc, Proc) = {
-      val fact = factory( "water-trans" + rrand( 1, 2 ))
-      (fact.make, fact.make)
-   }
+  protected def filters(implicit tx: ProcTxn): (Proc, Proc) = {
+    val idx   = rrand(1, 2)
+    val fact  = factory("water-trans" + idx)
+    Analysis.log(s"$name-filters idx $idx")
+    (fact.make, fact.make)
+  }
 
-   protected def gens( implicit tx: ProcTxn ) : (Proc, Proc) = {
-      import synth._
-      import ugen._
+  // produces a scrambled cut-up of the given pieces
+  @tailrec
+  private def cutOut(pieces: IIdxSeq[(Double, Double)], minKeep: Double, minSkip: Double, maxSkip: Double): IIdxSeq[(Double, Double)] = {
+    val minPcsLen = minKeep + minKeep + minSkip
+    val f         = pieces.filter(tup => tup._2 - tup._1 >= minPcsLen)
+    if (f.size == 0) return pieces
+    val piece     = f(rand(f.size))
+    val idx       = pieces.indexOf(piece)
+    val pieceDur  = piece._2 - piece._1
+    val cutDur    = exprand(minSkip, math.min(pieceDur - (minKeep + minKeep), maxSkip))
+    val cutPos    = exprand(minKeep, pieceDur - (minKeep + cutDur))
+    val pc1       = piece._1 -> (piece._1 + cutPos)
+    val pc2       = piece._1 + cutPos + cutDur -> piece._2
+    cutOut(pieces.patch(idx, pc1 :: pc2 :: Nil, 1), MIN_KEEP, MIN_SKIP, MAX_SKIP)
+  }
 
-      val cuts0 = cutOut( Vector( 0.0 -> 567.74122 ), 45, 27, 67 )
-      cutsRef.set( cuts0.tail )
-      val cut = cuts0.head
+  protected def gens(implicit tx: ProcTxn): (Proc, Proc) = {
+    import synth._
+    import ugen._
 
-      def map(ext: String): Proc = {
+    val cuts0 = cutOut(pieces = Vector(0.0 -> 567.74122), minKeep = 45, minSkip = 27, maxSkip = 67)
+    // store the tail for chaining, and begin with head cut
+    cutsRef.set(cuts0.tail)
+    val cut = cuts0.head
+
+    def map(ext: String): Proc = {
          val g = gen(name + "-" + ext) {
            val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), 15.dbamp)
            val ppos = pScalar("pos", ParamSpec(0, 600), 1)
@@ -136,7 +142,12 @@ class Sprenger extends WaterLike {
    }
 
   private def setCut(p: Proc, cut: (Double, Double))(implicit tx: ProcTxn) {
-    p.control("pos").v_=(cut._1)
-    p.control("dur").v_=(cut._2 - cut._1)
+    val (pos, end) = cut
+    val dur = end - pos
+
+    p.control("pos").v_=(pos)
+    p.control("dur").v_=(dur)
+
+    Analysis.log(s"$name-gen-cut pos $pos dur $dur")
   }
 }

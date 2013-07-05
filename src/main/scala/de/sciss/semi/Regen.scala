@@ -37,31 +37,36 @@ import synth.ugen.Dust
 import Util._
 
 object Regen {
-   val INOUT_MIN  = 32.0
-   val INOUT_MAX  = 64.0
-   val SHORT_FADE = 3.0
-   val MIN_DUR    = 3 * 60.0
-   val MAX_DUR    = 5 * 60.0
+  val INOUT_MIN  = 32.0
+  val INOUT_MAX  = 64.0
+  val SHORT_FADE = 3.0
+  val MIN_DUR    = 3 * 60.0
+  val MAX_DUR    = 5 * 60.0
 }
 
 class Regen extends WaterLike {
-   import Regen._
+  import Regen._
 
-   protected def minFade      = INOUT_MIN
-   protected def maxFade      = INOUT_MAX
-   protected def engageFade   = SHORT_FADE
+  protected def minFade      = INOUT_MIN
+  protected def maxFade      = INOUT_MAX
+  protected def engageFade   = SHORT_FADE
 
-   protected def filters( implicit tx: ProcTxn ) : (Proc, Proc) = {
-      val fact = factory( "water-trans" + rrand( 1, 2 ))
-      (fact.make, fact.make)
-   }
+  protected def filters(implicit tx: ProcTxn): (Proc, Proc) = {
+    val idx   = rrand(1, 2)
+    val fact  = factory("water-trans" + idx)
+    Analysis.log(s"$name-filters idx $idx")
+    (fact.make, fact.make)
+  }
 
-   def name = "regen"
-   def exclusives = Set( "sprenger" )
-   def trigger : GE = { // XXX
-      import synth._
-      Dust.kr( 1.0 / 360 )
-   }
+  def name = "regen"
+
+  def exclusives = Set("sprenger")
+
+  def trigger: GE = {
+    // XXX
+    import synth._
+    Dust.kr(1.0 / 360)
+  }
 
   protected def gens(implicit tx: ProcTxn): (Proc, Proc) = {
     import synth._
@@ -87,8 +92,12 @@ class Regen extends WaterLike {
           disk
         }
       }.make
-      g.control("pos").v_=(rrand(0.0, 300.0))
-      g.control("dur").v_=(exprand(MIN_DUR, MAX_DUR))
+      val pos = rrand(0.0, 300.0)
+      val dur = exprand(MIN_DUR, MAX_DUR)
+      g.control("pos").v_=(pos)
+      g.control("dur").v_=(dur)
+
+      Analysis.log(s"$name-gen-$ext pos $pos dur $dur")
       g
     }
     val gen1 = map("L")

@@ -30,9 +30,7 @@ package de.sciss.semi
 
 import collection.breakOut
 
-/**
- * @version 0.11, 17-Aug-10
- */
+/** Used by `Plate` */
 object Material {
    val all = Vector(
       SoundContext( "tp_02ftvc",

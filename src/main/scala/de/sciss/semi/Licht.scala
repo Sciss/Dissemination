@@ -18,17 +18,8 @@ object Licht {
    val MAX_DUST_DUR  = 103.0
 }
 
-class Licht(proc: Proc) extends SemiProcess {
+class Licht(proc: Proc) extends BasicProcess {
   import Licht._
-
-  private val activeRef = Ref(false)
-
-  def active( implicit tx: ProcTxn ) = activeRef()
-  def active_=(onOff: Boolean)(implicit tx: ProcTxn) {
-    val wasActive = activeRef.swap(onOff)
-    if (wasActive == onOff) return
-    if (onOff) start() else stop()
-  }
 
   def name        = "licht"
   def exclusives  = Set.empty[String]
@@ -40,13 +31,15 @@ class Licht(proc: Proc) extends SemiProcess {
     Dust.kr(LFNoise0.kr(1.0 / 107).linexp(-1, 1, 1.0 / MAX_DUST_DUR, 1.0 / MIN_DUST_DUR))
   }
 
-  private def stop()(implicit tx: ProcTxn) {}
+  protected def stop()(implicit tx: ProcTxn) {}
 
-  private def start()(implicit tx: ProcTxn) {
+  protected def start()(implicit tx: ProcTxn) {
     if (verbose) println(s"${new java.util.Date()} : Licht AN")
-    glide(rrand(MIN_FADE, MAX_FADE)) {
+
+    val fdt   = rrand(MIN_FADE, MAX_FADE)
+    val width = rrand(MIN_WIDTH, MAX_WIDTH)
+    glide(fdt) {
       val pcon  = proc.control("pos")
-      val width = rrand(MIN_WIDTH, MAX_WIDTH)
       pcon                 .v_=(if (pcon.v == 0.0) width + 18 else 0)
       proc.control("width").v_=(width)
     }
@@ -54,5 +47,6 @@ class Licht(proc: Proc) extends SemiProcess {
       if (verbose) println(s"${new java.util.Date()} : Licht AUS")
       active_=(onOff = false)
     }
+    Analysis.log(s"fade-out ${(fdt * 44100L).toLong} $name width $width")
   }
 }

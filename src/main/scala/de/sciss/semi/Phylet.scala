@@ -120,9 +120,12 @@ class Phylet(val idx: Int) extends ColorLike {
          val stop = marks( idx2 )
          dur    = (stop - start).toDouble / 44100
       } while( idx2 < marks.size - 1 && dur < dur0 )
-      g.control( "pos" ).v_=(start.toDouble / 44100)
+     val pos = start.toDouble / 44100
+      g.control( "pos" ).v_=(pos)
       g.control( "dur" ).v_=(dur)
-      g
+
+    Analysis.log(s"$name-gen1 idx $idx pos $pos dur $dur")
+     g
    }
 
    def filter1( implicit tx: ProcTxn ) : Proc = {
