@@ -2,7 +2,7 @@
  *  BounceSynthContext.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -28,253 +28,257 @@
 
 package de.sciss.semi
 
-import scala.collection.immutable.{ Queue => IQueue }
-import scala.collection.mutable.{ PriorityQueue }
-import java.io.{ BufferedInputStream, BufferedReader, File, InputStreamReader, IOException, RandomAccessFile }
-import java.nio.{ ByteBuffer }
-import javax.swing.{ SwingWorker }
+import scala.collection.immutable.{Queue => IQueue}
+import java.io.{BufferedReader, File, InputStreamReader, IOException, RandomAccessFile}
+import java.nio.ByteBuffer
+import javax.swing.SwingWorker
 import scala.math._
-import de.sciss.osc.{ OSCBundle, OSCMessage, OSCPacket, OSCPacketCodec }
+import de.sciss.osc
 import de.sciss.synth._
 import Dissemination._
+import scala.collection.mutable
 
 object BounceSynthContext {
-   @throws( classOf[ IOException ])
-   def apply( so: ServerOptionsBuilder ) : BounceSynthContext = {
-      val oscPath = File.createTempFile( "kontur", ".osc", new File( TEMP_PATH ))
-      val oscFile = new RandomAccessFile( oscPath, "rw" )
-      so.nrtCommandPath = oscPath.getCanonicalPath
-      val context = new BounceSynthContext( so.build, oscPath, oscFile )
-      context
-   }
+  def apply(so: Server.ConfigBuilder): BounceSynthContext = {
+    val oscPath       = File.createTempFile("kontur", ".osc", new File(TEMP_PATH))
+    val oscFile       = new RandomAccessFile(oscPath, "rw")
+    so.nrtCommandPath = oscPath.getCanonicalPath
+    val context       = new BounceSynthContext(so.build, oscPath, oscFile)
+    context
+  }
 
-   private var current: BounceSynthContext = null
+  private var current: BounceSynthContext = null
 
-   trait AbstractBundle {
-      protected var msgs = IQueue[ OSCMessage ]()
+  trait AbstractBundle {
+    protected var msgs = IQueue[osc.Message]()
 
-      @throws( classOf[ IOException ])
-      def send: Unit
+    @throws(classOf[IOException])
+    def send(): Unit
 
-      def add( msg: OSCMessage ) {
-         msgs = msgs.enqueue( msg )
-      }
+    def add(msg: osc.Message) {
+      msgs = msgs.enqueue(msg)
+    }
 
-      def messages: Seq[ OSCMessage ] = msgs
-   }
+    def messages: Seq[osc.Message] = msgs
+  }
 }
 
-class BounceSynthContext private( so: ServerOptions, oscPath: File, oscFile: RandomAccessFile ) {
-   import BounceSynthContext._
+class BounceSynthContext private(so: Server.Config, oscPath: File, oscFile: RandomAccessFile) {
+  import BounceSynthContext._
 
-   private val verbose =  false
+  private val verbose =  false
 
-   private var timebaseVar = 0.0
-   private val bundleQueue = new PriorityQueue[ Bundle ]()( BundleOrdering )
-   private var fileOpen    = true
-   private val codec       = new OSCPacketCodec( OSCPacketCodec.MODE_GRACEFUL )
-   private val bb          = ByteBuffer.allocateDirect( 65536 )
-   private val fch         = oscFile.getChannel()
+  private var timebaseVar = 0.0
+  private val bundleQueue = new mutable.PriorityQueue[Bundle]()(BundleOrdering)
+  private var fileOpen    = true
+  private val codec       = osc.PacketCodec().scsynth().build // new osc.PacketCodec( osc.PacketCodec.MODE_GRACEFUL )
+  private val bb          = ByteBuffer.allocateDirect(65536)
+  private val fch         = oscFile.getChannel
 
-   protected var bundle: AbstractBundle = null
-   
-   def timebase = timebaseVar
-   def timebase_=( newVal: Double ) {
-      if( newVal < timebaseVar ) throw new IllegalArgumentException( newVal.toString )
-      if( newVal > timebaseVar ) {
-         advanceTo( newVal )
-      }
-   }
+  protected var bundle: AbstractBundle = null
 
-   def perform( thunk: => Unit ) {
-      perform( thunk, -1 )
-   }
+  def timebase = timebaseVar
+  def timebase_=(newVal: Double) {
+    if (newVal < timebaseVar) throw new IllegalArgumentException(newVal.toString)
+    if (newVal > timebaseVar) {
+      advanceTo(newVal)
+    }
+  }
 
-   def delayed( tb: Double, delay: Double )( thunk: => Unit ) {
-      perform( thunk, (tb - timebase) + delay )
-   }
+  def perform(thunk: => Unit) {
+    perform(thunk, -1)
+  }
 
-   private def perform( thunk: => Unit, time: Double ) {
-      val savedContext  = BounceSynthContext.current
-      val savedBundle   = bundle
-      try {
-         initBundle( time )
-         BounceSynthContext.current = this
-         thunk
-         sendBundle
-      }
-      finally {
-         BounceSynthContext.current = savedContext
-         bundle = savedBundle
-      }
-   }
+  def delayed(tb: Double, delay: Double)(thunk: => Unit) {
+    perform(thunk, tb - timebase + delay)
+  }
 
-   private def sendBundle {
-      try {
-         bundle.send // sendBundle( bundle )
-      }
-      catch { case e: IOException => e.printStackTrace }
-      finally {
-         bundle = null
-      }
-   }
+  private def perform(thunk: => Unit, time: Double) {
+    val savedContext = BounceSynthContext.current
+    val savedBundle = bundle
+    try {
+      initBundle(time)
+      BounceSynthContext.current = this
+      thunk
+      sendBundle()
+    }
+    finally {
+      BounceSynthContext.current = savedContext
+      bundle = savedBundle
+    }
+  }
 
-   def sampleRate : Double = so.sampleRate
+  private def sendBundle() {
+    try {
+      bundle.send() // sendBundle( bundle )
+    }
+    catch {
+      case e: IOException => e.printStackTrace()
+    }
+    finally {
+      bundle = null
+    }
+  }
 
-   private def advanceTo( newTime: Double ) {
-      var keepGoing = true
-      while( keepGoing ) {
-         keepGoing = bundleQueue.headOption.map( b => {
-            if( b.time <= newTime ) {
-               bundleQueue.dequeue
-               timebaseVar = b.time // important because write calls doAsync
-               write( b )
-               true
-            } else false
-         }) getOrElse false
-      }
-      timebaseVar = newTime
-   }
+  def sampleRate: Double = so.sampleRate
 
-   protected def initBundle( delta: Double ) {
-      bundle = new Bundle( timebase + max( 0.0, delta ))
-   }
+  private def advanceTo(newTime: Double) {
+    var keepGoing = true
+    while (keepGoing) {
+      keepGoing = bundleQueue.headOption.exists(b => {
+        if (b.time <= newTime) {
+          bundleQueue.dequeue()
+          timebaseVar = b.time // important because write calls doAsync
+          write(b)
+          true
+        } else false
+      })
+    }
+    timebaseVar = newTime
+  }
 
-   @throws( classOf[ IOException ])
-   def render: SwingWorker[ _, _ ] = {
-      flush
-      close
+  protected def initBundle(delta: Double) {
+    bundle = new Bundle(timebase + max(0.0, delta))
+  }
 
-      val dur = timebaseVar // in seconds
-      val program = so.programPath
-//      println( "Booting '" + program + "'" )
-      val appPath = new File( program )
-      // -N cmd-filename input-filename output-filename sample-rate header-format sample-format -o numOutChans
-//      server.options.nrtOutputPath.value = descr.file.getCanonicalPath
-      val processArgs = so.toNonRealtimeArgs.toArray
+  @throws(classOf[IOException])
+  def render: SwingWorker[_, _] = {
+    flush()
+    close()
 
-//      -N <cmd-filename> <input-filename> <output-filename> <sample-rate> <header-format> <sample-format> 	<...other scsynth arguments>
-      
-      if( verbose ) println( processArgs.mkString( " " ))
-      val pb = new ProcessBuilder( processArgs: _* )
-        .directory( appPath.getParentFile )
-        .redirectErrorStream( true )
+    val dur = timebaseVar // in seconds
+    val program = so.programPath
+    //      println( "Booting '" + program + "'" )
+    val appPath = new File(program)
+    // -N cmd-filename input-filename output-filename sample-rate header-format sample-format -o numOutChans
+    //      server.options.nrtOutputPath.value = descr.file.getCanonicalPath
+    val processArgs = so.toNonRealtimeArgs.toArray
 
-      val w = new SwingWorker[ Int, Unit ]() {
-         main =>
-         override def doInBackground: Int = {
-            var pRunning   = true
-            val p          = pb.start
-//            val inStream	= new BufferedInputStream( p.getInputStream )
-            val inReader = new BufferedReader( new InputStreamReader( p.getInputStream ))
-            val printWorker   = new SwingWorker[ Unit, Unit ]() {
-               override def doInBackground {
-                  try {
-                     var lastProg = 0
-                     while( true ) {
-                        val line = inReader.readLine
-                        if( line.startsWith( "nextOSCPacket" )) {
-                           val time = line.substring( 14 ).toFloat
-                           val prog = (time / dur * 100).toInt
-//println( "time = " + time + "; dur = " + dur + "; prog = " + prog )
-                           if( prog != lastProg ) {
-//                        setProgress( prog )
-                              // NOTE: main.setProgress does not work, probably because
-                              // the thread is blocking...
-                              main.firePropertyChange( "progress", lastProg, prog )
-                              lastProg = prog
-                           }
-                        } else {
-                           if( verbose ) System.out.println( line )
-                        }
-                     }
-                  } catch { case e: IOException => }
-               }
-            }
+    //      -N <cmd-filename> <input-filename> <output-filename> <sample-rate> <header-format> <sample-format> 	<...other scsynth arguments>
+
+    if (verbose) println(processArgs.mkString(" "))
+    val pb = new ProcessBuilder(processArgs: _*)
+      .directory(appPath.getParentFile)
+      .redirectErrorStream(true)
+
+    val w = new SwingWorker[Int, Unit]() {
+      main =>
+      override def doInBackground(): Int = {
+        // var pRunning = true
+        val p = pb.start
+        //            val inStream	= new BufferedInputStream( p.getInputStream )
+        val inReader = new BufferedReader(new InputStreamReader(p.getInputStream))
+        val printWorker = new SwingWorker[Unit, Unit]() {
+          override def doInBackground() {
             try {
-               printWorker.execute()
-               p.waitFor()
-            } catch { case e: InterruptedException => }
-
-            printWorker.cancel( true )
-
-            try {
-               val resultCode	= p.exitValue
-               if( verbose ) println( "scsynth terminated (" + resultCode +")" )
-               resultCode
+              var lastProg = 0
+              while (true) {
+                val line = inReader.readLine
+                if (line.startsWith("nextOSCPacket")) {
+                  val time = line.substring(14).toFloat
+                  val prog = (time / dur * 100).toInt
+                  //println( "time = " + time + "; dur = " + dur + "; prog = " + prog )
+                  if (prog != lastProg) {
+                    //                        setProgress( prog )
+                    // NOTE: main.setProgress does not work, probably because
+                    // the thread is blocking...
+                    main.firePropertyChange("progress", lastProg, prog)
+                    lastProg = prog
+                  }
+                } else {
+                  if (verbose) System.out.println(line)
+                }
+              }
+            } catch {
+              case e: IOException =>
             }
-            catch { case e: IllegalThreadStateException => -1 } // gets thrown if we call exitValue() while sc still running
-         }
+          }
+        }
+        try {
+          printWorker.execute()
+          p.waitFor()
+        } catch {
+          case e: InterruptedException =>
+        }
+
+        printWorker.cancel(true)
+
+        try {
+          val resultCode = p.exitValue
+          if (verbose) println("scsynth terminated (" + resultCode + ")")
+          resultCode
+        }
+        catch {
+          case e: IllegalThreadStateException => -1
+        } // gets thrown if we call exitValue() while sc still running
       }
-//    w.execute()
-      w
-   }
+    }
+    //    w.execute()
+    w
+  }
 
-   @throws( classOf[ IOException ])
-   private def close {
-      if( fileOpen ) {
-         oscFile.close
-         fileOpen = false
+  private def close() {
+    if (fileOpen) {
+      oscFile.close()
+      fileOpen = false
+    }
+  }
+
+  def dispose() {
+    try {
+      close()
+      if (!oscPath.delete) oscPath.deleteOnExit()
+    }
+    catch {
+      case e: IOException => e.printStackTrace()
+    }
+  }
+
+  private def write(b: Bundle) {
+    val bndl = osc.Bundle.secs(b.time, b.messages: _*)
+    bb.clear
+    bndl.encode(codec, bb)
+    bb.flip
+    oscFile.writeInt(bb.limit()) // a little bit strange to use both RandomAccessFile...
+    fch.write(bb) // ...and FileChannel... but neither has both writeInt and write( bb )
+    if (verbose) {
+      osc.Packet.printTextOn(bndl, codec, System.out) // ( codec, System.out, bndl )
+    }
+    //      if( b.hasAsync ) perform { b.doAsync } // important to check hasAsync, as we create an infinite loop otherwise
+  }
+
+  private def enqueue(b: Bundle) {
+    if (b.time < timebase) throw new IOException("Negative bundle time")
+    if (b.time == timebase) {
+      write(b)
+    } else {
+      bundleQueue.enqueue(b)
+    }
+  }
+
+  private def flush() {
+    while (bundleQueue.nonEmpty) {
+      val b = bundleQueue.dequeue()
+      if (b.time <= timebaseVar) {
+        timebaseVar = b.time // important because write calls doAsync
+        write(b)
       }
-   }
+    }
+  }
 
-   def dispose {
-      try {
-         close
-         if( !oscPath.delete ) oscPath.deleteOnExit()
-      }
-      catch { case e: IOException => e.printStackTrace }
-   }
+  def add(msg: osc.Message) {
+    bundle.add(msg)
+  }
 
-   @throws( classOf[ IOException ])
-   private def write( b: Bundle ) {
-      val bndl = OSCBundle.secs( b.time, b.messages: _* )
-      bb.clear
-      bndl.encode( codec, bb )
-      bb.flip
-      oscFile.writeInt( bb.limit() )   // a little bit strange to use both RandomAccessFile...
-      fch.write( bb )                  // ...and FileChannel... but neither has both writeInt and write( bb )
-      if( verbose ) {
-         OSCPacket.printTextOn( codec, System.out, bndl )
-      }
-//      if( b.hasAsync ) perform { b.doAsync } // important to check hasAsync, as we create an infinite loop otherwise
-   }
+  private class Bundle(val time: Double)
+    extends AbstractBundle {
 
-   @throws( classOf[ IOException ])
-   private def enqueue( b: Bundle ) {
-      if( b.time < timebase ) throw new IOException( "Negative bundle time" )
-      if( b.time == timebase ) {
-         write( b )
-      } else {
-         bundleQueue.enqueue( b )
-      }
-   }
+    def send() {
+      enqueue(this)
+    }
+  }
 
-   @throws( classOf[ IOException ])
-   private def flush {
-      while( bundleQueue.nonEmpty ) {
-         val b = bundleQueue.dequeue
-         if( b.time <= timebaseVar ) {
-            timebaseVar = b.time // important because write calls doAsync
-            write( b )
-         }
-      }
-   }
-
-   def add( msg: OSCMessage ) {
-      bundle.add( msg )
-   }
-
-   private class Bundle( val time: Double )
-   extends AbstractBundle
-   {
-      @throws( classOf[ IOException ])
-      def send {
-         enqueue( this )
-      }
-   }
-
-   private object BundleOrdering extends Ordering[ Bundle ] {
-      def compare( x: Bundle, y: Bundle ) : Int = -Ordering.Double.compare( x.time, y.time ) // low times first
-   }
+  private object BundleOrdering extends Ordering[Bundle] {
+    def compare(x: Bundle, y: Bundle): Int = -Ordering.Double.compare(x.time, y.time) // low times first
+  }
 }

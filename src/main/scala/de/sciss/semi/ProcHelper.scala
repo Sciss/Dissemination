@@ -2,7 +2,7 @@
  *  ProcHelper.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -34,11 +34,11 @@ import java.io.File
 import Dissemination._
 
 object ProcHelper {
-   val verbose = false
+  val verbose = false
 
-   def createTempAudioFile = File.createTempFile( "semi", ".aif", new File( TEMP_PATH ))
+  def createTempAudioFile(): File = File.createTempFile("semi", ".aif", new File(TEMP_PATH))
 
-   def whenGlideDone( p: Proc, ctrlName: String )( fun: ProcTxn => Unit )( implicit tx: ProcTxn ) {
+  def whenGlideDone( p: Proc, ctrlName: String )( fun: ProcTxn => Unit )( implicit tx: ProcTxn ) {
       lazy val l: Proc.Listener = new Proc.Listener {
          def updated( u: Proc.Update ) {
             if( u.controls.find( tup => (tup._1.name == ctrlName) && tup._2.mapping.isEmpty ).isDefined ) {

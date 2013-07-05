@@ -2,7 +2,7 @@
  *  Plates.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -34,7 +34,6 @@ import collection.immutable.{ IndexedSeq => IIdxSeq }
 import de.sciss.synth.GE
 import de.sciss.synth.ugen.{TDuty, Dwhite, Dseq, Dust, Impulse}
 import de.sciss.synth
-import Float.{ PositiveInfinity => inf }
 
 object Plates {
    val MIN_ON_DUR    = 60.0

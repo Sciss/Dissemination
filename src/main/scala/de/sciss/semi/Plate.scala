@@ -2,7 +2,7 @@
  *  Plate.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -63,7 +63,7 @@ object Plate {
 //         val pmute = pControl( "mute", ParamSpec( 0, 1, step = 1 ), 0 )
 //         graph { in => in * (1 - pmute.kr) }
 //      } make
-      val collFact = filter( (id + 1).toString + "+" ) { graph { in => in }}
+      val collFact = filter( (id + 1).toString + "+" ) { graph { in: In => in }}
       val pColl1  = collFact.make
       val pColl2  = collFact.make
       val pDummy  = factory( "@" ).make
@@ -76,7 +76,7 @@ object Plate {
          val pcentr  = pScalar( "centr", ParamSpec( 20, 2000, ExpWarp ), 20 )  // for display only
          val pflat   = pScalar( "flat", ParamSpec( 0, 1 ), 0 )  // for display only
 
-         graph { in =>
+         graph { in: In =>
             val bufID   = bufEmpty( 1024 ).id
             val chain   = FFT( bufID, Mix( in ))
             val loud    = Loudness.kr( chain )
@@ -110,9 +110,9 @@ object Plate {
       val recPathF   = ProcHelper.createTempAudioFile
       val pRec = (diff( "rec" + id ) {
          val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
-         graph { in0 =>
+         graph { in0: In =>
             val in         = LeakDC.ar( in0 )
-            val b          = bufRecord( recPathF.getAbsolutePath(), in.numOutputs )
+            val b          = bufRecord( recPathF.getAbsolutePath(), in0.numChannels /* in.numOutputs */)
             DiskOut.ar( b.id, in )
             val done       = Done.kr( Line.kr( dur = pdur.ir ))
             val ampInteg   = Integrator.kr( Amplitude.kr( in ))

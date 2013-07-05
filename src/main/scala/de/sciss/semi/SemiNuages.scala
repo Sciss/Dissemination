@@ -2,7 +2,7 @@
  *  SemiNuages.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@
 
 package de.sciss.semi
 
-import de.sciss.synth.{ EnvSeg => S, _ }
+import de.sciss.synth._
 import de.sciss.synth.proc._
 import de.sciss.nuages.NuagesFrame
 import collection.breakOut
@@ -275,10 +275,10 @@ object SemiNuages extends {
          val pspeed  = pAudio( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 0.5 )
          val pmix    = pMix
 
-         graph { in =>
+         graph { in: In =>
             val speed	   = Lag.ar( pspeed.ar, 0.1 )
             val numFrames  = sampleRate.toInt
-            val numChannels= in.numOutputs
+            val numChannels= in.numChannels // .numOutputs
             val buf        = bufEmpty( numFrames, numChannels )
             val bufID      = buf.id
             val writeRate  = BufRateScale.kr( bufID )
@@ -308,8 +308,9 @@ object SemiNuages extends {
 
       filter( "a-hilb" ) {
          val pmix = pMix
-         graph { in =>
-            val flt = in.outputs map { ch =>
+         graph { in: In =>
+            val flt = (0 until in.numChannels) /* in.outputs */ map { chIdx =>
+              val ch = in \ chIdx
                val hlb  = Hilbert.ar( DelayN.ar( ch, 0.01, 0.01 ))
                val hlb2 = Hilbert.ar( Normalizer.ar( ch, dur = 0.02 ))
                (hlb \ 0) * (hlb2 \ 0) - (hlb \ 1 * hlb2 \ 1)
@@ -657,7 +658,7 @@ object SemiNuages extends {
       collMaster = (filter( "master+" ) {
          val ins = (0 until NUM_PLATES).map( idx => pAudioIn( "in" + (idx+1) ))
          graph {
-            val sig: GE = ins.flatMap( _.ar.outputs )
+            val sig: GE = Flatten(ins.map(_.ar)) // ins.flatMap( _.ar.outputs )
             sig
          }
       }).make
@@ -683,9 +684,9 @@ object SemiNuages extends {
       filter( "water-trans1" ) {
          val pin2    = pAudioIn( "in2" )
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
             val in2  = pin2.ar
-            require( in1.numOutputs == in2.numOutputs )
+            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */)
             val fade    = pfade.ar
 // Rand-fucking-wipe does not work, it produces shit at fade position 1
 //            val fft1    = FFT( bufEmpty( 256 ).id, in )
@@ -700,10 +701,10 @@ object SemiNuages extends {
       filter( "water-trans2" ) {
          val pin2    = pAudioIn( "in2" )
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
             val in2  = pin2.ar
-            val numChannels = in1.numOutputs
-            require( numChannels == in2.numOutputs )
+            val numChannels = in1.numChannels // numOutputs
+            require( numChannels == in2.numChannels) // .numOutputs
             val fade0= "fade".kr( 0 )
 //            val fade0 = LFTri.kr( "freq".kr( 0.1 )).linlin( -1, 1, 0, 1 )
             val fade = fade0.linlin( 0, 1, -1, 1 )
@@ -713,8 +714,14 @@ object SemiNuages extends {
             val mix1 = LinXFade2.ar( in1 / amp1, dc, fade )
             val mix2 = LinXFade2.ar( dc, in2 / amp2, fade )
             val hlb: GE = (0 until numChannels) map { ch =>
-               val Seq( re1, im1 ) = Hilbert.ar( mix1 \ ch ).outputs
-               val Seq( re2, im2 ) = Hilbert.ar( mix2 \ ch ).outputs
+              val hlb1 = Hilbert.ar( mix1 \ ch )
+              val hlb2 = Hilbert.ar( mix2 \ ch )
+            val re1 = hlb1 \ 0
+            val im1 = hlb1 \ 1
+            val re2 = hlb2 \ 0
+            val im2 = hlb2 \ 1
+               // val Seq( re1, im1 ) = Hilbert.ar( mix1 \ ch ).outputs
+               // val Seq( re2, im2 ) = Hilbert.ar( mix2 \ ch ).outputs
                re1 * re2 - im1 * im2
             }
             val ampMix = amp1 * (1 - fade0).sqrt + amp2 * fade0.sqrt
@@ -727,9 +734,9 @@ object SemiNuages extends {
          val php     = pControl( "hp", ParamSpec( 0, 1, step = 1 ), 0 )
          val psolo   = pControl( "solo", ParamSpec( 0, NUM_PLATES, step = 1 ), 0 )
          val pamp    = pControl( "amp", ParamSpec( (-40).dbamp, 0.dbamp ), MASTER_GAIN.dbamp )
-         graph { inPure =>
+         graph { inPure: In =>
             val in            = inPure * pamp.kr
-            val inChannels    = in.numOutputs
+            val inChannels    = inPure.numChannels // in.numOutputs
             val outChannels   = masterBus.numChannels
             val hp            = php.kr
             val solo          = psolo.kr
@@ -749,9 +756,10 @@ object SemiNuages extends {
             }
             val sigSoloM      = Mix( sigSolo )
             val hpSolo        = sigSoloM :: sigSoloM :: Nil
-            val hpMix         = hpIn * isAll + hpSolo * (1 - isAll)
+            val hpMix         = hpIn * isAll + (hpSolo: GE) * (1 - isAll)
 //            val sig           = (if( inChannels != outChannels ) hpMix else in) * pamp.kr
-            require( sigMix.numOutputs == outChannels )
+
+           // require( sigMix.numOutputs == outChannels )
 
             Out.ar( masterBus.index, sigMix * (1 - hp) )
             Out.ar( headphonesBus.index, hpMix * hp )
@@ -770,7 +778,7 @@ object SemiNuages extends {
 
          require( NUM_PLATES == 5 || NUM_PLATES == 7 )
 
-         graph { in =>
+         graph { in: In =>
             val flt     = Convolution2.ar( in, lichtBufs.map(_.id), frameSize = 2048 ) * pamp.kr
             val dlyTime = 2020 * SampleDur.ir
             val dly     = DelayN.ar( in, dlyTime, dlyTime )

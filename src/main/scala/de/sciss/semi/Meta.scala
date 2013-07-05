@@ -2,7 +2,7 @@
  *  Meta.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -42,13 +42,14 @@ object Meta {
 }
 
 class Meta {
-   import Meta._
-   
-   private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: zeven  :: licht ::
-      helicopter.map( List( _ )).getOrElse( Nil ) // XXX scherben
-   private val procMap: Map[ String, SemiProcess ] = procs.map( p => p.name -> p )( breakOut )
+  import Meta._
 
-   def init( implicit tx: ProcTxn ) {
+  private val procs = plates :: regen :: sprenger :: windspiel :: apfel :: phylet :: zeven :: licht ::
+    helicopter.map(List(_)).getOrElse(Nil)
+  // XXX scherben
+  private val procMap: Map[String, SemiProcess] = procs.map(p => p.name -> p)(breakOut)
+
+  def init()(implicit tx: ProcTxn) {
       val ptrig = (diff( "meta" ) {
          graph {
             procs foreach { proc =>

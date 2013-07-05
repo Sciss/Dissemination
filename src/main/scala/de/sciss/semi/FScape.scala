@@ -3,10 +3,11 @@ package de.sciss.semi
 import java.net.InetSocketAddress
 import de.sciss.synth.io.{AudioFileType, SampleFormat, AudioFileSpec}
 import java.util.Properties
-import de.sciss.osc.{OSCMessage, TCP, OSCClient}
+import de.sciss.osc
 import actors.{TIMEOUT, DaemonActor}
 import Dissemination._
 import java.io.{IOException, FileOutputStream, File}
+import scala.util.control.NonFatal
 
 // (too?) quickly hacked...
 object FScape {
@@ -18,7 +19,7 @@ object FScape {
 //   @volatile var clientReady = false
 
    private case class Process( name: String, doc: Doc, fun: Boolean => Unit )
-   private case class ClientReady( c: OSCClient )
+   private case class ClientReady( c: osc.Client )
    private case object CreateClient
 
    private object OSCActor extends DaemonActor {
@@ -30,15 +31,14 @@ object FScape {
                case CreateClient => {
                   if( verbose ) printInfo( "CreateClient received" )
                   Thread.sleep( 5000 )
-                  val c = OSCClient( TCP )
-                  c.target = new InetSocketAddress( "127.0.0.1", 0x4653 )
+                  val c = osc.TCP.Client(new InetSocketAddress( "127.0.0.1", 0x4653 ))
                   var count = 20
                   var ok = false
                   while( count > 0 && !ok ) {
                      count -= 1
                      try {
-                        c.start
-                        c.action = (msg, addr, when) => JobActor ! msg
+                        c.connect()
+                        c.action = (msg /* , addr, when */) => JobActor ! msg
 //                        client = c
 //                        clientReady = true
                         JobActor ! ClientReady( c )
@@ -46,7 +46,7 @@ object FScape {
                         if( verbose ) printInfo( "Connect done" )
                      }
                      catch {
-                        case e =>
+                        case NonFatal(_) =>
                            if( verbose ) printInfo( "Connect failed. Sleep" )
                            Thread.sleep( 1000 )
 //                        reactWithin( 1000 ) { case TIMEOUT => }
@@ -61,14 +61,14 @@ object FScape {
    private object JobActor extends DaemonActor {
       var syncID = -1
 
-      start
+      start()
 
-      def act {
-         var client: OSCClient = null
+      def act() {
+         var client: osc.Client = null
          loop {
             if( verbose ) printInfo( "restartFScape" )
             if( client != null ) {
-               client.dispose
+               client.close()
                client = null
             }
             val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "RestartFScape.sh" )
@@ -85,7 +85,7 @@ object FScape {
                            numJobs += 1
                            if( verbose ) printInfo( "GOT JOB (" + name + ")" )
 
-                           def timedOut( msg: OSCMessage ) {
+                           def timedOut( msg: osc.Message ) {
                               printInfo( "TIMEOUT (" + name + " -- " + msg + ")" )
                               fun( false )
                               numJobs = math.max( numJobs, MAX_JOBS - 10 ) // this is an indicator of a problem
@@ -94,11 +94,11 @@ object FScape {
                            def query( path: String, properties: Seq[ String ], timeOut: Long = 4000L )( handler: Seq[ Any ] => Unit ) {
                               syncID += 1
                               val sid = syncID
-                              val msg = OSCMessage( path, ("query" +: syncID +: properties): _* )
+                              val msg = osc.Message( path, ("query" +: syncID +: properties): _* )
                               client ! msg
                               reactWithin( timeOut ) {
                                  case TIMEOUT => timedOut( msg )
-                                 case OSCMessage( "/query.reply", `sid`, values @ _* ) => handler( values )
+                                 case osc.Message( "/query.reply", `sid`, values @ _* ) => handler( values )
                               }
                            }
 
@@ -109,7 +109,7 @@ object FScape {
                            val os      = new FileOutputStream( docFile )
                            prop.store( os, "Dissemination" )
                            os.close
-                           client ! OSCMessage( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
+                           client ! osc.Message( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
                            query( "/doc", "count" :: Nil ) {
                               case Seq( num: Int ) => {
                                  var idx = 0
@@ -119,7 +119,7 @@ object FScape {
                                        case Seq( id, `docFile` ) => {
                                           val addr = "/doc/id/" + id
                                           found = true
-                                          client ! OSCMessage( addr, "start" )
+                                          client ! osc.Message( addr, "start" )
                                           query( "/main", "version" :: Nil ) { // tricky sync
                                              case _ => {
                                                 var progress   = 0f
@@ -138,7 +138,7 @@ object FScape {
                                                       }
                                                    }
                                                 } andThen {
-                                                   client ! OSCMessage( addr, "close" )
+                                                   client ! osc.Message( addr, "close" )
                                                    if( err != "" ) {
                                                       printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
                                                       fun( false )
@@ -202,24 +202,25 @@ object FScape {
    }
    case class Gain( value: String = "0.0dB", normalized: Boolean = false )
 
-   trait Doc {
-      def toProperties( p: Properties ) : Unit
-      def className: String
-   }
+  trait Doc {
+    def toProperties(p: Properties): Unit
 
-   private object Param {
+    def className: String
+  }
+
+  private object Param {
       val NONE		=	0x0000
-      val AMP		=	0x0001
+      val AMP		  =	0x0001
       val TIME		=	0x0002
       val FREQ		=	0x0003
       val PHASE   =	0x0004
 
-      val ABSUNIT		=	0x0000		// ms, Hz, ...
+      val ABSUNIT		  =	0x0000		// ms, Hz, ...
       val ABSPERCENT	=	0x0010		// %
-      val RELUNIT		=	0x0020		// +/- ms, +/- Hz, ...
+      val RELUNIT		  =	0x0020		// +/- ms, +/- Hz, ...
       val RELPERCENT	=	0x0030		// +/- %
 
-      val BEATS		=	0x0100
+      val BEATS		  =	0x0100
       val SEMITONES	=	0x0200
       val DECIBEL		=	0x0300
 
@@ -739,81 +740,78 @@ object FScape {
 
    // ---- helper ----
 
-   private def absMsFactorTime( s: String ) : String = {
-      if( s.endsWith( "s" )) absMsTime( s ) else factorTime( s )
-   }
+  private def absMsFactorTime(s: String): String = {
+    if (s.endsWith("s")) absMsTime(s) else factorTime(s)
+  }
 
-   private def par( value: Double, unit: Int ) : String = Param( value, unit ).toString
+  private def par(value: Double, unit: Int): String = Param(value, unit).toString
 
-   private def absRelHzSemiFreq( s: String ) : String = {
-      if( s.endsWith( "semi" )) semiFreq( s )
-      else if( s.endsWith( "Hz" )) {
-         if( s.startsWith( "+" ) || s.startsWith( "-" )) relHzFreq( s ) else absHzFreq( s )
-      } else offsetFreq( s )
-   }
+  private def absRelHzSemiFreq(s: String): String = {
+    if (s.endsWith("semi")) semiFreq(s)
+    else if (s.endsWith("Hz")) {
+      if (s.startsWith("+") || s.startsWith("-")) relHzFreq(s) else absHzFreq(s)
+    } else offsetFreq(s)
+  }
 
-   private def semiFreq( s: String ) : String = {
-      require( s.endsWith( "semi" ))
-      Param( s.substring( 0, s.length - 4 ).toDouble, Param.OFFSET_SEMITONES ).toString
-   }
+  private def semiFreq(s: String): String = {
+    require(s.endsWith("semi"))
+    Param(s.substring(0, s.length - 4).toDouble, Param.OFFSET_SEMITONES).toString
+  }
 
-   private def relHzFreq( s: String ) : String = {
-      require( s.endsWith( "Hz" ))
-      Param( s.substring( 0, s.length - 2 ).toDouble, Param.OFFSET_HZ ).toString
-   }
+  private def relHzFreq(s: String): String = {
+    require(s.endsWith("Hz"))
+    Param(s.substring(0, s.length - 2).toDouble, Param.OFFSET_HZ).toString
+  }
 
-   private def absHzFreq( s: String ) : String = {
-      require( s.endsWith( "Hz" ))
-      Param( s.substring( 0, s.length - 2 ).toDouble, Param.ABS_HZ ).toString
-   }
+  private def absHzFreq(s: String): String = {
+    require(s.endsWith("Hz"))
+    Param(s.substring(0, s.length - 2).toDouble, Param.ABS_HZ).toString
+  }
 
-   private def offsetFreq( s: String ) : String = {
-      Param( s.toDouble * 100, Param.OFFSET_FREQ ).toString
-   }
+  private def offsetFreq(s: String): String = {
+    Param(s.toDouble * 100, Param.OFFSET_FREQ).toString
+  }
 
-   private def dbAmp( s: String ) : String = {
-      require( s.endsWith( "dB" ))
-      Param( s.substring( 0, s.length - 2 ).toDouble, Param.DECIBEL_AMP ).toString
-   }
+  private def dbAmp(s: String): String = {
+    require(s.endsWith("dB"))
+    Param(s.substring(0, s.length - 2).toDouble, Param.DECIBEL_AMP).toString
+  }
 
-   private def factorDBAmp( s: String ) : String = {
-      if( s.endsWith( "dB" )) dbAmp( s ) else factorAmp( s )
-   }
+  private def factorDBAmp(s: String): String = {
+    if (s.endsWith("dB")) dbAmp(s) else factorAmp(s)
+  }
 
-   private def factorAmp( s: String ) : String = {
-      Param( s.toDouble * 100, Param.FACTOR_AMP ).toString
-   }
+  private def factorAmp(s: String): String = {
+    Param(s.toDouble * 100, Param.FACTOR_AMP).toString
+  }
 
-   private def factorTime( s: String ) : String = {
-      Param( s.toDouble * 100, Param.FACTOR_TIME ).toString
-   }
+  private def factorTime(s: String): String = {
+    Param(s.toDouble * 100, Param.FACTOR_TIME).toString
+  }
 
-   private def absMsTime( s: String ) : String = {
-      require( s.endsWith( "s" ))
-      Param( s.substring( 0, s.length - 1 ).toDouble * 1000, Param.ABS_MS ).toString
-   }
+  private def absMsTime(s: String): String = {
+    require(s.endsWith("s"))
+    Param(s.substring(0, s.length - 1).toDouble * 1000, Param.ABS_MS).toString
+  }
 
-   private def offsetMsTime( s: String ) : String = {
-      require( s.endsWith( "s" ))
-      Param( s.substring( 0, s.length - 1 ).toDouble * 1000, Param.OFFSET_MS ).toString
-   }
+  private def offsetMsTime(s: String): String = {
+    require(s.endsWith("s"))
+    Param(s.substring(0, s.length - 1).toDouble * 1000, Param.OFFSET_MS).toString
+  }
 
-   private def gainType( gain: Gain ) : String = {
-      (if( gain.normalized ) 0 else 1).toString
-   }
+  private def gainType( gain: Gain ) : String = (if( gain.normalized ) 0 else 1).toString
 
-   private def audioFileType( spec: AudioFileSpec ) : String = {
+   private def audioFileType( spec: AudioFileSpec ) : String =
       (spec.fileType match {
          case AudioFileType.AIFF => 0x0020
+         case other => sys.error(s"Currently unsupported audio file type $other")
       }).toString
-   }
 
-   private def audioFileRes( spec: AudioFileSpec ) : String = {
+   private def audioFileRes( spec: AudioFileSpec ) : String =
       (spec.sampleFormat match {
          case SampleFormat.Int16 => 0
          case SampleFormat.Int24 => 1
          case SampleFormat.Float => 2
          case SampleFormat.Int32 => 3            
       }).toString
-   }
 }

@@ -2,7 +2,7 @@
  *  Phylet.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -129,9 +129,9 @@ class Phylet( idx: Int ) extends ColorLike {
       val f = (ProcDemiurg.factories.find( _.name == fltName ) getOrElse filter( fltName ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
             val in2        = pin2.ar
-            require( in1.numOutputs == in2.numOutputs )
+            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */)
             val fade       = pfade.ar
 //            val bufIDs     = List.fill( in1.numOutputs )( bufEmpty( 1024 ).id )
 //            val chain1		= FFT( bufIDs, in1 )
@@ -139,7 +139,7 @@ class Phylet( idx: Int ) extends ColorLike {
 //            val chain2     = PV_MagBelow( chain1, thresh )
 //            val flt			= IFFT( chain2 ) + in2
             val fltGain = A2K.kr( fade ).linlin( 0, 1, 0, FILTER_GAIN )
-            var sig  = in1
+            var sig: GE  = in1
             sig      = BPeakEQ.ar( sig, 2336, 0.2, fltGain )
             sig      = BPeakEQ.ar( sig, 3709, 0.2, fltGain )
             sig      = BPeakEQ.ar( sig, 5606, 0.2, fltGain )

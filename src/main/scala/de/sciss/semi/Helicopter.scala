@@ -2,7 +2,7 @@
  *  Phylet.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -89,12 +89,12 @@ class Helicopter( idx: Int ) extends ColorLike {
       val f = (ProcDemiurg.factories.find( _.name == fltName ) getOrElse filter( fltName ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
             val in2  = pin2.ar
-            require( in1.numOutputs == in2.numOutputs )
+            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */)
             val fade    = pfade.ar
 
-            val bufIDs        = List.fill( in1.numOutputs )( bufEmpty( 1024 ).id )
+            val bufIDs        = List.fill( in1.numChannels /* .numOutputs */)( bufEmpty( 1024 ).id )
             val chain1		   = FFT( bufIDs, in1 )
             val thresh        = A2K.kr( fade ).linexp( 1, 0, 4.0e-2, 1.0e1 )
             val chain2        = PV_MagBelow( chain1, thresh )

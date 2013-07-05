@@ -2,7 +2,7 @@
  *  Windspiel.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -29,11 +29,9 @@
 package de.sciss.semi
 
 import de.sciss.synth
-import de.sciss.synth.SynthDef
 import de.sciss.synth.ugen
 import ugen._
 import synth._
-import osc.OSCStatusMessage
 import proc.{ProcDemiurg, DSL, Proc, ParamSpec, ExpWarp, AudioFileCache, Ref, ProcTxn}
 import Util._
 import Dissemination._
@@ -100,19 +98,20 @@ object Windspiel {
 }
 
 class Windspiel extends SemiProcess {
-   import Windspiel._
 
-   private val activeRef = Ref( false )
-   private val urn = new Urn( (0 until NUM_PLATES): _* )
-   
-   def active( implicit tx: ProcTxn ) = activeRef()
-   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) {
-      val wasActive = activeRef.swap( onOff )
-      if( wasActive == onOff ) return
-      if( onOff ) start else stop
-   }
+  import Windspiel._
 
-   def name = "windspiel"
+  private val activeRef = Ref(false)
+  private val urn = new Urn(0 until NUM_PLATES: _*)
+
+  def active(implicit tx: ProcTxn) = activeRef()
+  def active_=(onOff: Boolean)(implicit tx: ProcTxn) {
+    val wasActive = activeRef.swap(onOff)
+    if (wasActive == onOff) return
+    if (onOff) start else stop
+  }
+
+  def name = "windspiel"
    def exclusives = Set.empty[ String ] 
    def trigger : GE = { // XXX
       import synth._
@@ -124,9 +123,9 @@ class Windspiel extends SemiProcess {
    }
 
    private def start( implicit tx: ProcTxn ) {
-      val so               = new ServerOptionsBuilder
+      val so               = Server.Config()
       val recPathF         = ProcHelper.createTempAudioFile
-      so.nrtOutputPath     = recPathF.getAbsolutePath() // "/Users/hhrutz/Desktop/test.aif"
+      so.nrtOutputPath     = recPathF.getAbsolutePath  // "/Users/hhrutz/Desktop/test.aif"
       so.sampleRate        = 44100
       so.outputBusChannels = 2
       so.programPath        = CMD_SCSYNTH
@@ -172,33 +171,35 @@ class Windspiel extends SemiProcess {
           bc.timebase += dt
       }
 
-      bc.timebase    = (stopTime + 0.1).max( bc.timebase )
-      bc.perform( bc.add( OSCStatusMessage ))
-      val worker     = bc.render
-      worker.addPropertyChangeListener( new PropertyChangeListener {
-         def propertyChange( e: PropertyChangeEvent ) {
-//            println( "EVENT = " + e.getPropertyName() + "; " + e.getOldValue() + " -> " + e.getNewValue() )
-            if( e.getPropertyName() == "state" && e.getNewValue() == SwingWorker.StateValue.DONE ) {
-               ProcTxn.atomic { implicit tx => processFile( recPathF )}
-            }
+     bc.timebase = (stopTime + 0.1).max(bc.timebase)
+     bc.perform(bc.add(osc.NodeRunMessage(0 -> true))) // dummy
+     val worker     = bc.render
+     worker.addPropertyChangeListener(new PropertyChangeListener {
+       def propertyChange(e: PropertyChangeEvent) {
+         //            println( "EVENT = " + e.getPropertyName() + "; " + e.getOldValue() + " -> " + e.getNewValue() )
+         if (e.getPropertyName == "state" && e.getNewValue == SwingWorker.StateValue.DONE) {
+           ProcTxn.atomic {
+             implicit tx => processFile(recPathF)
+           }
          }
-      })
-      worker.execute()
+       }
+     })
+     worker.execute()
    }
 
-   private def processFile( recPathF: File )( implicit tx: ProcTxn ) {
-      if( !active ) return
+  private def processFile(recPathF: File)(implicit tx: ProcTxn) {
+    if (!active) return
 
-      val tmpAF      = ProcHelper.createTempAudioFile
-      val outPathF   = ProcHelper.createTempAudioFile
-      val tmpA       = tmpAF.getAbsolutePath()
-      val outPath    = outPathF.getAbsolutePath()
-      val recPath    = recPathF.getAbsolutePath()
-//println( "PATH IS " + recPath )
-      val numFrames0 = AudioFileCache.spec( recPath ).numFrames
-      val numFrames  = nextPowerOfTwo( numFrames0 )
+    val tmpAF     = ProcHelper.createTempAudioFile()
+    val outPathF  = ProcHelper.createTempAudioFile()
+    val tmpA      = tmpAF   .getAbsolutePath
+    val outPath   = outPathF.getAbsolutePath
+    val recPath   = recPathF.getAbsolutePath
+    //println( "PATH IS " + recPath )
+    val numFrames0  = AudioFileCache.spec(recPath).numFrames
+    val numFrames   = nextPowerOfTwo(numFrames0)
 
-      import FScape._
+    import FScape._
 
       val docWT   = Wavelet(
          in       = recPath,
@@ -255,7 +256,10 @@ class Windspiel extends SemiProcess {
                if( verbose ) println( "" + new java.util.Date() + " DONE PLAYING " + p )
                ProcTxn.spawnAtomic { implicit tx => ProcHelper.stopAndDispose( 0, p )}
             }
-            val Seq( sigL, sigR ) = (d * pamp.ar).outputs
+            // val Seq( sigL, sigR ) = (d * pamp.ar).outputs
+           val sigLR = (d * pamp.ar)
+           val sigL = sigLR \ 0
+           val sigR = sigLR \ 1
             pout2.ar( sigR )
             sigL
          }

@@ -2,7 +2,7 @@
  *  Apfelessen.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -30,9 +30,8 @@ package de.sciss.semi
 
 import de.sciss.synth
 import synth._
-import proc.{ProcDemiurg, DSL, RichBus, ExpWarp, ParamSpec, Proc, ProcTxn}
+import proc.{ProcDemiurg, DSL, ExpWarp, ParamSpec, Proc, ProcTxn}
 import ugen._
-import Util._
 import SemiNuages._
 import DSL._
 import Dissemination._
@@ -73,7 +72,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
 //      }
 //   }
 
-   private val urn = new Urn( (0 until marks.size - 1): _* )
+  private val urn = new Urn(0 until marks.size - 1: _*)
 
    def plate = plates( idx )
 
@@ -95,8 +94,8 @@ class Apfelessen( idx: Int ) extends ColorLike {
       val idx     = urn.next // rand( marks.size - 1 )
       val start   = marks( idx )
       val stop    = marks( idx + 1 )
-      g.control( "pos" ).v = start.toDouble / 44100
-      g.control( "dur" ).v = (stop - start).toDouble / 44100
+      g.control( "pos" ).v_=(start.toDouble / 44100)
+      g.control( "dur" ).v_=((stop - start).toDouble / 44100)
       g
    }
 
@@ -105,12 +104,12 @@ class Apfelessen( idx: Int ) extends ColorLike {
       val f = (ProcDemiurg.factories.find( _.name == fltName ) getOrElse filter( fltName ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
             val in2  = pin2.ar
-            require( in1.numOutputs == in2.numOutputs )
+            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */ )
             val fade    = pfade.ar
 
-            val bufIDs        = List.fill( in1.numOutputs )( bufEmpty( 1024 ).id )
+            val bufIDs        = List.fill( in1.numChannels /* .numOutputs */)( bufEmpty( 1024 ).id )
             val chain1		   = FFT( bufIDs, in1 )
             val thresh        = A2K.kr( fade ).linexp( 0, 1, 1.0e-3, 1.0e1 )
             val chain2        = PV_MagAbove( chain1, thresh )

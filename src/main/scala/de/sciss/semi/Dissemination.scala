@@ -2,7 +2,7 @@
  *  Dissemination.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -28,17 +28,15 @@
 
 package de.sciss.semi
 
-import javax.swing.{WindowConstants, JFrame}
-import de.sciss.synth.swing.{ServerStatusPanel, NodeTreePanel}
 import de.sciss.synth._
 import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
 import collection.immutable.{ IndexedSeq => IIdxSeq }
-import de.sciss.osc.TCP
 import java.io.{FileOutputStream, FileInputStream, File}
 import java.util.Properties
 import proc.{ProcTxn, ProcDemiurg}
 import actors.Actor
+import de.sciss.synth.swing.j.{JNodeTreePanel, JServerStatusPanel}
 
 object Dissemination {
    val fs = File.separator
@@ -69,7 +67,7 @@ object Dissemination {
       if( file.isFile ) {
          val is = new FileInputStream( file )
          prop.loadFromXML( is )
-         is.close
+         is.close()
       } else {
          prop.setProperty( PROP_BASEPATH,
             new File( new File( System.getProperty( "user.home" ), "Desktop" ), "Dissemination" ).getAbsolutePath )
@@ -78,7 +76,7 @@ object Dissemination {
                "devel" ), "SuperCollider3" ), "common" ), "build" ).getAbsolutePath )
          val os = new FileOutputStream( file )
          prop.storeToXML( os, "Dissemination Settings" )
-         os.close
+         os.close()
       }
       prop
    }
@@ -100,14 +98,14 @@ object Dissemination {
    val PLATE_TRANSITS      = if( GRAZ ) {
       IIdxSeq.tabulate( NUM_PLATES )( i => i < 2 || (NUM_PLATES - 1 - i) < 2 )  
    } else {
-      IIdxSeq.tabulate( NUM_PLATES )( i => ((i % 2) == 0) == false ) // START_WITH_TRANSIT
+      IIdxSeq.tabulate( NUM_PLATES )( i => !(i % 2 == 0) ) // START_WITH_TRANSIT
    }
    val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
 
    val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
    
    val options          = {
-      val o = new ServerOptionsBuilder()
+      val o = Server.Config()
       if( INTERNAL_AUDIO ) {
          o.deviceNames        = Some( "Built-in Microphone" -> "Built-in Output" )
       } else {
@@ -140,96 +138,101 @@ object Dissemination {
    @volatile var config: NuagesConfig = _
 
    def main( args: Array[ String ]) {
-      guiRun { init }
+      guiRun { init() }
    }
 
    def guiRun( code: => Unit ) {
-      EventQueue.invokeLater( new Runnable { def run = code })
+      EventQueue.invokeLater( new Runnable { def run() { code }})
    }
 
-   def init {
-      // prevent actor starvation!!!
-      // --> http://scala-programming-language.1934581.n4.nabble.com/Scala-Actors-Starvation-td2281657.html
-      System.setProperty( "actors.enableForkJoin", "false" )
+  def init() {
+    // prevent actor starvation!!!
+    // --> http://scala-programming-language.1934581.n4.nabble.com/Scala-Actors-Starvation-td2281657.html
+    System.setProperty("actors.enableForkJoin", "false")
 
-      val sif  = new ScalaInterpreterFrame( support /* ntp */ )
-      val ssp  = new ServerStatusPanel()
-      val sspw = ssp.makeWindow
-      val ntp  = if( OPEN_NODETREE ) {
-         val res = new NodeTreePanel()
-         val ntpw = res.makeWindow
-         ntpw.setLocation( sspw.getX, sspw.getY + sspw.getHeight + 32 )
-         ntpw.setVisible( true )
-         Some( res )
-      } else None
-      gui      = new GUI
-      sspw.setVisible( true )
-      sif.setLocation( sspw.getX + sspw.getWidth + 32, sif.getY )
-      sif.setVisible( true )
-      booting = Server.boot( options = options ) {
-         case ServerConnection.Preparing( srv ) => {
-            ssp.server = Some( srv )
-            ntp.foreach( _.server = Some( srv ))
-         }
-         case ServerConnection.Running( srv ) => {
-            ProcDemiurg.addServer( srv )
-            s = srv
-            support.s = srv
+    val sif   = new ScalaInterpreterFrame( support /* ntp */ )
+    val ssp   = new JServerStatusPanel()
+    val sspw  = ssp.makeWindow
+    val ntp   = if (OPEN_NODETREE) {
+      val res   = new JNodeTreePanel()
+      val ntpw  = res.makeWindow()
+      ntpw.setLocation(sspw.getX, sspw.getY + sspw.getHeight + 32)
+      ntpw.setVisible(true)
+      Some(res)
+    } else None
+    gui = new GUI
+    sspw.setVisible(true)
+    sif.setLocation(sspw.getX + sspw.getWidth + 32, sif.getY)
+    sif.setVisible(true)
+    booting = Server.boot(config = options) {
+      case ServerConnection.Preparing(srv) =>
+        ssp.server = Some(srv)
+        ntp.foreach(_.group = Some(srv.rootNode))
 
-//            if( DUMP_OSC ) s.dumpOSC(1)
+      case ServerConnection.Running(srv) =>
+        ProcDemiurg.addServer(srv)
+        s = srv
+        support.s = srv
 
-            // nuages
-            initNuages
-//            new GUI
-         }
+        //            if( DUMP_OSC ) s.dumpOSC(1)
+
+        // nuages
+        initNuages()
+        //            new GUI
+    }
+    Runtime.getRuntime.addShutdownHook(new Thread {
+      override def run() {
+        shutDown()
       }
-      Runtime.getRuntime().addShutdownHook( new Thread { override def run = shutDown })
-//      booting.start
-   }
+    })
+    //      booting.start
+  }
 
-   private def initNuages {
-      masterBus  = if( INTERNAL_AUDIO ) {
-         new AudioBus( s, 0, 2 )
-      } else {
-         new AudioBus( s, MASTER_INDEX, MASTER_NUMCHANNELS )
+  private def initNuages() {
+    masterBus = if (INTERNAL_AUDIO) {
+      new AudioBus(s, 0, 2)
+    } else {
+      new AudioBus(s, MASTER_INDEX, MASTER_NUMCHANNELS)
+    }
+    //      val soloBus    = Bus.audio( s, 2 )
+    headphonesBus     = new AudioBus(s, HEADPHONES_INDEX, 2)
+    val masterChans   = Vector.tabulate(masterBus.numChannels)(_ + masterBus.index)
+    config            = NuagesConfig(s, Some(masterChans), None, Some(RECORD_PATH))
+    if (OPEN_NUAGES) {
+      val f = new NuagesFrame(config)
+      f.panel.display.setHighQuality(NUAGES_ANTIALIAS)
+      f.setSize(640, 480)
+      f.setLocation(((SCREEN_BOUNDS.width - f.getWidth) >> 1) + 100, 10)
+      f.setVisible(true)
+      support.nuages = f
+    }
+
+    Actor.actor {
+      ProcTxn.atomic { implicit tx =>
+        SemiNuages.init(s)
       }
-//      val soloBus    = Bus.audio( s, 2 )
-      headphonesBus  = new AudioBus( s, HEADPHONES_INDEX, 2 )
-      config         = NuagesConfig( s, Some( masterBus ), None, Some( RECORD_PATH ))
-      if( OPEN_NUAGES ) {
-         val f          = new NuagesFrame( config )
-         f.panel.display.setHighQuality( NUAGES_ANTIALIAS )
-         f.setSize( 640, 480 )
-         f.setLocation( ((SCREEN_BOUNDS.width - f.getWidth()) >> 1) + 100, 10 )
-         f.setVisible( true )
-         support.nuages = f
-      }
-
-      Actor.actor {
-         ProcTxn.atomic { implicit tx => 
-            SemiNuages.init( s )
-         }
-         if( START_META ) ProcTxn.atomic { implicit tx =>
-            SemiNuages.meta.init
-         }
-      }
-   }
-
-   def quit { System.exit( 0 )}
-
-   def shutDownComputer {
-      val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "shutdown.sh" )
-      pb.start()
-   }
-
-   private def shutDown { // sync.synchronized { }
-      if( (s != null) && (s.condition != Server.Offline) ) {
-         s.quit
-         s = null
-      }
-      if( booting != null ) {
-         booting.abort
-         booting = null
+      if (START_META) ProcTxn.atomic { implicit tx =>
+        SemiNuages.meta.init()
       }
     }
+  }
+
+  def quit() { sys.exit() }
+
+  def shutDownComputer() {
+    val pb = new ProcessBuilder("/bin/sh", BASE_PATH + fs + "shutdown.sh")
+    pb.start()
+  }
+
+  private def shutDown() {
+    // sync.synchronized { }
+    if (s != null && s.condition != Server.Offline) {
+      s.quit()
+      s = null
+    }
+    if (booting != null) {
+      booting.abort()
+      booting = null
+    }
+  }
 }

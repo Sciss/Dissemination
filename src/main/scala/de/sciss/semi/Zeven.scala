@@ -2,7 +2,7 @@
  *  Zeven.scala
  *  (Dissemination)
  *
- *  Copyright (c) 2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2010-2013 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -88,7 +88,7 @@ class Zeven( idx: Int ) extends ColorLike {
       val f = (filter( name + "-trans" ) {
          val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
          val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1 =>
+         graph { in1: In =>
 //            val in2        = pin2.ar
 //            require( in1.numOutputs == in2.numOutputs )
 //            val fade       = pfade.ar.linlin( 0, 1, -1, 1 )
@@ -104,7 +104,7 @@ class Zeven( idx: Int ) extends ColorLike {
 //            val sig2       = LinXFade2.ar( dc2, in2, fade )
 //            sig1 * sig2
             val in2        = pin2.ar
-            require( in1.numOutputs == in2.numOutputs )
+            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */)
             val fade       = pfade.ar
             val fade1      = fade.linlin( 0, 1.0/3, -1, 1 ).clip2( 1 )
             val fade2      = fade.linlin( 2.0/3, 1, 1, -1 ).clip2( 1 )

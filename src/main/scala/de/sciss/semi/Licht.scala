@@ -3,7 +3,7 @@ package de.sciss.semi
 import de.sciss.synth
 import synth.proc.{DSL, Proc, ProcTxn, Ref}
 import synth.ugen._
-import synth.{ServerOptionsBuilder, GE}
+import synth.GE
 import DSL._
 import Util._
 
