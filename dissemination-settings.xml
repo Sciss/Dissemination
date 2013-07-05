@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Dissemination Settings</comment>
+<entry key="basepath">/Dissemination</entry>
+<entry key="scpath">/Applications/SuperCollider3/common/build</entry>
+<entry key="graz">true</entry>
+<entry key="mastergain">-18</entry>
+</properties>
