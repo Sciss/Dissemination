@@ -148,6 +148,6 @@ class Sprenger extends WaterLike {
     p.control("pos").v_=(pos)
     p.control("dur").v_=(dur)
 
-    Analysis.log(s"$name-gen-cut pos $pos dur $dur")
+    Analysis.log(s"$name-gen-cut pos ${(pos * 44100L).toLong} dur ${(dur * 44100L).toLong}")
   }
 }

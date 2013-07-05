@@ -69,9 +69,9 @@ object Windspiel {
   lazy val SPAN_FILE  = AUDIO_PATH + fs + "windspiel_spans"
 
   lazy val df = SynthDef("wind") {
-    val bufID = "buf".ir
+    val bufID = "buf" .ir
     val rate  = "rate".kr(1)
-    val dur   = "dur".ir
+    val dur   = "dur" .ir
     val play  = VDiskIn.ar(2, bufID, rate)
     val env   = Line.ar(1, 0, dur, freeSelf)
     Out.ar(0, play * env)
@@ -166,7 +166,7 @@ class Windspiel extends BasicProcess {
       bc.timebase += dt
     }
 
-    val genLog = s"gen-wind rate $rate lo-skew $loSkew hi-skew $hiSkew min-step $minStep max-step $maxStep pow $m steps $n dur $stopTime"
+    val genLog = f"gen-wind rate $rate%1.3f lo-skew $loSkew%1.3f hi-skew $hiSkew%1.3f min-step $minStep%1.3f max-step $maxStep%1.3f pow $m%1.3f steps $n dur ${(stopTime * 44100L).toLong}"
 
     bc.timebase = (stopTime + 0.1).max(bc.timebase)
     bc.perform(bc.add(osc.NodeRunMessage(0 -> true))) // dummy
@@ -289,7 +289,7 @@ class Windspiel extends BasicProcess {
 
     Analysis.log(genLog )
     Analysis.log(procLog)
-    Analysis.log(s"wind-play speed $speed idx1 $idx1 idx2 $idx2 coin1 $collCoin1 coin2 $collCoin2 dur $dur")
+    Analysis.log(f"$name-play speed $speed%1.3f idx1 $idx1 idx2 $idx2 coin1 $collCoin1 coin2 $collCoin2 dur ${(dur * 44100L).toLong}")
   }
 
   def calcStep(minStep: Double, maxStep: Double, m: Double, num: Int)(n: Int) = {

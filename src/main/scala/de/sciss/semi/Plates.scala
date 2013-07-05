@@ -43,35 +43,42 @@ object Plates {
 
   def create(implicit tx: ProcTxn): Plates = {
     val res = new Plates
-    res.init
+    res.init()
     res
   }
 }
 
 class Plates private() extends SemiProcess {
-   import Plates._
+  import Plates._
 
-   def name = "plates"
-   def exclusives = Set.empty[ String ]
-   def trigger : GE = {
-      import synth._
-      TDuty.kr( Dseq( Dwhite( MIN_ON_DUR, MAX_ON_DUR ) :: Dwhite(  MIN_OFF_DUR, MAX_OFF_DUR ) :: Nil, inf ), Dseq( 1 :: -1 :: Nil, inf ))
-   }
+  def name = "plates"
 
-   private var plates: IIdxSeq[ Plate ] = _
+  def exclusives = Set.empty[String]
 
-   private def init( implicit tx: ProcTxn ) {
-      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
-         val (transit, idx) = tup
-         Plate( idx, transit )
+  def trigger: GE = {
+    import synth._
+    TDuty.kr(Dseq(Dwhite(MIN_ON_DUR, MAX_ON_DUR) :: Dwhite(MIN_OFF_DUR, MAX_OFF_DUR) :: Nil, inf), Dseq(1 :: -1 :: Nil, inf))
+  }
+
+  private var plates: IIdxSeq[Plate] = _
+
+  private def init()(implicit tx: ProcTxn) {
+    plates = PLATE_TRANSITS.zipWithIndex map { case (transit, idx) =>
+      Plate(idx, transit)
+    }
+    plates.foreach { p =>
+      p.initNeighbours {
+        val i = p.id - 2; if (i >= 0) Some(plates(i)) else None
+      } {
+        val i = p.id + 2; if (i < NUM_PLATES) Some(plates(i)) else None
       }
-      plates.foreach( p => p.initNeighbours(
-         { val i = p.id - 2; if( i >= 0 ) Some( plates( i )) else None },
-         { val i = p.id + 2; if( i < NUM_PLATES ) Some( plates( i )) else None }))
-   }
+    }
+  }
 
-   def active( implicit tx: ProcTxn ) : Boolean = plates( 0 ).active
-   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) { plates.foreach( _.active_=(onOff) )}
+  def active(implicit tx: ProcTxn): Boolean = plates(0).active
+  def active_=(onOff: Boolean)(implicit tx: ProcTxn) {
+    plates.foreach(_.active_=(onOff))
+  }
 
-   def apply( idx: Int ) = plates( idx )
+  def apply(idx: Int) = plates(idx)
 }

@@ -47,6 +47,6 @@ class Licht(proc: Proc) extends BasicProcess {
       if (verbose) println(s"${new java.util.Date()} : Licht AUS")
       active_=(onOff = false)
     }
-    Analysis.log(s"fade-out ${(fdt * 44100L).toLong} $name width $width")
+    Analysis.log(s"fade-in ${(fdt * 44100L).toLong} $name width $width")
   }
 }

@@ -85,7 +85,7 @@ class Helicopter(val idx: Int) extends ColorLike {
      g.control("pos").v_=(pos)
      g.control("dur").v_=(dur)
 
-    Analysis.log(s"$name-gen1 pos $pos dur $dur")
+    Analysis.log(s"$name-gen1 pos ${(pos * 44100L).toLong} dur ${(dur * 44100L).toLong}")
      g
    }
 
