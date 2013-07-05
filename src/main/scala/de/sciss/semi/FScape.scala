@@ -63,21 +63,24 @@ object FScape {
     start()
 
     def act() {
-         var client: osc.Client = null
-         loop {
-            if( verbose ) printInfo( "restartFScape" )
-            if( client != null ) {
-               client.close()
-               client = null
+      var client: osc.Client = null
+      loop {
+        if (verbose) printInfo("restartFScape")
+        if (client != null) {
+          client.close()
+          client = null
+        }
+        val pb = new ProcessBuilder("/bin/sh", BASE_PATH + fs + "RestartFScape.sh")
+        pb.start()
+        OSCActor ! CreateClient
+        react {
+          case ClientReady(c) =>
+            client = c
+            if (verbose) {
+              printInfo("ClientReady received")
+              client.dump()
             }
-            val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "RestartFScape.sh" )
-            pb.start()
-            OSCActor ! CreateClient
-            react {
-               case ClientReady( c ) =>
-                  client = c
-                  if( verbose ) printInfo( "ClientReady received" )
-                  var numJobs = 0
+            var numJobs = 0
                   loopWhile( numJobs < MAX_JOBS ) {
                      react {
                         case Process( name, doc, fun ) /* if( clientReady ) */ => try {
@@ -101,21 +104,25 @@ object FScape {
                               }
                            }
 
-                           val docFile = File.createTempFile( "semi", ".fsc", new File( TEMP_PATH )).getAbsolutePath
-                           val prop    = new Properties()
+                           val docFile  = File.createTempFile( "semi", ".fsc", new File( TEMP_PATH ))
+                           val docPath  = docFile.getAbsolutePath
+                           val prop     = new Properties()
                            prop.setProperty( "Class", "de.sciss.fscape.gui." + doc.className + "Dlg" )
                            doc.toProperties( prop )
-                           val os      = new FileOutputStream( docFile )
-                           prop.store( os, "Dissemination" )
+                           val os      = new FileOutputStream( docPath )
+                           // prop.store( os, "Dissemination" )
+                           prop.store(os, "Created by FScape; do not edit manually!")
                            os.close()
-                           client ! osc.Message( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
+
+                           client ! osc.Message("/doc", "open", docPath, if (OPEN_WINDOW) 1 else 0)
+                           // Thread.sleep(100)
                            query( "/doc", "count" :: Nil ) {
                               case Seq( num: Int ) => {
                                  var idx = 0
                                  var found = false
                                  loopWhile( !found && idx < num ) {
                                     query( "/doc/index/" + idx, "id" :: "file" :: Nil ) {
-                                       case Seq( id, `docFile` ) => {
+                                       case Seq( id, `docPath` ) => {
                                           val addr = "/doc/id/" + id
                                           found = true
                                           client ! osc.Message( addr, "start" )
@@ -139,7 +146,7 @@ object FScape {
                                                 } .andThen[Unit] {
                                                    client ! osc.Message( addr, "close" )
                                                    if( err != "" ) {
-                                                      printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
+                                                      printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docPath )
                                                       fun( false )
                                                    } else {
                                                       if( verbose ) printInfo( "Success (" + name + ")" )
@@ -153,7 +160,7 @@ object FScape {
                                     }
                                  } .andThen[Unit] {
                                     if( !found ) {
-                                       printInfo( "?! File not found (" + name + " / " + docFile + ")" )
+                                       printInfo(s"?! File not found ($name / $docPath)" )
                                        fun( false )
                                     }
                                  }

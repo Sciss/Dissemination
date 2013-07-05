@@ -4,7 +4,7 @@
 <comment>Dissemination Settings</comment>
 <entry key="basepath">/Dissemination</entry>
 <!-- <entry key="scpath">/Applications/SuperCollider_3.4.4/</entry> -->
-<entry key="scpath">/Applications/SuperCollider_3.6.5/</entry>
+<entry key="scpath">/Applications/SuperCollider_3.6.5/SuperCollider.app/Contents/Resources/</entry>
 <entry key="graz">true</entry>
 <entry key="mastergain">-18</entry>
 </properties>

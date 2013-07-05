@@ -16,3 +16,7 @@ An internal project of me, realizing sketches for the Dissemination project. (C)
 Missing
 
  - `"RestartDissem.sh"`
+
+## Tested
+
+Last tested July 2013, using SuperCollider 3.6.5, FScape as of that time.

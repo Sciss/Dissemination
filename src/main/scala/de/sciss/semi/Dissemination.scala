@@ -28,15 +28,16 @@
 
 package de.sciss.semi
 
-import de.sciss.synth._
+import de.sciss.synth.{osc => sosc, _}
 import de.sciss.nuages.{NuagesFrame, NuagesConfig}
 import java.awt.{GraphicsEnvironment, EventQueue}
-import collection.immutable.{ IndexedSeq => IIdxSeq }
+import collection.immutable.{IndexedSeq => IIdxSeq}
 import java.io.{FileOutputStream, FileInputStream, File}
 import java.util.Properties
 import proc.{ProcTxn, ProcDemiurg}
 import actors.Actor
 import de.sciss.synth.swing.j.{JNodeTreePanel, JServerStatusPanel}
+import de.sciss.osc
 
 object Dissemination {
    val fs = File.separator
@@ -119,7 +120,7 @@ object Dissemination {
       o.memorySize         = 65536
       o.zeroConf           = false
 //      o.port               = 0
-//      o.transport          = TCP
+      o.transport          = osc.TCP
 //      o.programPath        = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
       o.build
    }
