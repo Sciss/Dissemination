@@ -45,12 +45,12 @@ class Licht( proc: Proc )  extends SemiProcess {
       glide( rrand( MIN_FADE, MAX_FADE )) { // exprand
          val pcon    = proc.control( "pos" )
          val width   = rrand( MIN_WIDTH, MAX_WIDTH )
-         pcon.v = if( pcon.v == 0.0 ) width + 18 else 0
-         proc.control( "width" ).v = width
+         pcon.v_=(if( pcon.v == 0.0 ) width + 18 else 0)
+         proc.control( "width" ).v_=(width)
       }
       ProcHelper.whenGlideDone( proc, "pos" ) { implicit tx =>
          if( verbose ) println( "" + new java.util.Date() + " : Licht AUS" )
-         active = false
+         active_=(onOff = false)
       }
    }
 }

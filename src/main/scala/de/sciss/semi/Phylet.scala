@@ -90,7 +90,7 @@ class Phylet( idx: Int ) extends ColorLike {
       Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
    }
 
-   private val urn = new Urn( (0 until marks.size - 1): _* )
+  private val urn = new Urn(0 until marks.size - 1: _*)
 
    def plate = plates( idx )
 
@@ -105,7 +105,7 @@ class Phylet( idx: Int ) extends ColorLike {
             val b          = bufCue( path, startFrame )
             val env        = EnvGen.kr( Env.linen( 0.02, pdur.ir - (0.02 + 0.5), 0.5 ))
             val done       = Done.kr( env )
-            done.react( diskDone )
+            done.react( diskDone() )
             DiskIn.ar( 1, b.id ) * env * pamp.kr
          }
       }).make
@@ -118,9 +118,9 @@ class Phylet( idx: Int ) extends ColorLike {
          idx2  += 1
          val stop = marks( idx2 )
          dur    = (stop - start).toDouble / 44100
-      } while( (idx2 < marks.size - 1) && (dur < dur0) )
-      g.control( "pos" ).v = start.toDouble / 44100
-      g.control( "dur" ).v = dur
+      } while( idx2 < marks.size - 1 && dur < dur0 )
+      g.control( "pos" ).v_=(start.toDouble / 44100)
+      g.control( "dur" ).v_=(dur)
       g
    }
 

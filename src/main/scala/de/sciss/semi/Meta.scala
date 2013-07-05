@@ -29,8 +29,7 @@
 package de.sciss.semi
 
 import SemiNuages._
-import de.sciss.synth.Constant
-import de.sciss.synth.proc.{Proc, DSL, ProcTxn}
+import de.sciss.synth.proc.{DSL, ProcTxn}
 import collection.breakOut
 import DSL._
 import java.util.TimerTask
@@ -50,47 +49,46 @@ class Meta {
   private val procMap: Map[String, SemiProcess] = procs.map(p => p.name -> p)(breakOut)
 
   def init()(implicit tx: ProcTxn) {
-      val ptrig = (diff( "meta" ) {
-         graph {
-            procs foreach { proc =>
-               val tr = proc.trigger
-//               proc.offTrigger match {
-//                  case Constant( 0 ) =>
-//                  case t => t.react {
-//                     ProcTxn.spawnAtomic { implicit tx => proc.active = false }
-//                  }
-//               }
-               val onTrig  = tr.max( 0 )
-               val offTrig = (-tr).max( 0 )
-               onTrig.react {
-                  if( verbose ) println( "ACTIVATING " + proc.name )
-                  ProcTxn.spawnAtomic { implicit tx =>
-                     if( !proc.exclusives.exists( name =>
-                        procMap.get( name ).map( _.active ).getOrElse( false )
-                     )) {
-                        proc.active = true
-                     }
-                  }
-               }
-               offTrig.react {
-                  if( verbose ) println( "DEACTIVATING " + proc.name )
-                  ProcTxn.spawnAtomic { implicit tx =>
-//                     if( procs.exists( p => p != proc && p.active ))
-                     proc.active = false
-                  }
-               }
+    val ptrig = diff("meta") {
+      graph {
+        procs foreach { proc =>
+          val tr = proc.trigger
+          //               proc.offTrigger match {
+          //                  case Constant( 0 ) =>
+          //                  case t => t.react {
+          //                     ProcTxn.spawnAtomic { implicit tx => proc.active = false }
+          //                  }
+          //               }
+          val onTrig = tr.max(0)
+          val offTrig = (-tr).max(0)
+          onTrig.react {
+            if (verbose) println("ACTIVATING " + proc.name)
+            ProcTxn.spawnAtomic {
+              implicit tx =>
+                if (!proc.exclusives.exists(name =>
+                  procMap.get(name).exists(_.active)
+                )) proc.active_=(onOff = true)
             }
-            0
-         }
-      }).make
-      ptrig.play
+          }
+          offTrig.react {
+            if (verbose) println("DEACTIVATING " + proc.name)
+            ProcTxn.spawnAtomic { implicit tx =>
+              //                     if( procs.exists( p => p != proc && p.active ))
+              proc.active_=(onOff = false)
+            }
+          }
+        }
+        0
+      }
+    }.make
+    ptrig.play
 
-      val tim = new java.util.Timer()
+    val tim = new java.util.Timer()
       tim.schedule( new TimerTask {
-         def run { ProcTxn.atomic { implicit tx => xfade( 15 ) { pMaster.stop }}}
+         def run() { ProcTxn.atomic { implicit tx => xfade( 15 ) { pMaster.stop }}}
       }, AUTO_RESTART )
       tim.schedule( new TimerTask {
-         def run {
+         def run() {
             val pb = new ProcessBuilder( "/bin/sh", BASE_PATH + fs + "RestartDissem.sh" )
             pb.start()
          }

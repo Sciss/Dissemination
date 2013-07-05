@@ -32,20 +32,20 @@ import Dissemination._
 import de.sciss.synth.proc.ProcTxn
 import collection.immutable.{ IndexedSeq => IIdxSeq }
 import de.sciss.synth.GE
-import de.sciss.synth.ugen.{TDuty, Dwhite, Dseq, Dust, Impulse}
+import de.sciss.synth.ugen.{TDuty, Dwhite, Dseq}
 import de.sciss.synth
 
 object Plates {
-   val MIN_ON_DUR    = 60.0
-   val MAX_ON_DUR    = 120.0
-   val MIN_OFF_DUR   = 60.0
-   val MAX_OFF_DUR   = 120.0
+  val MIN_ON_DUR  =  60.0
+  val MAX_ON_DUR  = 120.0
+  val MIN_OFF_DUR =  60.0
+  val MAX_OFF_DUR = 120.0
 
-   def create( implicit tx: ProcTxn ) : Plates = {
-      val res = new Plates
-      res.init
-      res
-   }
+  def create(implicit tx: ProcTxn): Plates = {
+    val res = new Plates
+    res.init
+    res
+  }
 }
 
 class Plates private() extends SemiProcess {
@@ -71,7 +71,7 @@ class Plates private() extends SemiProcess {
    }
 
    def active( implicit tx: ProcTxn ) : Boolean = plates( 0 ).active
-   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) { plates.foreach( _.active = onOff )}
+   def active_=( onOff: Boolean )( implicit tx: ProcTxn ) { plates.foreach( _.active_=(onOff) )}
 
    def apply( idx: Int ) = plates( idx )
 }

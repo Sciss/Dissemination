@@ -30,9 +30,6 @@ package de.sciss.semi
 
 import util.Random
 
-/**
- * @version 0.11, 17-Aug-10
- */
 object Util {
    private val rnd = new Random()
 
@@ -66,7 +63,7 @@ object Util {
    }
 
    def wchoose[ T ]( seq: Traversable[ T ])( fun: T => Double ) : T = {
-      val i    = rnd.nextDouble
+      val i    = rnd.nextDouble()
       var sum  = 0.0
       seq find { e => sum += fun( e ); sum >= i } getOrElse seq.last
    }

@@ -29,7 +29,6 @@
 package de.sciss.semi
 
 import de.sciss.synth._
-import collection.immutable.{ IndexedSeq => IIdxSeq }
 import proc._
 import DSL._
 import ugen._
@@ -70,60 +69,67 @@ object Plate {
       pDummy ~> pColl1
       pColl1 ~> pColl2
       var plate: Plate = null
-      val pAna    = (diff( "ana" + (id+1) ) {
-//         val pid = pScalar( "id", ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
-         val ploud   = pScalar( "loud", ParamSpec( 0, 12 ), 0 )  // for display only
-         val pcentr  = pScalar( "centr", ParamSpec( 20, 2000, ExpWarp ), 20 )  // for display only
-         val pflat   = pScalar( "flat", ParamSpec( 0, 1 ), 0 )  // for display only
+      val pAna    = diff("ana" + (id + 1)) {
+        //         val pid = pScalar( "id", ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
+        /* val ploud   = */ pScalar("loud", ParamSpec(0, 12), 0) // for display only
+        /* val pcentr  = */ pScalar("centr", ParamSpec(20, 2000, ExpWarp), 20) // for display only
+        /* val pflat   = */ pScalar("flat", ParamSpec(0, 1), 0) // for display only
 
-         graph { in: In =>
-            val bufID   = bufEmpty( 1024 ).id
-            val chain   = FFT( bufID, Mix( in ))
-            val loud    = Loudness.kr( chain )
-//            val centr   = SpecCentroid.kr( chain )
-            val centr   = SpecPcile.kr( chain )
-            val flat0    = SpecFlatness.kr( chain )
-            val flatc   = CheckBadValues.kr( flat0, post = 0 )
-            val flat    = Gate.kr( flat0, flatc === 0 )
-//          List( loud, centr, flat ).poll( 2 )
-            val compound= List( loud, centr, flat )
-            val smooth  = Lag.kr( compound, 10 )
-//           smooth.poll( 2 )
-            1.react( smooth ) { data =>
-               val Seq( loud, centr, flat ) = data
-//println( "AQUI " + id )
-               ProcTxn.spawnAtomic { implicit tx =>
-//java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
-                  plate.newAnalysis( loud, centr, flat )
-                  // display
-                  val me = plate.analyzer
-                  me.control( "loud" ).v    = loud
-                  me.control( "centr" ).v   = centr
-                  me.control( "flat" ).v    = flat
-               }
-//            })
+        graph {
+          in: In =>
+            val bufID = bufEmpty(1024).id
+            val chain = FFT(bufID, Mix(in))
+            val loud = Loudness.kr(chain)
+            //            val centr   = SpecCentroid.kr( chain )
+            val centr = SpecPcile.kr(chain)
+            val flat0 = SpecFlatness.kr(chain)
+            val flatc = CheckBadValues.kr(flat0, post = 0)
+            val flat = Gate.kr(flat0, flatc === 0)
+            //          List( loud, centr, flat ).poll( 2 )
+            val compound = List(loud, centr, flat)
+            val smooth = Lag.kr(compound, 10)
+            //           smooth.poll( 2 )
+            1.react(smooth) {
+              data =>
+                val Seq(loud, centr, flat) = data
+                //println( "AQUI " + id )
+                ProcTxn.spawnAtomic {
+                  implicit tx =>
+                  //java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
+                    plate.newAnalysis(loud, centr, flat)
+                    // display
+                    val me = plate.analyzer
+                    me.control("loud" ).v_=(loud )
+                    me.control("centr").v_=(centr)
+                    me.control("flat" ).v_=(flat )
+                }
+              //            })
             }
             0
-         }
-      }).make
+        }
+      }.make
 
-      val recPathF   = ProcHelper.createTempAudioFile
-      val pRec = (diff( "rec" + id ) {
-         val pdur = pScalar( "dur", ParamSpec( 1, 120 ), 1 ) 
-         graph { in0: In =>
-            val in         = LeakDC.ar( in0 )
-            val b          = bufRecord( recPathF.getAbsolutePath(), in0.numChannels /* in.numOutputs */)
-            DiskOut.ar( b.id, in )
-            val done       = Done.kr( Line.kr( dur = pdur.ir ))
-            val ampInteg   = Integrator.kr( Amplitude.kr( in ))
-            done.react( ampInteg ) { data =>
-               val Seq( amp ) = data
-               ProcTxn.spawnAtomic { implicit tx => plate.recordDone( recPathF, amp )}
+      val recPathF   = ProcHelper.createTempAudioFile()
+      val pRec = diff("rec" + id) {
+        val pdur = pScalar("dur", ParamSpec(1, 120), 1)
+        graph {
+          in0: In =>
+            val in = LeakDC.ar(in0)
+            val b = bufRecord(recPathF.getAbsolutePath, in0.numChannels /* in.numOutputs */)
+            DiskOut.ar(b.id, in)
+            val done = Done.kr(Line.kr(dur = pdur.ir))
+            val ampInteg = Integrator.kr(Amplitude.kr(in))
+            done.react(ampInteg) {
+              data =>
+                val Seq(amp) = data
+                ProcTxn.spawnAtomic {
+                  implicit tx => plate.recordDone(recPathF, amp)
+                }
             }
-//            FreeSelf.kr( done )
-            PauseSelf.kr( done ) // free-self not yet recognized by proc, so we avoid a /n_free node not found
-         }
-      }).make
+            //            FreeSelf.kr( done )
+            PauseSelf.kr(done) // free-self not yet recognized by proc, so we avoid a /n_free node not found
+        }
+      }.make
 
       plate = new Plate( id, pColl1, pColl2, pAna, pRec )
       pColl1 ~> pAna
@@ -260,7 +266,7 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
       if( loud < MIN_LOUDNESS_THRESH ) {
          val cnt = silenceCount() + 1
          silenceCount.set( cnt )
-         if( (cnt >= minLoudnessCount) && (exhaust == 0) ) {
+         if( cnt >= minLoudnessCount && exhaust == 0 ) {
 //            println( this.toString + " : make some noise" )
             consumeSomeNoise
          }
@@ -302,7 +308,7 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
       if( coin( SHADE_PROB )) {
          val cnt = rp.proc.control( "speed" )
          xfade( fadeTime ) {
-            cnt.v = (cnt.v * rrand( 0.47, 0.53 )).max( 0.3 )
+           cnt.v_=((cnt.v * rrand(0.47, 0.53)).max(0.3))
          }
          if( verbose ) println( "" + new java.util.Date() + " SHADING OBSOLETE " + rp )
       } else {
@@ -323,26 +329,26 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
       true
    }
 
-   private def consumeSomeNoise( implicit tx: ProcTxn ) {
-      running.transform( _ + createProc( Material.all ++ injected() ))
-   }
+  private def consumeSomeNoise(implicit tx: ProcTxn) {
+    running.transform(_ + createProc(Material.all ++ injected()))
+  }
 
-   private def produceSomeNoise( implicit tx: ProcTxn ) : Boolean = {
-      if( recording.swap( true )) return false
+  private def produceSomeNoise(implicit tx: ProcTxn): Boolean = {
+    if (recording.swap(true)) return false
 
-//      val pRec = recFactory.make
-      recorder.control( "dur" ).v = nextPowerOfTwo( (exprand( MIN_RECORD_DUR, MAX_RECORD_DUR ) * SAMPLE_RATE).toInt ) / SAMPLE_RATE
-//      collector ~> recorder
-      recorder.play
-//      recordProc.set( Some( pRec ))
-      true
-   }
+    //      val pRec = recFactory.make
+    recorder.control("dur").v_=(nextPowerOfTwo((exprand(MIN_RECORD_DUR, MAX_RECORD_DUR) * SAMPLE_RATE).toInt) / SAMPLE_RATE)
+    //      collector ~> recorder
+    recorder.play
+    //      recordProc.set( Some( pRec ))
+    true
+  }
 
-   def recordDone( recPathF: File, ampInteg: Double )( implicit tx: ProcTxn ) {
+  def recordDone( recPathF: File, ampInteg: Double )( implicit tx: ProcTxn ) {
       if( verbose ) println( this.toString + " RECORD DONE " + ampInteg )
 //      recordProc.swap( None ).foreach( _.dispose )
       recorder.stop
-      if( (ampInteg < MIN_RECORD_INTEG) || !active ) {
+      if( ampInteg < MIN_RECORD_INTEG || !active ) {
          recording.set( false )
          return
       }
@@ -351,17 +357,17 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
 //      val tmpB    = WORK_PATH   + fs + "tmp-b" + id + ".aif"
 //      val tmpC    = WORK_PATH   + fs + "tmp-c" + id + ".aif"
 //      val recPath = RECORD_PATH + fs + "plate" + id + ".aif"
-      val tmpAF      = ProcHelper.createTempAudioFile
-      val tmpBF      = ProcHelper.createTempAudioFile
-      val tmpCF      = ProcHelper.createTempAudioFile
+      val tmpAF      = ProcHelper.createTempAudioFile()
+      val tmpBF      = ProcHelper.createTempAudioFile()
+      val tmpCF      = ProcHelper.createTempAudioFile()
 //      val recPathF   = ProcHelper.createTempAudioFile
 
-      val tmpA       = tmpAF.getAbsolutePath()
-      val tmpB       = tmpBF.getAbsolutePath()
-      val tmpC       = tmpCF.getAbsolutePath()
-      val recPath    = recPathF.getAbsolutePath()
+      val tmpA       = tmpAF   .getAbsolutePath
+      val tmpB       = tmpBF   .getAbsolutePath
+      val tmpC       = tmpCF   .getAbsolutePath
+      val recPath    = recPathF.getAbsolutePath
 
-      val neighbour  = choose( (neighbour1  :: neighbour2 :: Nil) collect { case Some( n ) => n })
+      val neighbour  = choose( neighbour1 :: neighbour2 :: Nil collect { case Some( n ) => n })
 //      val injectPath = INJECT_PATH + fs + neighbour.id
 //      new File( injectPath ).mkdirs
 //      val outPath = WORK_PATH   + fs + "plateT" + id + ".aif"

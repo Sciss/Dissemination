@@ -52,9 +52,9 @@ class GUI {
       val procGGPlate   = new JCheckBox()
       procGGPlate.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGPlate.isSelected()
+            val onOff = procGGPlate.isSelected
             ProcTxn.atomic { implicit tx =>
-               plates.active = onOff
+               plates.active_=(onOff)
             }
          }
       })
@@ -63,9 +63,9 @@ class GUI {
       val procGGSprenger = new JCheckBox()
       procGGSprenger.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGSprenger.isSelected()
+            val onOff = procGGSprenger.isSelected
             ProcTxn.atomic { implicit tx =>
-               sprenger.active = onOff
+               sprenger.active_=(onOff)
             }
          }
       })
@@ -74,9 +74,9 @@ class GUI {
       val procGGRegen = new JCheckBox()
       procGGRegen.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGRegen.isSelected()
+            val onOff = procGGRegen.isSelected
             ProcTxn.atomic { implicit tx =>
-               regen.active = onOff
+               regen.active_=(onOff)
             }
          }
       })
@@ -85,9 +85,9 @@ class GUI {
       val procGGZeven = new JCheckBox()
       procGGZeven.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGZeven.isSelected()
+            val onOff = procGGZeven.isSelected
             ProcTxn.atomic { implicit tx =>
-               zeven.active = onOff
+               zeven.active_=(onOff)
             }
          }
       })
@@ -96,9 +96,9 @@ class GUI {
       val procGGHeli = new JCheckBox()
       procGGHeli.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGHeli.isSelected()
+            val onOff = procGGHeli.isSelected
             ProcTxn.atomic { implicit tx =>
-               helicopter.foreach( _.active = onOff )
+               helicopter.foreach( _.active_=(onOff))
             }
          }
       })
@@ -107,9 +107,9 @@ class GUI {
       val procGGWindspiel = new JCheckBox()
       procGGWindspiel.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGWindspiel.isSelected()
+            val onOff = procGGWindspiel.isSelected
             ProcTxn.atomic { implicit tx =>
-               windspiel.active = onOff
+               windspiel.active_=(onOff)
             }
          }
       })
@@ -118,9 +118,9 @@ class GUI {
       val procGGLicht = new JCheckBox()
       procGGLicht.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
-            val onOff = procGGLicht.isSelected()
+            val onOff = procGGLicht.isSelected
             ProcTxn.atomic { implicit tx =>
-               licht.active = onOff
+               licht.active_=(onOff)
             }
          }
       })
@@ -184,7 +184,7 @@ class GUI {
       ggHP.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
             ProcTxn.atomic { implicit tx =>
-               pMaster.control( "hp" ).v = if( ggHP.isSelected() ) 1 else 0
+               pMaster.control( "hp" ).v_=(if( ggHP.isSelected ) 1 else 0)
             }
          }
       })
@@ -205,17 +205,17 @@ val ggShutdown = new JButton( "Shutdown" )
 ggShutdown.setFont( new Font( "SansSerif", Font.PLAIN, 24 ))
 ggShutdown.addActionListener( new ActionListener {
    def actionPerformed( e: ActionEvent ) {
-      Dissemination.shutDownComputer
+      Dissemination.shutDownComputer()
    }
 })
 
       frame.setResizable( false )
-      val cp   = frame.getContentPane()
+      val cp   = frame.getContentPane
       cp.add( monitorPane, BorderLayout.SOUTH )
       cp.add( procPane, BorderLayout.NORTH )
 cp.add( ggShutdown, BorderLayout.CENTER )
       frame.pack()
-      frame.setLocation( 10, SCREEN_BOUNDS.height - (frame.getHeight() + 10) )
+      frame.setLocation( 10, SCREEN_BOUNDS.height - (frame.getHeight + 10) )
       frame.setVisible( true )
    }
 
@@ -223,7 +223,7 @@ cp.add( ggShutdown, BorderLayout.CENTER )
       b.addActionListener( new ActionListener {
          def actionPerformed( e: ActionEvent ) {
             ProcTxn.atomic { implicit tx =>
-               pMaster.control( "solo" ).v = idx
+               pMaster.control( "solo" ).v_=(idx)
             }
          }
       })

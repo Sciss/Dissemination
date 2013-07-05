@@ -96,7 +96,7 @@ object Dissemination {
    val NUM_PLATES          = if( GRAZ ) 7 else 5
 //   val START_WITH_TRANSIT  = false // GRAZ
    val PLATE_TRANSITS      = if( GRAZ ) {
-      IIdxSeq.tabulate( NUM_PLATES )( i => i < 2 || (NUM_PLATES - 1 - i) < 2 )  
+      IIdxSeq.tabulate( NUM_PLATES )( i => i < 2 || NUM_PLATES - 1 - i < 2 )
    } else {
       IIdxSeq.tabulate( NUM_PLATES )( i => !(i % 2 == 0) ) // START_WITH_TRANSIT
    }

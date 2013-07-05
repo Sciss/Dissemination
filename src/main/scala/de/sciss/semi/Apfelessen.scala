@@ -87,7 +87,7 @@ class Apfelessen( idx: Int ) extends ColorLike {
             val b          = bufCue( path, startFrame )
             val env        = EnvGen.kr( Env.linen( 0.02, pdur.ir - (0.02 + 0.5), 0.5 ))
             val done       = Done.kr( env )
-            done.react( diskDone )
+            done.react( diskDone() )
             DiskIn.ar( 1, b.id ) * env * pamp.kr
          }
       }).make

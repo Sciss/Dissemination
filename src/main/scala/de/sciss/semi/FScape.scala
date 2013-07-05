@@ -22,48 +22,47 @@ object FScape {
    private case class ClientReady( c: osc.Client )
    private case object CreateClient
 
-   private object OSCActor extends DaemonActor {
-      start
+  private object OSCActor extends DaemonActor {
+    start()
 
-      def act {
-         loop {
-            react {
-               case CreateClient => {
-                  if( verbose ) printInfo( "CreateClient received" )
-                  Thread.sleep( 5000 )
-                  val c = osc.TCP.Client(new InetSocketAddress( "127.0.0.1", 0x4653 ))
-                  var count = 20
-                  var ok = false
-                  while( count > 0 && !ok ) {
-                     count -= 1
-                     try {
-                        c.connect()
-                        c.action = (msg /* , addr, when */) => JobActor ! msg
-//                        client = c
-//                        clientReady = true
-                        JobActor ! ClientReady( c )
-                        ok = true
-                        if( verbose ) printInfo( "Connect done" )
-                     }
-                     catch {
-                        case NonFatal(_) =>
-                           if( verbose ) printInfo( "Connect failed. Sleep" )
-                           Thread.sleep( 1000 )
-//                        reactWithin( 1000 ) { case TIMEOUT => }
-                     }
-                  }
-               }
+    def act() {
+      loop {
+        react {
+          case CreateClient =>
+            if (verbose) printInfo("CreateClient received")
+            Thread.sleep(5000)
+            val c = osc.TCP.Client(new InetSocketAddress("127.0.0.1", 0x4653))
+            var count = 20
+            var ok = false
+            while (count > 0 && !ok) {
+              count -= 1
+              try {
+                c.connect()
+                c.action = (msg /* , addr, when */) => JobActor ! msg
+                //                        client = c
+                //                        clientReady = true
+                JobActor ! ClientReady(c)
+                ok = true
+                if (verbose) printInfo("Connect done")
+              }
+              catch {
+                case NonFatal(_) =>
+                  if (verbose) printInfo("Connect failed. Sleep")
+                  Thread.sleep(1000)
+                //                        reactWithin( 1000 ) { case TIMEOUT => }
+              }
             }
-         }
+        }
       }
-   }
+    }
+  }
 
-   private object JobActor extends DaemonActor {
-      var syncID = -1
+  private object JobActor extends DaemonActor {
+    var syncID = -1
 
-      start()
+    start()
 
-      def act() {
+    def act() {
          var client: osc.Client = null
          loop {
             if( verbose ) printInfo( "restartFScape" )
@@ -94,7 +93,7 @@ object FScape {
                            def query( path: String, properties: Seq[ String ], timeOut: Long = 4000L )( handler: Seq[ Any ] => Unit ) {
                               syncID += 1
                               val sid = syncID
-                              val msg = osc.Message( path, ("query" +: syncID +: properties): _* )
+                              val msg = osc.Message( path, "query" +: syncID +: properties: _* )
                               client ! msg
                               reactWithin( timeOut ) {
                                  case TIMEOUT => timedOut( msg )
@@ -108,13 +107,13 @@ object FScape {
                            doc.toProperties( prop )
                            val os      = new FileOutputStream( docFile )
                            prop.store( os, "Dissemination" )
-                           os.close
+                           os.close()
                            client ! osc.Message( "/doc", "open", docFile, if( OPEN_WINDOW ) 1 else 0 )
                            query( "/doc", "count" :: Nil ) {
                               case Seq( num: Int ) => {
                                  var idx = 0
                                  var found = false
-                                 loopWhile( !found && (idx < num) ) {
+                                 loopWhile( !found && idx < num ) {
                                     query( "/doc/index/" + idx, "id" :: "file" :: Nil ) {
                                        case Seq( id, `docFile` ) => {
                                           val addr = "/doc/id/" + id
@@ -137,7 +136,7 @@ object FScape {
                                                          }
                                                       }
                                                    }
-                                                } andThen {
+                                                } .andThen[Unit] {
                                                    client ! osc.Message( addr, "close" )
                                                    if( err != "" ) {
                                                       printInfo( "ERROR (" + name + " -- " + err + ")" + " / " + docFile )
@@ -152,7 +151,7 @@ object FScape {
                                        }
                                        case _ => idx += 1
                                     }
-                                 } andThen {
+                                 } .andThen[Unit] {
                                     if( !found ) {
                                        printInfo( "?! File not found (" + name + " / " + docFile + ")" )
                                        fun( false )
@@ -193,8 +192,8 @@ object FScape {
    }
 
    object Gain {
-      val immediate  = Gain( "0.0dB", false )
-      val normalized = Gain( "-0.2dB", true )
+      val immediate  = Gain( "0.0dB", normalized = false )
+      val normalized = Gain( "-0.2dB", normalized = true )
    }
    object OutputSpec {
       val aiffFloat  = AudioFileSpec( AudioFileType.AIFF, SampleFormat.Float, 1, 44100.0 ) // numCh, sr not used

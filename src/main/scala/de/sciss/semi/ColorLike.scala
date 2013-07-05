@@ -34,26 +34,26 @@ import DSL._
 import Util._
 
 object ColorLike {
-   case class Channel( procFilter: Proc, procGen: Proc )
+  case class Channel(procFilter: Proc, procGen: Proc)
 }
 
 trait ColorLike extends SemiProcess {
-   import ColorLike._
-   
-   protected val ch: Ref[ Option[ Channel ]] = Ref( None )
-   private val activeRef = Ref( false )
+  import ColorLike._
 
-   // --- abstract ---
-   protected def filter1( implicit tx: ProcTxn ) : Proc
-   protected def gen1( implicit tx: ProcTxn ) : Proc
-   protected def plate : Plate
-   protected def minFade  : Double
-   protected def maxFade : Double
-   protected def engageFade : Double
+  protected val ch: Ref[Option[Channel]] = Ref(None)
+  private val activeRef = Ref(false)
 
-   protected def delayGen : Boolean
+  // --- abstract ---
+  protected def filter1(implicit tx: ProcTxn): Proc
+  protected def gen1   (implicit tx: ProcTxn): Proc
 
-   def active( implicit tx: ProcTxn ) = activeRef()
+  protected def plate     : Plate
+  protected def minFade   : Double
+  protected def maxFade   : Double
+  protected def engageFade: Double
+  protected def delayGen  : Boolean
+
+  def active( implicit tx: ProcTxn ) = activeRef()
    def active_=( onOff: Boolean )( implicit tx: ProcTxn ) {
       val wasActive = activeRef.swap( onOff )
       if( wasActive == onOff ) return
@@ -86,11 +86,11 @@ trait ColorLike extends SemiProcess {
       xfade( engageFade ) {
          chan.procFilter.engage
       }
-      glide( exprand( minFade, maxFade )) {
-         chan.procFilter.control( "fade" ).v = 1
-      }
+     glide(exprand(minFade, maxFade)) {
+       chan.procFilter.control("fade").v_=(1)
+     }
 
-      if( delayGen ) ProcHelper.whenGlideDone( chan.procFilter, "fade" ) { implicit tx =>
+     if( delayGen ) ProcHelper.whenGlideDone( chan.procFilter, "fade" ) { implicit tx =>
          chan.procGen ~> chan.procFilter.audioInput( "in2" )
          chan.procGen.play
          pDummy.dispose
@@ -102,7 +102,7 @@ trait ColorLike extends SemiProcess {
       val chanO = ch.swap( None )
       glide( fdt ) {
          chanO.foreach { ch =>
-            ch.procFilter.control( "fade" ).v = 0
+            ch.procFilter.control( "fade" ).v_=(0)
             ProcHelper.whenGlideDone( ch.procFilter, "fade" ) { implicit tx =>
                ProcHelper.stopAndDispose( engageFade, ch.procFilter, postFun = ch.procGen.dispose( _ ))
             }
@@ -110,7 +110,7 @@ trait ColorLike extends SemiProcess {
       }
    }
 
-   protected def diskDone {
-      ProcTxn.spawnAtomic( implicit tx => active = false )
-   }
+  protected def diskDone() {
+    ProcTxn.spawnAtomic(implicit tx => active_=(onOff = false))
+  }
 }

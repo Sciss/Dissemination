@@ -62,39 +62,43 @@ class Regen extends WaterLike {
       import synth._
       Dust.kr( 1.0 / 360 )
    }
-   
-   protected def gens( implicit tx: ProcTxn ) : (Proc, Proc) = {
-      import synth._
-      import ugen._
-      
-      val Seq( gen1, gen2 ) = ("L" :: "R" :: Nil) map { ext =>
-         val g = (gen( name + "-" + ext ) {
-            val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
-            val ppos = pScalar( "pos", ParamSpec( 0, 900), 1 )
-            val pdur = pScalar( "dur", ParamSpec( 1, 600), 1 )
-            graph {
-               val path       = AUDIO_PATH + fs + "080227_WeimarRegenFensterAT-" + ext + ".aif"
-               val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
-               val b          = bufCue( path, startFrame )
-               val disk       = DiskIn.ar( 1, b.id ) * pamp.kr
-// XXX DiskIn does _not_ set a done flag!!
-//               val done       = Done.kr( disk )
-               val done =  DetectSilence.ar( disk, dur = 1.0 ) + 
-                           Done.kr( Line.kr( dur = pdur.ir ))
-               done.react { diskDone( ext )}
-               disk
-            }
-         }).make
-         g.control( "pos" ).v = rrand( 0.0, 300.0 )
-         g.control( "dur" ).v = exprand( MIN_DUR, MAX_DUR )
-         g
-      }
-      (gen1, gen2)
-   }
 
-   private def diskDone( ext: String ) {
-      if( ext == "L" ) {
-         ProcTxn.spawnAtomic( implicit tx => active = false )
-      }
-   }
+  protected def gens(implicit tx: ProcTxn): (Proc, Proc) = {
+    import synth._
+    import ugen._
+
+    def map(ext: String): Proc = {
+      val g = gen(name + "-" + ext) {
+        val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), 3.dbamp)
+        val ppos = pScalar("pos", ParamSpec(0, 900), 1)
+        val pdur = pScalar("dur", ParamSpec(1, 600), 1)
+        graph {
+          val path = AUDIO_PATH + fs + "080227_WeimarRegenFensterAT-" + ext + ".aif"
+          val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
+          val b = bufCue(path, startFrame)
+          val disk = DiskIn.ar(1, b.id) * pamp.kr
+          // XXX DiskIn does _not_ set a done flag!!
+          //               val done       = Done.kr( disk )
+          val done = DetectSilence.ar(disk, dur = 1.0) +
+            Done.kr(Line.kr(dur = pdur.ir))
+          done.react {
+            diskDone(ext)
+          }
+          disk
+        }
+      }.make
+      g.control("pos").v_=(rrand(0.0, 300.0))
+      g.control("dur").v_=(exprand(MIN_DUR, MAX_DUR))
+      g
+    }
+    val gen1 = map("L")
+    val gen2 = map("R")
+    (gen1, gen2)
+  }
+
+  private def diskDone(ext: String) {
+    if (ext == "L") {
+      ProcTxn.spawnAtomic(implicit tx => active_=(onOff = false))
+    }
+  }
 }

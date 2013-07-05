@@ -75,12 +75,12 @@ class Helicopter( idx: Int ) extends ColorLike {
             val b          = bufCue( path, startFrame )
             val env        = EnvGen.kr( Env.linen( 0.02, pdur.ir - (0.02 + 2.0), 2.0 ))
             val done       = Done.kr( env )
-            done.react( diskDone )
+            done.react( diskDone() )
             DiskIn.ar( 1, b.id, loop = 1 ) * env * pamp.kr
          }
       }).make
-      g.control( "pos" ).v = rrand( 0.0, 117.0 )
-      g.control( "dur" ).v = exprand( MIN_DUR, MAX_DUR ) + 2.0
+      g.control( "pos" ).v_=(rrand( 0.0, 117.0 ))
+      g.control( "dur" ).v_=(exprand( MIN_DUR, MAX_DUR ) + 2.0)
       g
    }
 

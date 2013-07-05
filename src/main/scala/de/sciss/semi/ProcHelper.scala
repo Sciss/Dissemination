@@ -39,42 +39,42 @@ object ProcHelper {
   def createTempAudioFile(): File = File.createTempFile("semi", ".aif", new File(TEMP_PATH))
 
   def whenGlideDone( p: Proc, ctrlName: String )( fun: ProcTxn => Unit )( implicit tx: ProcTxn ) {
-      lazy val l: Proc.Listener = new Proc.Listener {
-         def updated( u: Proc.Update ) {
-            if( u.controls.find( tup => (tup._1.name == ctrlName) && tup._2.mapping.isEmpty ).isDefined ) {
-               ProcTxn.atomic { implicit tx =>
-                  p.removeListener( l )
-                  fun( tx )
-               }
-            }
-         }
+    lazy val l: Proc.Listener = new Proc.Listener {
+      def updated(u: Proc.Update) {
+        if (u.controls.exists(tup => tup._1.name == ctrlName && tup._2.mapping.isEmpty)) {
+          ProcTxn.atomic { implicit tx =>
+            p.removeListener(l)
+            fun(tx)
+          }
+        }
       }
-      p.addListener( l )
-   }
-   
-   private def stopAndDisposeListener( preFun: ProcTxn => Unit, postFun: ProcTxn => Unit ) = new Proc.Listener {
-      def updated( u: Proc.Update ) {
-//println( "UPDATE " + u )
-         if( !u.state.fading && (u.state.bypassed || u.controls.find( tup =>
-            (tup._1.name == "amp") && tup._2.mapping.isEmpty ).isDefined) ) {
-            if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
-            disposeProc( u.proc, preFun, postFun ) // ProcTxn.atomic { implicit tx => }
-         }
-      }
-   }
+    }
+    p.addListener(l)
+  }
 
-   private def disposeProc( proc: Proc, preFun: ProcTxn => Unit, postFun: ProcTxn => Unit ) {
-      ProcTxn.atomic { implicit tx =>
-         preFun( tx )
-         proc.anatomy match {
-            case ProcFilter   => disposeFilter( proc )
-            case _            => disposeGenDiff( proc )
-         }
-         postFun( tx )
+  private def stopAndDisposeListener(preFun: ProcTxn => Unit, postFun: ProcTxn => Unit) = new Proc.Listener {
+    def updated(u: Proc.Update) {
+      //println( "UPDATE " + u )
+      if (!u.state.fading && (u.state.bypassed || u.controls.exists(tup =>
+        tup._1.name == "amp" && tup._2.mapping.isEmpty))) {
+        if (verbose) println("" + new java.util.Date() + " FINAL-DISPOSE " + u.proc)
+        disposeProc(u.proc, preFun, postFun) // ProcTxn.atomic { implicit tx => }
       }
-   }
+    }
+  }
 
-   // XXX copied from Nuages. we should have this going into SoundProcesses directly somehow
+  private def disposeProc(proc: Proc, preFun: ProcTxn => Unit, postFun: ProcTxn => Unit) {
+    ProcTxn.atomic { implicit tx =>
+      preFun(tx)
+      proc.anatomy match {
+        case ProcFilter => disposeFilter (proc)
+        case _          => disposeGenDiff(proc)
+      }
+      postFun(tx)
+    }
+  }
+
+  // XXX copied from Nuages. we should have this going into SoundProcesses directly somehow
    private def disposeFilter( proc: Proc )( implicit tx: ProcTxn ) {
       val in   = proc.audioInput( "in" )
       val out  = proc.audioOutput( "out" )
@@ -121,7 +121,7 @@ object ProcHelper {
       val state = p.state
 //println( "STOP-AND-DISPOSE " + p + " -> " + state + " / " + tx.transit )
 //      if( !state.fading && (!state.playing || state.bypassed || (tx.transit == Instant)) ) {
-      if( !state.fading && (!state.playing || state.bypassed || (fadeTime == 0.0)) ) {
+      if( !state.fading && (!state.playing || state.bypassed || fadeTime == 0.0) ) {
 //println( ".......INSTANT" )
          preFun( tx )
          p.dispose
@@ -136,7 +136,9 @@ object ProcHelper {
             case _ => {
 //println( ".......STOP " + (new java.util.Date()) )
 //               p.stop
-               glide( fadeTime ) { p.control( "amp" ).v = 0.001 }
+              glide(fadeTime) {
+                p.control("amp").v_=(0.001)
+              }
             }
          }
       }

@@ -124,7 +124,7 @@ class Windspiel extends SemiProcess {
 
    private def start( implicit tx: ProcTxn ) {
       val so               = Server.Config()
-      val recPathF         = ProcHelper.createTempAudioFile
+      val recPathF         = ProcHelper.createTempAudioFile()
       so.nrtOutputPath     = recPathF.getAbsolutePath  // "/Users/hhrutz/Desktop/test.aif"
       so.sampleRate        = 44100
       so.outputBusChannels = 2
@@ -195,9 +195,9 @@ class Windspiel extends SemiProcess {
     val tmpA      = tmpAF   .getAbsolutePath
     val outPath   = outPathF.getAbsolutePath
     val recPath   = recPathF.getAbsolutePath
-    //println( "PATH IS " + recPath )
-    val numFrames0  = AudioFileCache.spec(recPath).numFrames
-    val numFrames   = nextPowerOfTwo(numFrames0)
+
+    // val numFrames0  = AudioFileCache.spec(recPath).numFrames
+    // val numFrames   = nextPowerOfTwo(numFrames0)
 
     import FScape._
 
@@ -209,7 +209,7 @@ class Windspiel extends SemiProcess {
       val scale   = rrand( 1, 3 )
 //      val stop    = numFrames >> (scale - 1)
 //      val start   = numFrames >> scale
-      val offLen  = (2.0).pow( -scale )
+      val offLen  = 2.0.pow( -scale )
 //      val dur     = offLen * numFrames / 44100
       val docCut  = UnaryOp(
          in       = tmpA,
@@ -239,7 +239,7 @@ class Windspiel extends SemiProcess {
 
    private def createProc( outPathF: File /*, dur: Double*/ )( implicit tx: ProcTxn ) {
       if( !active ) return
-      active = false
+      active_=(onOff = false)
 
       lazy val p: Proc = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
          val pspeed  = pControl(  "speed", ParamSpec( 0.1f, 10, ExpWarp ), 1 )
@@ -247,7 +247,7 @@ class Windspiel extends SemiProcess {
          val pdur    = pScalar(   "dur",   ParamSpec( 0, 600 ), 1 )
          val pout2   = pAudioOut( "out2" )
          graph {
-            val buf        = bufCue( outPathF.getAbsolutePath() )
+            val buf        = bufCue( outPathF.getAbsolutePath )
             val bufID      = buf.id
             val speed      = pspeed.kr // * BufRateScale.ir( bufID )
             val d          = VDiskIn.ar( 2, bufID, speed )
@@ -257,7 +257,7 @@ class Windspiel extends SemiProcess {
                ProcTxn.spawnAtomic { implicit tx => ProcHelper.stopAndDispose( 0, p )}
             }
             // val Seq( sigL, sigR ) = (d * pamp.ar).outputs
-           val sigLR = (d * pamp.ar)
+           val sigLR = d * pamp.ar
            val sigL = sigLR \ 0
            val sigR = sigLR \ 1
             pout2.ar( sigR )
@@ -265,16 +265,16 @@ class Windspiel extends SemiProcess {
          }
       }).make
 
-      val speed               = exprand( MIN_SPEED, MAX_SPEED )
-      p.control( "speed" ).v  = speed
-      p.control( "amp" ).v    = AMP.dbamp
-//      p.control( "dur" ).v    = dur / speed + 0.2
-      val afs = AudioFileCache.spec( outPathF.getAbsolutePath() )
-// println( outPathF.getAbsolutePath() )
-      p.control( "dur" ).v    = (afs.numFrames / (afs.sampleRate * speed)) + 0.2
-      if( verbose ) println( "" + new java.util.Date() + " STARTING (SPARSE) " + p )
+     val speed = exprand(MIN_SPEED, MAX_SPEED)
+     p.control("speed").v_=(speed    )
+     p.control("amp"  ).v_=(AMP.dbamp)
+     //      p.control( "dur" ).v    = dur / speed + 0.2
+     val afs = AudioFileCache.spec(outPathF.getAbsolutePath)
+     // println( outPathF.getAbsolutePath() )
+     p.control("dur").v_=(afs.numFrames / (afs.sampleRate * speed) + 0.2)
+     if (verbose) println("" + new java.util.Date() + " STARTING (SPARSE) " + p)
 
-      val Seq( idx1, idx2 ) = urn.take( 2 )
+     val Seq( idx1, idx2 ) = urn.take( 2 )
       val collector1 = if( coin( REC_PROB )) plates( idx1 ).collector1 else plates( idx1 ).collector2
       val collector2 = if( coin( REC_PROB )) plates( idx2 ).collector1 else plates( idx2 ).collector2
       

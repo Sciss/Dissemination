@@ -29,11 +29,10 @@
 package de.sciss.semi
 
 import Dissemination._
-import SemiNuages._
 import Util._
 import de.sciss.synth
 import synth.GE
-import synth.proc.{Proc, ExpWarp, ProcDemiurg, DSL, ParamSpec, ProcTxn, Ref}
+import synth.proc.{Proc, ExpWarp, DSL, ParamSpec, ProcTxn, Ref}
 import collection.immutable.{ IndexedSeq => IIdxSeq }
 import DSL._
 import annotation.tailrec
@@ -51,7 +50,6 @@ object Sprenger {
 
 class Sprenger extends WaterLike {
    import Sprenger._
-   import WaterLike._
 
    private val cutsRef = Ref( Seq.empty[ (Double, Double) ])
 
@@ -77,7 +75,7 @@ class Sprenger extends WaterLike {
       val cutDur = exprand( minSkip, math.min( pieceDur - (minKeep + minKeep), maxSkip ))
       val cutPos = exprand( minKeep, pieceDur - (minKeep + cutDur) )
       val pc1 = piece._1 -> (piece._1 + cutPos)
-      val pc2 = (piece._1 + cutPos + cutDur) -> piece._2
+      val pc2 = piece._1 + cutPos + cutDur -> piece._2
       cutOut( pieces.patch( idx, pc1 :: pc2 :: Nil, 1 ), MIN_KEEP, MIN_SKIP, MAX_SKIP )
    }
 
@@ -94,23 +92,27 @@ class Sprenger extends WaterLike {
       cutsRef.set( cuts0.tail )
       val cut = cuts0.head
 
-      val Seq( gen1, gen2 )= ("L" :: "R" :: Nil) map { ext =>
-         val g = (gen( name + "-" + ext ) {
-            val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 15.dbamp )
-            val ppos = pScalar( "pos", ParamSpec( 0, 600), 1 )
-            val pdur = pScalar( "dur", ParamSpec( 1, 600), 1 )
-            graph {
-               val path       = AUDIO_PATH + fs + "080304_173812_MisionSprengerOKM-" + ext + ".aif"
-               val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
-               val b          = bufCue( path, startFrame )
-               val done       = Done.kr( Line.kr( dur = pdur.ir - FADE_DUR ))
-               done.react { cutDone( ext )}
-               DiskIn.ar( 1, b.id ) * pamp.kr
-            }
-         }).make
+      def map(ext: String): Proc = {
+         val g = gen(name + "-" + ext) {
+           val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), 15.dbamp)
+           val ppos = pScalar("pos", ParamSpec(0, 600), 1)
+           val pdur = pScalar("dur", ParamSpec(1, 600), 1)
+           graph {
+             val path = AUDIO_PATH + fs + "080304_173812_MisionSprengerOKM-" + ext + ".aif"
+             val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
+             val b = bufCue(path, startFrame)
+             val done = Done.kr(Line.kr(dur = pdur.ir - FADE_DUR))
+             done.react {
+               cutDone(ext)
+             }
+             DiskIn.ar(1, b.id) * pamp.kr
+           }
+         }.make
          setCut( g, cut )
          g
       }
+     val gen1 = map("L")
+     val gen2 = map("R")
       (gen1, gen2)
    }
 
@@ -127,14 +129,14 @@ class Sprenger extends WaterLike {
                   ch2().foreach( ch => setCut( ch.procGen, cut ))
                }
             } else {
-               active = false
+               active_=(onOff = false)
             }
          })
       }
    }
-   
-   private def setCut( p: Proc, cut: (Double, Double) )( implicit tx: ProcTxn ) {
-      p.control( "pos" ).v = cut._1
-      p.control( "dur" ).v = cut._2 - cut._1
-   }
+
+  private def setCut(p: Proc, cut: (Double, Double))(implicit tx: ProcTxn) {
+    p.control("pos").v_=(cut._1)
+    p.control("dur").v_=(cut._2 - cut._1)
+  }
 }

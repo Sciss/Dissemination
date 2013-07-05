@@ -85,7 +85,7 @@ trait TapeSoundSettingsLike extends SoundSettings {
   }
 
   def prepareForPlay(proc: Proc)(implicit tx: ProcTxn) {
-    proc.control("pos").v = rand(0.95)
+    proc.control("pos").v_=(rand(0.95))
   }
 }
 
@@ -112,6 +112,6 @@ object VerbFilterSettings extends SoundSettings {
   }
 
   def prepareForPlay(proc: Proc)(implicit tx: ProcTxn) {
-    proc.control("size").v = rrand(0.7, 1.0)
+    proc.control("size").v_=(rrand(0.7, 1.0))
   }
 }

@@ -30,225 +30,217 @@ package de.sciss.semi
 
 import de.sciss.synth._
 import de.sciss.synth.proc._
-import de.sciss.nuages.NuagesFrame
-import collection.breakOut
-import collection.immutable.{ IndexedSeq => IIdxSeq }
 import ugen._
-import scala.Float.{ PositiveInfinity => inf }
-import java.io.File
 
-/**
- *    @version 0.12, 01-Aug-10
- */
 object SemiNuages extends {
-   import DSL._
-   import Dissemination._
+  import DSL._
+  import Dissemination._
 
-   val NUM_LOOPS        = 7
-   val LOOP_DUR         = 30
+  val NUM_LOOPS = 7
+  val LOOP_DUR  = 30
 
-//   var f : NuagesFrame = _
-   var masterSynth : Synth  = _
+  //   var f : NuagesFrame = _
+  var masterSynth: Synth = _
 
-//   var plateCollectors = IIdxSeq[ Proc ]() // = _
-//   var plates: IIdxSeq[ Plate ] = _
-   var plates: Plates         = _
-   var collMaster: Proc       = _
-   var pMaster:    Proc       = _
-   var sprenger: Sprenger     = _
-   var regen: Regen           = _
-   var windspiel: Windspiel   = _
-   var apfel: Apfelessen      = _
-   var phylet: Phylet         = _
-   var zeven: Zeven           = _
-   var helicopter: Option[ Helicopter ] = None
-   var licht: Licht           = _
+  //   var plateCollectors = IIdxSeq[ Proc ]() // = _
+  //   var plates: IIdxSeq[ Plate ] = _
+  var plates    : Plates = _
+  var collMaster: Proc = _
+  var pMaster   : Proc = _
+  var sprenger  : Sprenger = _
+  var regen     : Regen = _
+  var windspiel : Windspiel = _
+  var apfel     : Apfelessen = _
+  var phylet    : Phylet = _
+  var zeven     : Zeven = _
+  var helicopter: Option[Helicopter] = None
+  var licht     : Licht = _
 
-   var meta: Meta             = _
+  var meta      : Meta = _
 
-   def init( s: Server )( implicit tx: ProcTxn ) {
+  def init(s: Server)(implicit tx: ProcTxn) {
 
-      // -------------- DIFFUSIONS --------------
+    // -------------- DIFFUSIONS --------------
 
-//      val goAll = diff( "O-all" ) {
-//         val pamp  = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
-//         val pout  = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
-//
-//         graph { in =>
-//            val sig          = (in * Lag.ar( pamp.ar, 0.1 )).outputs
-//            val inChannels   = sig.size
-//            val outChannels  = MASTER_NUMCHANNELS
-//            val sig1         = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
-//            pout.ar( sig1 )
-//         }
-//      }
+     //      val goAll = diff( "O-all" ) {
+     //         val pamp  = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
+     //         val pout  = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
+     //
+     //         graph { in =>
+     //            val sig          = (in * Lag.ar( pamp.ar, 0.1 )).outputs
+     //            val inChannels   = sig.size
+     //            val outChannels  = MASTER_NUMCHANNELS
+     //            val sig1         = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
+     //            pout.ar( sig1 )
+     //         }
+     //      }
 
-//      diff( "O-pan" ) {
-//         val pspread = pControl( "spr",  ParamSpec( 0.0, 1.0 ), 0.25 ) // XXX rand
-//         val prota   = pControl( "rota", ParamSpec( 0.0, 1.0 ), 0.0 )
-//         val pbase   = pControl( "azi",  ParamSpec( 0.0, 360.0 ), 0.0 )
-//         val pamp    = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
-//         val pout    = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
-//
-//         graph { in =>
-//            val baseAzi       = Lag.kr( pbase.kr, 0.5 ) + IRand( 0, 360 )
-//            val rotaAmt       = Lag.kr( prota.kr, 0.1 )
-//            val spread        = Lag.kr( pspread.kr, 0.5 )
-//            val inChannels   = in.numOutputs
-//            val outChannels  = MASTER_NUMCHANNELS
-////            val sig1         = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
-//            val rotaSpeed     = 0.1
-//            val inSig         = (in * Lag.ar( pamp.ar, 0.1 )).outputs
-//            val noise         = LFDNoise1.kr( rotaSpeed ) * rotaAmt * 2
-//            val outSig: Array[ GE ] = Array.fill( outChannels )( 0 )
-//            val altern        = false
-//            for( inCh <- 0 until inChannels ) {
-//               val pos0 = if( altern ) {
-//                  (baseAzi / 180) + (inCh / outChannels * 2);
-//               } else {
-//                  (baseAzi / 180) + (inCh / inChannels * 2);
-//               }
-//               val pos = pos0 + noise
-//
-//             // + rota
-////				   w	 = inCh / (inChannels -1);
-////				   level = ((1 - levelMod) * w) + (1 - w);
-//               val level   = 1   // (1 - w);
-//               val width   = (spread * (outChannels - 2)) + 2
-//               val pan     = PanAz.ar( outChannels, inSig( inCh ), pos, level, width, 0 )
-//               pan.outputs.zipWithIndex.foreach( tup => {
-//                  val (chanSig, i) = tup
-//                  outSig( i ) = outSig( i ) + chanSig
-//               })
-//            }
-//            pout.ar( outSig.toSeq )
-//         }
-//      }
+     //      diff( "O-pan" ) {
+     //         val pspread = pControl( "spr",  ParamSpec( 0.0, 1.0 ), 0.25 ) // XXX rand
+     //         val prota   = pControl( "rota", ParamSpec( 0.0, 1.0 ), 0.0 )
+     //         val pbase   = pControl( "azi",  ParamSpec( 0.0, 360.0 ), 0.0 )
+     //         val pamp    = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
+     //         val pout    = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
+     //
+     //         graph { in =>
+     //            val baseAzi       = Lag.kr( pbase.kr, 0.5 ) + IRand( 0, 360 )
+     //            val rotaAmt       = Lag.kr( prota.kr, 0.1 )
+     //            val spread        = Lag.kr( pspread.kr, 0.5 )
+     //            val inChannels   = in.numOutputs
+     //            val outChannels  = MASTER_NUMCHANNELS
+     ////            val sig1         = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
+     //            val rotaSpeed     = 0.1
+     //            val inSig         = (in * Lag.ar( pamp.ar, 0.1 )).outputs
+     //            val noise         = LFDNoise1.kr( rotaSpeed ) * rotaAmt * 2
+     //            val outSig: Array[ GE ] = Array.fill( outChannels )( 0 )
+     //            val altern        = false
+     //            for( inCh <- 0 until inChannels ) {
+     //               val pos0 = if( altern ) {
+     //                  (baseAzi / 180) + (inCh / outChannels * 2);
+     //               } else {
+     //                  (baseAzi / 180) + (inCh / inChannels * 2);
+     //               }
+     //               val pos = pos0 + noise
+     //
+     //             // + rota
+     ////				   w	 = inCh / (inChannels -1);
+     ////				   level = ((1 - levelMod) * w) + (1 - w);
+     //               val level   = 1   // (1 - w);
+     //               val width   = (spread * (outChannels - 2)) + 2
+     //               val pan     = PanAz.ar( outChannels, inSig( inCh ), pos, level, width, 0 )
+     //               pan.outputs.zipWithIndex.foreach( tup => {
+     //                  val (chanSig, i) = tup
+     //                  outSig( i ) = outSig( i ) + chanSig
+     //               })
+     //            }
+     //            pout.ar( outSig.toSeq )
+     //         }
+     //      }
 
-//      diff( "O-rnd" ) {
-//         val pamp  = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
-//         val pfreq = pControl( "freq", ParamSpec( 0.01, 10, ExpWarp ), 0.1 )
-//         val ppow  = pControl( "pow", ParamSpec( 1, 10 ), 2 )
-//         val plag  = pControl( "lag", ParamSpec( 0.1, 10 ), 1 )
-//         val pout  = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
-//
-//         graph { in =>
-//            val sig          = (in * Lag.ar( pamp.ar, 0.1 )).outputs
-//            val inChannels   = sig.size
-//            val outChannels  = MASTER_NUMCHANNELS
-//            val sig1: GE     = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
-//            val freq         = pfreq.kr
-//            val lag          = plag.kr
-//            val pw           = ppow.kr
-//            val rands        = Lag.ar( TRand.ar( 0, 1, Dust.ar( List.fill( outChannels )( freq ))).pow( pw ), lag )
-//            val outSig       = sig1 * rands
-//            pout.ar( outSig )
-//         }
-//      }
+     //      diff( "O-rnd" ) {
+     //         val pamp  = pAudio( "amp", ParamSpec( 0.01, 10, ExpWarp ), 1 )
+     //         val pfreq = pControl( "freq", ParamSpec( 0.01, 10, ExpWarp ), 0.1 )
+     //         val ppow  = pControl( "pow", ParamSpec( 1, 10 ), 2 )
+     //         val plag  = pControl( "lag", ParamSpec( 0.1, 10 ), 1 )
+     //         val pout  = pAudioOut( "out", config.masterBus.map( RichBus.wrap( _ )))
+     //
+     //         graph { in =>
+     //            val sig          = (in * Lag.ar( pamp.ar, 0.1 )).outputs
+     //            val inChannels   = sig.size
+     //            val outChannels  = MASTER_NUMCHANNELS
+     //            val sig1: GE     = List.tabulate( outChannels )( ch => sig( ch % inChannels ))
+     //            val freq         = pfreq.kr
+     //            val lag          = plag.kr
+     //            val pw           = ppow.kr
+     //            val rands        = Lag.ar( TRand.ar( 0, 1, Dust.ar( List.fill( outChannels )( freq ))).pow( pw ), lag )
+     //            val outSig       = sig1 * rands
+     //            pout.ar( outSig )
+     //         }
+     //      }
 
-      // -------------- GENERATORS --------------
+    // -------------- GENERATORS --------------
 
-      gen( "test" ) {
-         val pf1  = pControl( "f1", ParamSpec( 0.1, 10, ExpWarp ), 1 )
-         val pf2  = pControl( "f2", ParamSpec( 50, 15000, ExpWarp ), 440 )
-         val pphas= pScalar( "phas", ParamSpec( 0, 1 ), 0 )
-         val pq   = pControl( "q", ParamSpec( 1, 100, ExpWarp ), 20 )
-         graph {
-//            val env = Decay.ar( Impulse.ar( pf1.kr ), 1 )
-            val freq = pf1.kr
-            val env = Decay.ar( LFPulse.ar( freq, pphas.ir, freq / SampleRate.ir ), 1 )
-            Resonz.ar( WhiteNoise.ar( 1 ) * env, pf2.kr, pq.kr.reciprocal )
-         }
+    gen("test") {
+      val pf1   = pControl("f1",  ParamSpec(0.1, 10, ExpWarp), 1)
+      val pf2   = pControl("f2",  ParamSpec(50, 15000, ExpWarp), 440)
+      val pphas = pScalar("phas", ParamSpec(0, 1), 0)
+      val pq    = pControl("q",   ParamSpec(1, 100, ExpWarp), 20)
+      graph {
+        //            val env = Decay.ar( Impulse.ar( pf1.kr ), 1 )
+        val freq = pf1.kr
+        val env = Decay.ar(LFPulse.ar(freq, pphas.ir, freq / SampleRate.ir), 1)
+        Resonz.ar(WhiteNoise.ar(1) * env, pf2.kr, pq.kr.reciprocal)
       }
+    }
 
-//      // NuagesUMic
-//      val loopFrames = (LOOP_DUR * s.sampleRate).toInt
-//      val loopBufs   = Array.fill[ Buffer ]( NUM_LOOPS )( Buffer.alloc( s, loopFrames, 2 ))
-//      val loopBufIDs: Seq[ Int ] = loopBufs.map( _.id )( breakOut )
-//
-//      gen( "loop" ) {
-//         val pbuf    = pControl( "buf",   ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
-//         val pspeed  = pControl( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 1 )
-//         val pstart  = pControl( "start", ParamSpec( 0, 1 ), 0 )
-//         val pdur    = pControl( "dur",   ParamSpec( 0, 1 ), 1 )
-//         graph {
-//            val trig1	   = LocalIn.kr( 1 )
-//            val gateTrig1	= PulseDivider.kr( trig = trig1, div = 2, start = 1 )
-//            val gateTrig2	= PulseDivider.kr( trig = trig1, div = 2, start = 0 )
-//            val startFrame = pstart.kr * loopFrames
-//            val numFrames  = pdur.kr * (loopFrames - startFrame)
-//            val lOffset	   = Latch.kr( in = startFrame, trig = trig1 )
-//            val lLength	   = Latch.kr( in = numFrames,  trig = trig1 )
-//            val speed      = pspeed.kr
-//            val duration	= lLength / (speed * SampleRate.ir) - 2
-//            val gate1	   = Trig1.kr( in = gateTrig1, dur = duration )
-//            val env		   = Env.asr( 2, 1, 2, linShape )	// \sin
-//            val bufID      = Select.kr( pbuf.kr, loopBufIDs )
-//            val play1	   = PlayBuf.ar( 2, bufID, speed, gateTrig1, lOffset, loop = 0 )
-//            val play2	   = PlayBuf.ar( 2, bufID, speed, gateTrig2, lOffset, loop = 0 )
-//            val amp0		   = EnvGen.kr( env, gate1 )  // 0.999 = bug fix !!!
-//            val amp2		   = 1.0 - amp0.squared
-//            val amp1		   = 1.0 - (1.0 - amp0).squared
-//            val sig     	= (play1 * amp1) + (play2 * amp2)
-//            LocalOut.kr( Impulse.kr( 1.0 / duration.max( 0.1 )))
-//            sig
-//         }
-//      }
+    //      // NuagesUMic
+     //      val loopFrames = (LOOP_DUR * s.sampleRate).toInt
+     //      val loopBufs   = Array.fill[ Buffer ]( NUM_LOOPS )( Buffer.alloc( s, loopFrames, 2 ))
+     //      val loopBufIDs: Seq[ Int ] = loopBufs.map( _.id )( breakOut )
+     //
+     //      gen( "loop" ) {
+     //         val pbuf    = pControl( "buf",   ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
+     //         val pspeed  = pControl( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 1 )
+     //         val pstart  = pControl( "start", ParamSpec( 0, 1 ), 0 )
+     //         val pdur    = pControl( "dur",   ParamSpec( 0, 1 ), 1 )
+     //         graph {
+     //            val trig1	   = LocalIn.kr( 1 )
+     //            val gateTrig1	= PulseDivider.kr( trig = trig1, div = 2, start = 1 )
+     //            val gateTrig2	= PulseDivider.kr( trig = trig1, div = 2, start = 0 )
+     //            val startFrame = pstart.kr * loopFrames
+     //            val numFrames  = pdur.kr * (loopFrames - startFrame)
+     //            val lOffset	   = Latch.kr( in = startFrame, trig = trig1 )
+     //            val lLength	   = Latch.kr( in = numFrames,  trig = trig1 )
+     //            val speed      = pspeed.kr
+     //            val duration	= lLength / (speed * SampleRate.ir) - 2
+     //            val gate1	   = Trig1.kr( in = gateTrig1, dur = duration )
+     //            val env		   = Env.asr( 2, 1, 2, linShape )	// \sin
+     //            val bufID      = Select.kr( pbuf.kr, loopBufIDs )
+     //            val play1	   = PlayBuf.ar( 2, bufID, speed, gateTrig1, lOffset, loop = 0 )
+     //            val play2	   = PlayBuf.ar( 2, bufID, speed, gateTrig2, lOffset, loop = 0 )
+     //            val amp0		   = EnvGen.kr( env, gate1 )  // 0.999 = bug fix !!!
+     //            val amp2		   = 1.0 - amp0.squared
+     //            val amp1		   = 1.0 - (1.0 - amp0).squared
+     //            val sig     	= (play1 * amp1) + (play2 * amp2)
+     //            LocalOut.kr( Impulse.kr( 1.0 / duration.max( 0.1 )))
+     //            sig
+     //         }
+     //      }
 
-//      gen( "mic" ) {
-//         val pboost  = pAudio( "gain", ParamSpec( 0.1, 10, ExpWarp ), 0.1 /* 1 */)
-//         val pfeed   = pAudio( "feed", ParamSpec( 0, 1 ), 0 )
-//         graph {
-//            val off        = if( INTERNAL_AUDIO ) 0 else MIC_OFFSET
-//            val boost      = pboost.ar
-//            val pureIn	   = In.ar( NumOutputBuses.ir + off, 2 ) * boost
-//            val bandFreqs	= List( 150, 800, 3000 )
-//            val ins		   = HPZ1.ar( pureIn ) // .outputs
-//            var outs: GE   = 0
-//            var flt: GE    = ins
-//            bandFreqs.foreach( maxFreq => {
-//               val band = if( maxFreq != bandFreqs.last ) {
-//                  val res  = LPF.ar( flt, maxFreq )
-//                  flt	   = HPF.ar( flt, maxFreq )
-//                  res
-//               } else {
-//                  flt
-//               }
-//               val amp		= Amplitude.kr( band, 2, 2 )
-//               val slope	= Slope.kr( amp )
-//               val comp		= Compander.ar( band, band, 0.1, 1, slope.max( 1 ).reciprocal, 0.01, 0.01 )
-//               outs		   = outs + comp
-//            })
-//            val dly        = DelayC.ar( outs, 0.0125, LFDNoise1.kr( 5 ).madd( 0.006, 0.00625 ))
-//            val feed       = pfeed.ar * 2 - 1
-//            XFade2.ar( pureIn, dly, feed )
-//         }
-//      }
+     //      gen( "mic" ) {
+     //         val pboost  = pAudio( "gain", ParamSpec( 0.1, 10, ExpWarp ), 0.1 /* 1 */)
+     //         val pfeed   = pAudio( "feed", ParamSpec( 0, 1 ), 0 )
+     //         graph {
+     //            val off        = if( INTERNAL_AUDIO ) 0 else MIC_OFFSET
+     //            val boost      = pboost.ar
+     //            val pureIn	   = In.ar( NumOutputBuses.ir + off, 2 ) * boost
+     //            val bandFreqs	= List( 150, 800, 3000 )
+     //            val ins		   = HPZ1.ar( pureIn ) // .outputs
+     //            var outs: GE   = 0
+     //            var flt: GE    = ins
+     //            bandFreqs.foreach( maxFreq => {
+     //               val band = if( maxFreq != bandFreqs.last ) {
+     //                  val res  = LPF.ar( flt, maxFreq )
+     //                  flt	   = HPF.ar( flt, maxFreq )
+     //                  res
+     //               } else {
+     //                  flt
+     //               }
+     //               val amp		= Amplitude.kr( band, 2, 2 )
+     //               val slope	= Slope.kr( amp )
+     //               val comp		= Compander.ar( band, band, 0.1, 1, slope.max( 1 ).reciprocal, 0.01, 0.01 )
+     //               outs		   = outs + comp
+     //            })
+     //            val dly        = DelayC.ar( outs, 0.0125, LFDNoise1.kr( 5 ).madd( 0.006, 0.00625 ))
+     //            val feed       = pfeed.ar * 2 - 1
+     //            XFade2.ar( pureIn, dly, feed )
+     //         }
+     //      }
 
-//      gen( "sum_rec" ) {
-//         val pbuf    = pControl( "buf",  ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
-//         val pfeed   = pControl( "feed", ParamSpec( 0, 1 ), 0 )
-//         val ploop   = pControl( "loop", ParamSpec( 0, 1, LinWarp, 1 ), 0 )
-//         graph {
-//            val in      = InFeedback.ar( masterBus.index, masterBus.numChannels )
-//            val w       = 2.0 / in.numOutputs
-//            var sig     = Array[ GE ]( 0, 0 )
-//            in.outputs.zipWithIndex.foreach( tup => {
-//               val (add, ch) = tup
-//               sig( ch % 2 ) += add
-//            })
-//            val sig1    = sig.toSeq * w
-//            val bufID   = Select.kr( pbuf.kr, loopBufIDs )
-//            val feed    = pfeed.kr
-//            val prelvl  = feed.sqrt
-//            val reclvl  = (1 - feed).sqrt
-//            val loop    = ploop.kr
-//            val rec     = RecordBuf.ar( sig1, bufID, recLevel = reclvl, preLevel = prelvl, loop = loop )
-//            Silent.ar( 2 )// dummy thru
-//         }
-//      }
+     //      gen( "sum_rec" ) {
+     //         val pbuf    = pControl( "buf",  ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
+     //         val pfeed   = pControl( "feed", ParamSpec( 0, 1 ), 0 )
+     //         val ploop   = pControl( "loop", ParamSpec( 0, 1, LinWarp, 1 ), 0 )
+     //         graph {
+     //            val in      = InFeedback.ar( masterBus.index, masterBus.numChannels )
+     //            val w       = 2.0 / in.numOutputs
+     //            var sig     = Array[ GE ]( 0, 0 )
+     //            in.outputs.zipWithIndex.foreach( tup => {
+     //               val (add, ch) = tup
+     //               sig( ch % 2 ) += add
+     //            })
+     //            val sig1    = sig.toSeq * w
+     //            val bufID   = Select.kr( pbuf.kr, loopBufIDs )
+     //            val feed    = pfeed.kr
+     //            val prelvl  = feed.sqrt
+     //            val reclvl  = (1 - feed).sqrt
+     //            val loop    = ploop.kr
+     //            val rec     = RecordBuf.ar( sig1, bufID, recLevel = reclvl, preLevel = prelvl, loop = loop )
+     //            Silent.ar( 2 )// dummy thru
+     //         }
+     //      }
 
-      // -------------- FILTERS --------------
+     // -------------- FILTERS --------------
 
       def mix( in: GE, flt: GE, mix: ProcParamAudio ) : GE = LinXFade2.ar( in, flt, mix.ar * 2 - 1 )
       def pMix = pAudio( "mix", ParamSpec( 0, 1 ), 1 )
@@ -256,22 +248,22 @@ object SemiNuages extends {
       // NuagesUHilbert
       // NuagesUMagBelow
 
-//      filter( "rec" ) {
-//         val pbuf    = pControl( "buf",  ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
-//         val pfeed   = pControl( "feed", ParamSpec( 0, 1 ), 0 )
-//         val ploop   = pControl( "loop", ParamSpec( 0, 1, LinWarp, 1 ), 0 )
-//         graph { in =>
-//            val bufID   = Select.kr( pbuf.kr, loopBufIDs )
-//            val feed    = pfeed.kr
-//            val prelvl  = feed.sqrt
-//            val reclvl  = (1 - feed).sqrt
-//            val loop    = ploop.kr
-//            val rec     = RecordBuf.ar( in, bufID, recLevel = reclvl, preLevel = prelvl, loop = loop )
-//            in  // dummy thru
-//         }
-//      }
+     //      filter( "rec" ) {
+     //         val pbuf    = pControl( "buf",  ParamSpec( 0, NUM_LOOPS - 1, LinWarp, 1 ), 0 )
+     //         val pfeed   = pControl( "feed", ParamSpec( 0, 1 ), 0 )
+     //         val ploop   = pControl( "loop", ParamSpec( 0, 1, LinWarp, 1 ), 0 )
+     //         graph { in =>
+     //            val bufID   = Select.kr( pbuf.kr, loopBufIDs )
+     //            val feed    = pfeed.kr
+     //            val prelvl  = feed.sqrt
+     //            val reclvl  = (1 - feed).sqrt
+     //            val loop    = ploop.kr
+     //            val rec     = RecordBuf.ar( in, bufID, recLevel = reclvl, preLevel = prelvl, loop = loop )
+     //            in  // dummy thru
+     //         }
+     //      }
 
-      filter( "achil") {
+     filter( "achil") {
          val pspeed  = pAudio( "speed", ParamSpec( 0.125, 2.3511, ExpWarp ), 0.5 )
          val pmix    = pMix
 
@@ -286,34 +278,34 @@ object SemiNuages extends {
             val readPhasor = Phasor.ar( 0, readRate, 0, numFrames )
             val read			= BufRd.ar( numChannels, bufID, readPhasor, 0, 4 )
             val writePhasor= Phasor.ar( 0, writeRate, 0, numFrames )
-            val old			= BufRd.ar( numChannels, bufID, writePhasor, 0, 1 )
-            val wet0 		= SinOsc.ar( 0, ((readPhasor - writePhasor).abs / numFrames * math.Pi) )
-            val dry			= 1 - wet0.squared
-            val wet			= 1 - (1 - wet0).squared
-            BufWr.ar( (old * dry) + (in * wet), bufID, writePhasor )
+            val old			  = BufRd.ar( numChannels, bufID, writePhasor, 0, 1 )
+            val wet0 		  = SinOsc.ar( 0, (readPhasor - writePhasor).abs / numFrames * math.Pi )
+            val dry			  = 1 - wet0.squared
+            val wet			  = 1 - (1 - wet0).squared
+            BufWr.ar( old * dry + in * wet, bufID, writePhasor )
             mix( in, read, pmix )
          }
       }
 
-//      filter( "a-gate" ) {
-//         val pamt = pAudio( "amt", ParamSpec( 0, 1 ), 1 )
-//         val pmix = pMix
-//         graph { in =>
-//            val amount = Lag.ar( pamt.ar, 0.1 )
-//            val flt = Compander.ar( in, in, Amplitude.ar( in * (1 - amount ) * 5 ), 20, 1, 0.01, 0.001 )
-//            mix( in, flt, pmix )
-//         }
-//      }
+     //      filter( "a-gate" ) {
+     //         val pamt = pAudio( "amt", ParamSpec( 0, 1 ), 1 )
+     //         val pmix = pMix
+     //         graph { in =>
+     //            val amount = Lag.ar( pamt.ar, 0.1 )
+     //            val flt = Compander.ar( in, in, Amplitude.ar( in * (1 - amount ) * 5 ), 20, 1, 0.01, 0.001 )
+     //            mix( in, flt, pmix )
+     //         }
+     //      }
 
 
-      filter( "a-hilb" ) {
+     filter( "a-hilb" ) {
          val pmix = pMix
          graph { in: In =>
-            val flt = (0 until in.numChannels) /* in.outputs */ map { chIdx =>
+            val flt = 0 until in.numChannels /* in.outputs */ map { chIdx =>
               val ch = in \ chIdx
-               val hlb  = Hilbert.ar( DelayN.ar( ch, 0.01, 0.01 ))
+               val hlb1 = Hilbert.ar( DelayN.ar( ch, 0.01, 0.01 ))
                val hlb2 = Hilbert.ar( Normalizer.ar( ch, dur = 0.02 ))
-               (hlb \ 0) * (hlb2 \ 0) - (hlb \ 1 * hlb2 \ 1)
+               hlb1 \ 0 * hlb2 \ 0 - hlb1 \ 1 * hlb2 \ 1
             }
             mix( in, flt, pmix )
          }
@@ -655,13 +647,13 @@ object SemiNuages extends {
 
       // ---- master ----
 
-      collMaster = (filter( "master+" ) {
-         val ins = (0 until NUM_PLATES).map( idx => pAudioIn( "in" + (idx+1) ))
-         graph {
-            val sig: GE = Flatten(ins.map(_.ar)) // ins.flatMap( _.ar.outputs )
-            sig
-         }
-      }).make
+      collMaster = filter("master+") {
+        val ins = (0 until NUM_PLATES).map(idx => pAudioIn("in" + (idx + 1)))
+        graph {
+          val sig: GE = Flatten(ins.map(_.ar)) // ins.flatMap( _.ar.outputs )
+          sig
+        }
+      }.make
 
       plates = Plates.create
 //      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
@@ -700,7 +692,7 @@ object SemiNuages extends {
 
       filter( "water-trans2" ) {
          val pin2    = pAudioIn( "in2" )
-         val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
+         /* val pfade = */ pAudio( "fade", ParamSpec( 0, 1 ), 0 )
          graph { in1: In =>
             val in2  = pin2.ar
             val numChannels = in1.numChannels // numOutputs
@@ -713,18 +705,18 @@ object SemiNuages extends {
             val amp2 = Amplitude.kr( in2, 0.05, 0.4 ).max( (-40).dbamp )
             val mix1 = LinXFade2.ar( in1 / amp1, dc, fade )
             val mix2 = LinXFade2.ar( dc, in2 / amp2, fade )
-            val hlb: GE = (0 until numChannels) map { ch =>
-              val hlb1 = Hilbert.ar( mix1 \ ch )
-              val hlb2 = Hilbert.ar( mix2 \ ch )
-            val re1 = hlb1 \ 0
-            val im1 = hlb1 \ 1
-            val re2 = hlb2 \ 0
-            val im2 = hlb2 \ 1
+           val hlb: GE = 0 until numChannels map { ch =>
+               val hlb1 = Hilbert.ar(mix1 \ ch)
+               val hlb2 = Hilbert.ar(mix2 \ ch)
+               val re1 = hlb1 \ 0
+               val im1 = hlb1 \ 1
+               val re2 = hlb2 \ 0
+               val im2 = hlb2 \ 1
                // val Seq( re1, im1 ) = Hilbert.ar( mix1 \ ch ).outputs
                // val Seq( re2, im2 ) = Hilbert.ar( mix2 \ ch ).outputs
                re1 * re2 - im1 * im2
-            }
-            val ampMix = amp1 * (1 - fade0).sqrt + amp2 * fade0.sqrt
+           }
+           val ampMix = amp1 * (1 - fade0).sqrt + amp2 * fade0.sqrt
             LeakDC.ar( hlb * ampMix )
          }
       }
@@ -737,7 +729,7 @@ object SemiNuages extends {
          graph { inPure: In =>
             val in            = inPure * pamp.kr
             val inChannels    = inPure.numChannels // in.numOutputs
-            val outChannels   = masterBus.numChannels
+            // val outChannels   = masterBus.numChannels
             val hp            = php.kr
             val solo          = psolo.kr
             val soloIdx       = solo - 1
@@ -770,33 +762,34 @@ object SemiNuages extends {
          Buffer.read( s, RECORD_PATH + fs + "EQ_"+(ch+1)+".aif" )
       }
 
-      val pLicht = (filter( "licht" ) {
-         val ppos    = pAudio( "pos", ParamSpec( 0, 100 ), 0 )
-         val pwidth  = pAudio( "width", ParamSpec( 1, 100 ), 1 )
-         val lichtGain = if( GRAZ ) 3.0 else 4.5
-         val pamp    = pControl( "amp", ParamSpec( 0.1, 10, ExpWarp ), lichtGain.dbamp )
+      val pLicht = filter("licht") {
+        val ppos = pAudio("pos", ParamSpec(0, 100), 0)
+        val pwidth = pAudio("width", ParamSpec(1, 100), 1)
+        val lichtGain = if (GRAZ) 3.0 else 4.5
+        val pamp = pControl("amp", ParamSpec(0.1, 10, ExpWarp), lichtGain.dbamp)
 
-         require( NUM_PLATES == 5 || NUM_PLATES == 7 )
+        require(NUM_PLATES == 5 || NUM_PLATES == 7)
 
-         graph { in: In =>
-            val flt     = Convolution2.ar( in, lichtBufs.map(_.id), frameSize = 2048 ) * pamp.kr
+        graph {
+          in: In =>
+            val flt = Convolution2.ar(in, lichtBufs.map(_.id), frameSize = 2048) * pamp.kr
             val dlyTime = 2020 * SampleDur.ir
-            val dly     = DelayN.ar( in, dlyTime, dlyTime )
-//            val mix = pmix.kr
-//            flt * mix + in * (1 - mix)
-            val pos     = A2K.kr( ppos.ar )
-            val width   = A2K.kr( pwidth.ar )
-            val pos2    = pos - width
+            val dly = DelayN.ar(in, dlyTime, dlyTime)
+            //            val mix = pmix.kr
+            //            flt * mix + in * (1 - mix)
+            val pos = A2K.kr(ppos.ar)
+            val width = A2K.kr(pwidth.ar)
+            val pos2 = pos - width
             val plates: GE = NUM_PLATES match {
-               case 5 => 1 :: 3 :: 9 :: 11 :: 16 :: Nil
-//               case 7 => 1.0 :: 3.5 :: 6.0 :: 8.5 :: 11.0 :: 13.5 :: 16.0 :: Nil
-               case 7 => 1.0 :: 3.0 :: 5.0 :: 8.5 :: 12.0 :: 14.0 :: 16.0 :: Nil
+              case 5 => 1 :: 3 :: 9 :: 11 :: 16 :: Nil
+              //               case 7 => 1.0 :: 3.5 :: 6.0 :: 8.5 :: 11.0 :: 13.5 :: 16.0 :: Nil
+              case 7 => 1.0 :: 3.0 :: 5.0 :: 8.5 :: 12.0 :: 14.0 :: 16.0 :: Nil
             }
-            val mix     = Clip.kr( pos - plates, 0, 1 ).min( Clip.kr( plates - pos2, 0, 1 ))
-//mix.poll( 1 )
+            val mix = Clip.kr(pos - plates, 0, 1).min(Clip.kr(plates - pos2, 0, 1))
+            //mix.poll( 1 )
             flt * mix + dly * (1 - mix)
-         }
-      }).make
+        }
+      }.make
 
 //      val pComp = diff( "cupola-comp" )( graph { in =>
 //         val ctrl = HPF.ar( in, 50 )

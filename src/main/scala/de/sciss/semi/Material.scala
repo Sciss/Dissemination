@@ -61,5 +61,5 @@ object Material {
       )
    )
 
-   val map: Map[ String, SoundContext ] = all.map( c => (c.name -> c) )( breakOut )
+  val map: Map[String, SoundContext] = all.map(c => c.name -> c)(breakOut)
 }

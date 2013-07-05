@@ -30,7 +30,7 @@ package de.sciss.semi
 
 import Dissemination._
 import SemiNuages._
-import de.sciss.synth.proc.{DSL, ProcFactory, ProcTxn, Ref, Proc}
+import de.sciss.synth.proc.{DSL, ProcTxn, Ref, Proc}
 import DSL._
 import Util._
 
@@ -44,7 +44,7 @@ object WaterLike {
 trait WaterLike extends SemiProcess {
    import WaterLike._
    
-   private val urn = new Urn( (0 until NUM_PLATES): _* )
+   private val urn = new Urn( 0 until NUM_PLATES: _* )
 
    protected val ch1: Ref[ Option[ Channel ]] = Ref( None )
    protected val ch2: Ref[ Option[ Channel ]] = Ref( None )
@@ -100,7 +100,7 @@ trait WaterLike extends SemiProcess {
             ch.procFilter.engage
          }
          glide( exprand( minFade, maxFade )) {
-            ch.procFilter.control( "fade" ).v = 1
+            ch.procFilter.control( "fade" ).v_=(1)
          }
       }
    }
@@ -111,8 +111,8 @@ trait WaterLike extends SemiProcess {
       val chan1O = ch1.swap( None )
       val chan2O = ch2.swap( None )
       glide( fdt ) {
-         (chan1O :: chan2O :: Nil) foreach( _.foreach { ch =>
-            ch.procFilter.control( "fade" ).v = 0
+         chan1O :: chan2O :: Nil foreach( _.foreach { ch =>
+            ch.procFilter.control( "fade" ).v_=(0)
             ProcHelper.whenGlideDone( ch.procFilter, "fade" ) { implicit tx =>
                ProcHelper.stopAndDispose( engageFade, ch.procFilter, postFun = ch.procGen.dispose( _ ))
             }
