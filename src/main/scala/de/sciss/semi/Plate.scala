@@ -496,27 +496,27 @@ class Plate( val id: Int, val collector1: Proc, val collector2: Proc, val analyz
       rp
    }
 
-//   private def makeTapePlayer( name: String, file: String )( implicit tx: ProcTxn ) = {
-//      ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
-//         val pspeed  = pControl( "speed", ParamSpec( 0.1f, 10, ExpWarp ), speed )
-//         val pamp    = pControl( "amp",   ParamSpec( 0.1f, 10, ExpWarp ), gain.dbamp )
-//         val ppos    = pScalar(  "pos",   ParamSpec( 0, 1 ), 0 )
-//         graph {
-//            val fullPath   = Dissemination.BASE_PATH + File.separator + "audio_work" + File.separator + file
-//            val afSpec     = audioFileSpec( fullPath )
-//            val startPos   = ppos.v
-//            val startFrame = (startPos * afSpec.numFrames).toLong
-//            val buf        = bufCue( fullPath, startFrame )
-//            val bufID      = buf.id
-//            val speed      = pspeed.kr * BufRateScale.ir( bufID )
-//            val d          = VDiskIn.ar( afSpec.numChannels, bufID, speed, loop = 1 )
-////               val frame   = d.reply
-////               (frame.carry( pspeed.v * b.sampleRate ) / b.numFrames) ~> ppos
-//            val liveFrame  = Integrator.ar( K2A.ar( speed ))
-//            val livePos    = ((liveFrame / BufFrames.ir( bufID )) + startPos) % 1.0f
-////               livePos ~> ppos
-//            d * pamp.kr
-//         }
-//      }
-//   }
+  //   private def makeTapePlayer( name: String, file: String )( implicit tx: ProcTxn ) = {
+  //      ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
+  //         val pspeed  = pControl( "speed", ParamSpec( 0.1f, 10, ExpWarp ), speed )
+  //         val pamp    = pControl( "amp",   ParamSpec( 0.1f, 10, ExpWarp ), gain.dbamp )
+  //         val ppos    = pScalar(  "pos",   ParamSpec( 0, 1 ), 0 )
+  //         graph {
+  //            val fullPath   = Dissemination.BASE_PATH + File.separator + "audio_work" + File.separator + file
+  //            val afSpec     = audioFileSpec( fullPath )
+  //            val startPos   = ppos.v
+  //            val startFrame = (startPos * afSpec.numFrames).toLong
+  //            val buf        = bufCue( fullPath, startFrame )
+  //            val bufID      = buf.id
+  //            val speed      = pspeed.kr * BufRateScale.ir( bufID )
+  //            val d          = VDiskIn.ar( afSpec.numChannels, bufID, speed, loop = 1 )
+  ////               val frame   = d.reply
+  ////               (frame.carry( pspeed.v * b.sampleRate ) / b.numFrames) ~> ppos
+  //            val liveFrame  = Integrator.ar( K2A.ar( speed ))
+  //            val livePos    = ((liveFrame / BufFrames.ir( bufID )) + startPos) % 1.0f
+  ////               livePos ~> ppos
+  //            d * pamp.kr
+  //         }
+  //      }
+  //   }
 }

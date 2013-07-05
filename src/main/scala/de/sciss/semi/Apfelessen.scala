@@ -52,71 +52,74 @@ object Apfelessen {
       19282908, 20034970, 20509064, 20905410, 21265568, 22108634, 22343952, 22685859, 23053207 )
 }
 
-class Apfelessen( idx: Int ) extends ColorLike {
-   import Apfelessen._
-   
-   protected def minFade      = MIN_FILTER_FADE
-   protected def maxFade      = MAX_FILTER_FADE
-   protected def engageFade   = 0.1
-   protected def delayGen     = true
+class Apfelessen(idx: Int) extends ColorLike {
+  import Apfelessen._
 
-   def name = "apfel"
-   def exclusives = Set.empty[ String ] // Set( "regen" )
-   def trigger : GE = {
-      Dust.kr( LFNoise0.kr( TRIG_CHANGE_FREQ ).linexp( -1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ ))
-   }
+  protected def minFade = MIN_FILTER_FADE
+  protected def maxFade = MAX_FILTER_FADE
 
-//   def init( implicit tx: ProcTxn ) {
-//      gen( "apfel" ) {
-//         val ppos =
-//      }
-//   }
+  protected def engageFade  = 0.1
+  protected def delayGen    = true
+
+  def name        = "apfel"
+  def exclusives  = Set.empty[String]
+
+  // Set( "regen" )
+  def trigger: GE = {
+    Dust.kr(LFNoise0.kr(TRIG_CHANGE_FREQ).linexp(-1, 1, MIN_TRIG_FREQ, MAX_TRIG_FREQ))
+  }
+
+  //   def init( implicit tx: ProcTxn ) {
+  //      gen( "apfel" ) {
+  //         val ppos =
+  //      }
+  //   }
 
   private val urn = new Urn(0 until marks.size - 1: _*)
 
-   def plate = plates( idx )
+  def plate = plates(idx)
 
-   def gen1( implicit tx: ProcTxn ) : Proc = {
-      val g = (ProcDemiurg.factories.find( _.name == name ) getOrElse gen( name ) {
-         val pamp = pControl( "amp", ParamSpec( 0.dbamp, 18.dbamp, ExpWarp ), 3.dbamp )
-         val ppos = pScalar( "pos", ParamSpec( 0, 600), 1 )
-         val pdur = pScalar( "dur", ParamSpec( 0.2, 600), 1 )
-         graph {
-            val path       = AUDIO_PATH + fs + "ApflssnConAtemAmp-M.aif"
-            val startFrame = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
-            val b          = bufCue( path, startFrame )
-            val env        = EnvGen.kr( Env.linen( 0.02, pdur.ir - (0.02 + 0.5), 0.5 ))
-            val done       = Done.kr( env )
-            done.react( diskDone() )
-            DiskIn.ar( 1, b.id ) * env * pamp.kr
-         }
-      }).make
-      val idx     = urn.next // rand( marks.size - 1 )
-      val start   = marks( idx )
-      val stop    = marks( idx + 1 )
-      g.control( "pos" ).v_=(start.toDouble / 44100)
-      g.control( "dur" ).v_=((stop - start).toDouble / 44100)
-      g
-   }
+  def gen1( implicit tx: ProcTxn ) : Proc = {
+    val g = (ProcDemiurg.factories.find(_.name == name) getOrElse gen(name) {
+      val pamp = pControl("amp", ParamSpec(0.dbamp, 18.dbamp, ExpWarp), 3.dbamp)
+      val ppos = pScalar ("pos", ParamSpec(0  , 600), 1)
+      val pdur = pScalar ("dur", ParamSpec(0.2, 600), 1)
+      graph {
+        val path        = AUDIO_PATH + fs + "ApflssnConAtemAmp-M.aif"
+        val startFrame  = (ppos.v * 44100L).toLong // AudioFileCache.spec( path ).numFrames
+        val b           = bufCue(path, startFrame)
+        val env         = EnvGen.kr(Env.linen(0.02, pdur.ir - (0.02 + 0.5), 0.5))
+        val done        = Done.kr(env)
+        done.react(diskDone())
+        DiskIn.ar(1, b.id) * env * pamp.kr
+      }
+    }).make
+    val idx   = urn.next() // rand( marks.size - 1 )
+    val start = marks(idx)
+    val stop  = marks(idx + 1)
+    g.control("pos").v_=(start.toDouble / 44100)
+    g.control("dur").v_=((stop - start).toDouble / 44100)
+    g
+  }
 
-   def filter1( implicit tx: ProcTxn ) : Proc = {
-      val fltName = name + "-trans"
-      val f = (ProcDemiurg.factories.find( _.name == fltName ) getOrElse filter( fltName ) {
-         val pin2    = pAudioIn( "in2" ) // Some( RichBus.audio( Server.default, 1 ))
-         val pfade   = pAudio( "fade", ParamSpec( 0, 1 ), 0 )
-         graph { in1: In =>
-            val in2  = pin2.ar
-            require( in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */ )
-            val fade    = pfade.ar
+  def filter1(implicit tx: ProcTxn): Proc = {
+    val fltName = name + "-trans"
+    val f = (ProcDemiurg.factories.find(_.name == fltName) getOrElse filter(fltName) {
+      val pin2  = pAudioIn("in2") // Some( RichBus.audio( Server.default, 1 ))
+      val pfade = pAudio  ("fade", ParamSpec(0, 1), 0)
+      graph { in1: In =>
+        val in2     = pin2.ar
+        require(in1.numChannels /* .numOutputs */ == in2.numChannels /* .numOutputs */)
+        val fade    = pfade.ar
 
-            val bufIDs        = List.fill( in1.numChannels /* .numOutputs */)( bufEmpty( 1024 ).id )
-            val chain1		   = FFT( bufIDs, in1 )
-            val thresh        = A2K.kr( fade ).linexp( 0, 1, 1.0e-3, 1.0e1 )
-            val chain2        = PV_MagAbove( chain1, thresh )
-            val flt			   = IFFT( chain2 ) + in2
-            flt
-         }
-      }).make
-      f
-   }
+        val bufIDs  = List.fill(in1.numChannels /* .numOutputs */)(bufEmpty(1024).id)
+        val chain1  = FFT(bufIDs, in1)
+        val thresh  = A2K.kr(fade).linexp(0, 1, 1.0e-3, 1.0e1)
+        val chain2  = PV_MagAbove(chain1, thresh)
+        val flt     = IFFT(chain2) + in2
+        flt
+      }
+    }).make
+    f
+  }
 }

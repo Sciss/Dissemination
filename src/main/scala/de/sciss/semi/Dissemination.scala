@@ -62,7 +62,7 @@ object Dissemination {
    private val PROP_MASTERGAIN= "mastergain"
 
    val properties          = {
-      val file = new File( "dissemination-settings.xml" )
+      val file = new File("dissemination-settings.xml")
       val prop = new Properties()
       if( file.isFile ) {
          val is = new FileInputStream( file )
@@ -202,7 +202,7 @@ object Dissemination {
       val f = new NuagesFrame(config)
       f.panel.display.setHighQuality(NUAGES_ANTIALIAS)
       f.setSize(640, 480)
-      f.setLocation(((SCREEN_BOUNDS.width - f.getWidth) >> 1) + 100, 10)
+      f.setLocation((SCREEN_BOUNDS.width - f.getWidth >> 1) + 100, 10)
       f.setVisible(true)
       support.nuages = f
     }

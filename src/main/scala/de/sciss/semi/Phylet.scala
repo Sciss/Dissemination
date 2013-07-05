@@ -109,7 +109,7 @@ class Phylet( idx: Int ) extends ColorLike {
             DiskIn.ar( 1, b.id ) * env * pamp.kr
          }
       }).make
-      val idx     = urn.next
+      val idx     = urn.next()
       val dur0    = exprand( MIN_DUR, MAX_DUR )
       val start   = marks( idx )
       var idx2    = idx

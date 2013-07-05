@@ -5,7 +5,7 @@ import collection.mutable.{ Buffer => MBuffer }
 class Urn[T](elements: T*) {
   private val bag = MBuffer.empty[T]
 
-  def next: T = {
+  def next(): T = {
     if (bag.isEmpty) {
       bag.append(elements: _*)
     }
@@ -18,6 +18,6 @@ class Urn[T](elements: T*) {
       bag.clear()
       bag.append(elements: _*)
     }
-    Seq.fill(n)(next)
+    Seq.fill(n)(next())
   }
 }
