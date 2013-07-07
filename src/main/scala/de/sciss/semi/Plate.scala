@@ -59,69 +59,58 @@ object Plate {
   val MAX_FILES              = 50
 
   def apply(id: Int, transit: Boolean)(implicit tx: ProcTxn): Plate = {
-    //      val pColl   = filter( (id + 1).toString + "+" ) {
-    //         val pmute = pControl( "mute", ParamSpec( 0, 1, step = 1 ), 0 )
-    //         graph { in => in * (1 - pmute.kr) }
-    //      } make
-    val collFact = filter( (id + 1).toString + "+" ) { graph { in: In => in }}
-    val pColl1 = collFact.make
-    val pColl2 = collFact.make
-    val pDummy = factory("@").make
+    val collFact  = filter(s"${id + 1}+") { graph { in: In => in }}
+    val pColl1    = collFact.make
+    val pColl2    = collFact.make
+    val pDummy    = factory("@").make
     pDummy ~> pColl1
     pColl1 ~> pColl2
     var plate: Plate = null
-    val pAna = diff("ana" + (id + 1)) {
-      //         val pid = pScalar( "id", ParamSpec( 0, NUM_PLATES - 1, step = 1 ), 0 )
-      /* val ploud   = */ pScalar("loud", ParamSpec(0, 12), 0) // for display only
-      /* val pcentr  = */ pScalar("centr", ParamSpec(20, 2000, ExpWarp), 20) // for display only
-      /* val pflat   = */ pScalar("flat", ParamSpec(0, 1), 0) // for display only
+    val pAna = diff(s"ana${id + 1}") {
+      // these three parameters are for display only
+      pScalar("loud" , ParamSpec( 0, 12), 0)
+      pScalar("centr", ParamSpec(20, 2000, ExpWarp), 20)
+      pScalar("flat" , ParamSpec( 0, 1), 0)
 
       graph { in: In =>
-        val bufID = bufEmpty(1024).id
-        val chain = FFT(bufID, Mix(in))
-        val loud  = Loudness.kr(chain)
-        //            val centr   = SpecCentroid.kr( chain )
-        val centr = SpecPcile.kr(chain)
-        val flat0 = SpecFlatness.kr(chain)
-        val flatc = CheckBadValues.kr(flat0, post = 0)
-        val flat  = Gate.kr(flat0, flatc === 0)
-        //          List( loud, centr, flat ).poll( 2 )
-        val compound = List(loud, centr, flat)
-        val smooth = Lag.kr(compound, 10)
-        //           smooth.poll( 2 )
-        1.react(smooth) { data =>
-          val Seq(loud, centr, flat) = data
-          //println( "AQUI " + id )
+        val bufID     = bufEmpty(1024).id
+        val chain     = FFT(bufID, Mix(in))
+        val loud      = Loudness      .kr(chain)
+        val centr     = SpecPcile     .kr(chain)
+        val flat0     = SpecFlatness  .kr(chain)
+        val flatc     = CheckBadValues.kr(flat0, post = 0)
+        val flat      = Gate.kr(flat0, flatc === 0)
+        val compound  = Seq(loud, centr, flat)
+        val smooth    = Lag.kr(compound, 10)
+
+        1.react(smooth) { case Seq(vloud, vcentr, vflat) =>
           ProcTxn.spawnAtomic { implicit tx =>
-            //java.awt.EventQueue.invokeLater( new Runnable { def run = ProcTxn.atomic { implicit tx =>
-            plate.newAnalysis(loud, centr, flat)
+            plate.newAnalysis(vloud, vcentr, vflat)
             // display
             val me = plate.analyzer
-            me.control("loud" ).v_=(loud )
-            me.control("centr").v_=(centr)
-            me.control("flat" ).v_=(flat )
+            me.control("loud" ).v_=(vloud )
+            me.control("centr").v_=(vcentr)
+            me.control("flat" ).v_=(vflat )
           }
         }
         0
       }
     }.make
 
-    val recPathF   = ProcHelper.createTempAudioFile()
-    val pRec = diff("rec" + id) {
+    val recPathF  = ProcHelper.createTempAudioFile()
+    val pRec      = diff(s"rec${id + 1}") {
       val pdur = pScalar("dur", ParamSpec(1, 120), 1)
       graph { in0: In =>
         val in        = LeakDC.ar(in0)
-        val b         = bufRecord(recPathF.getAbsolutePath, in0.numChannels /* in.numOutputs */)
+        val b         = bufRecord(recPathF.getAbsolutePath, in0.numChannels)
         DiskOut.ar(b.id, in)
         val done      = Done.kr(Line.kr(dur = pdur.ir))
         val ampInteg  = Integrator.kr(Amplitude.kr(in))
-        done.react(ampInteg) { data =>
-          val Seq(amp) = data
-          ProcTxn.spawnAtomic {
-            implicit tx => plate.recordDone(recPathF, amp)
+        done.react(ampInteg) { case Seq(amp) =>
+          ProcTxn.spawnAtomic { implicit tx =>
+            plate.recordDone(recPathF, amp)
           }
         }
-        //            FreeSelf.kr( done )
         PauseSelf.kr(done) // free-self not yet recognized by proc, so we avoid a /n_free node not found
       }
     }.make
@@ -134,15 +123,6 @@ object Plate {
     pDummy.dispose
     plate
   }
-
-  //   private val stopAndDisposeListener = new Proc.Listener {
-  //      def updated( u: Proc.Update ) {
-  //         if( !u.state.fading && (!u.state.playing || u.state.bypassed) ) {
-  //            if( verbose ) println( "" + new java.util.Date() + " FINAL-DISPOSE " + u.proc )
-  //            disposeProc( u.proc ) // ProcTxn.atomic { implicit tx => }
-  //         }
-  //      }
-  //   }
 
   case class RunningProc(proc: Proc, context: SoundContext, startTime: Long, deathTime: Long)
 }
@@ -173,7 +153,7 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
       res
     }
     val idx       = names.lastOption.map(_.substring(6, 11).toInt).getOrElse(0)
-    val contexts  = names.map(wrapInjectionInContext(_))
+    val contexts  = names.map(wrapInjectionInContext)
     (Ref(idx), Ref(contexts))
   }
 

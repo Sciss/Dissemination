@@ -40,111 +40,110 @@ import de.sciss.synth.swing.j.{JNodeTreePanel, JServerStatusPanel}
 import de.sciss.osc
 
 object Dissemination {
-   val fs = File.separator
+  val fs = File.separator
 
-//   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
-   val INTERNAL_AUDIO      = false // true
-   val NUAGES_ANTIALIAS    = false
-   val MASTER_INDEX        = 2
-   val SAMPLE_RATE         = 44100.0
+  //   val BASE_PATH           = System.getProperty( "user.home" ) + fs + "Desktop" + fs + "Dissemination"
+  val INTERNAL_AUDIO          = false
+  val NUAGES_ANTIALIAS        = false
+  val MASTER_INDEX            = 2
+  val SAMPLE_RATE             = 44100.0
 
-   val HEADPHONES_INDEX    = 0
+  val HEADPHONES_INDEX        = 0
 
-   val OPEN_NUAGES         = true
-   val OPEN_NODETREE       = false
+  val OPEN_NUAGES             = true
+  val OPEN_NODETREE           = false
 
-   val CMD_KILL_ALL        = "/usr/bin/killall"
-   val CMD_OPEN            = "/usr/bin/open"
+  val CMD_KILL_ALL            = "/usr/bin/killall"
+  val CMD_OPEN                = "/usr/bin/open"
 
-   private val PROP_BASEPATH  = "basepath"
-   private val PROP_SCPATH    = "scpath"
-   private val PROP_GRAZ      = "graz"
-   private val PROP_STARTMETA = "startmeta"
-   private val PROP_MASTERGAIN= "mastergain"
+  private val PROP_BASEPATH   = "basepath"
+  private val PROP_SCPATH     = "scpath"
+  private val PROP_GRAZ       = "graz"
+  private val PROP_STARTMETA  = "startmeta"
+  private val PROP_MASTERGAIN = "mastergain"
 
-   val properties          = {
-      val file = new File("dissemination-settings.xml")
-      val prop = new Properties()
-      if( file.isFile ) {
-         val is = new FileInputStream( file )
-         prop.loadFromXML( is )
-         is.close()
-      } else {
-         prop.setProperty( PROP_BASEPATH,
-            new File( new File( System.getProperty( "user.home" ), "Desktop" ), "Dissemination" ).getAbsolutePath )
-         prop.setProperty( PROP_SCPATH,
-            new File( new File( new File( new File( new File( System.getProperty( "user.home" ), "Documents" ),
-               "devel" ), "SuperCollider3" ), "common" ), "build" ).getAbsolutePath )
-         val os = new FileOutputStream( file )
-         prop.storeToXML( os, "Dissemination Settings" )
-         os.close()
-      }
-      prop
-   }
+  val properties = {
+    val file = new File("dissemination-settings.xml")
+    val prop = new Properties()
+    if (file.isFile) {
+      val is = new FileInputStream(file)
+      prop.loadFromXML(is)
+      is.close()
+    } else {
+      prop.setProperty(PROP_BASEPATH,
+        new File(new File(System.getProperty("user.home"), "Desktop"), "Dissemination").getAbsolutePath)
+      prop.setProperty(PROP_SCPATH,
+        new File(new File(new File(new File(new File(System.getProperty("user.home"), "Documents"),
+          "devel"), "SuperCollider3"), "common"), "build").getAbsolutePath)
+      val os = new FileOutputStream(file)
+      prop.storeToXML(os, "Dissemination Settings")
+      os.close()
+    }
+    prop
+  }
 
-   val MASTER_GAIN         = properties.getProperty( PROP_MASTERGAIN, "-24" ).toDouble
+  val MASTER_GAIN         = properties.getProperty( PROP_MASTERGAIN, "-24" ).toDouble
 
-   val BASE_PATH           = properties.getProperty( PROP_BASEPATH )
-   val RECORD_PATH         = BASE_PATH + fs + "rec"
-   val AUDIO_PATH          = BASE_PATH + fs + "audio_work" 
-   val WORK_PATH           = AUDIO_PATH + fs + "work"
-   val INJECT_PATH         = BASE_PATH + fs + "inject"
-   val TEMP_PATH           = System.getProperty( "java.io.tmpdir" ) // BASE_PATH + fs + "tmp"
+  val BASE_PATH           = properties.getProperty(PROP_BASEPATH)
+  val RECORD_PATH         = BASE_PATH + fs + "rec"
+  val AUDIO_PATH          = BASE_PATH + fs + "audio_work"
+  val WORK_PATH           = AUDIO_PATH + fs + "work"
+  val INJECT_PATH         = BASE_PATH + fs + "inject"
+  val TEMP_PATH           = System.getProperty("java.io.tmpdir") // BASE_PATH + fs + "tmp"
 
-   val GRAZ                = properties.getProperty( PROP_GRAZ, "false" ).toBoolean // false
-   val START_META          = properties.getProperty( PROP_STARTMETA, "true" ).toBoolean
+  val GRAZ                = properties.getProperty(PROP_GRAZ, "false").toBoolean
+  val START_META          = properties.getProperty(PROP_STARTMETA, "true").toBoolean
 
-   val NUM_PLATES          = if( GRAZ ) 7 else 5
-//   val START_WITH_TRANSIT  = false // GRAZ
-   val PLATE_TRANSITS      = if( GRAZ ) {
-      IIdxSeq.tabulate( NUM_PLATES )( i => i < 2 || NUM_PLATES - 1 - i < 2 )
-   } else {
-      IIdxSeq.tabulate( NUM_PLATES )( i => !(i % 2 == 0) ) // START_WITH_TRANSIT
-   }
-   val MASTER_NUMCHANNELS  = if( INTERNAL_AUDIO ) 2 else NUM_PLATES
+  val NUM_PLATES          = if (GRAZ) 7 else 5
+  //   val START_WITH_TRANSIT  = false // GRAZ
+  val PLATE_TRANSITS      = if (GRAZ) {
+    IIdxSeq.tabulate(NUM_PLATES)(i => i < 2 || NUM_PLATES - 1 - i < 2)
+  } else {
+    IIdxSeq.tabulate(NUM_PLATES)(i => !(i % 2 == 0)) // START_WITH_TRANSIT
+  }
+  val MASTER_NUMCHANNELS  = if (INTERNAL_AUDIO) 2 else NUM_PLATES
 
-   val CMD_SCSYNTH         = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
-   
-   val options          = {
-      val o = Server.Config()
-      if( INTERNAL_AUDIO ) {
-         o.deviceNames        = Some( "Built-in Microphone" -> "Built-in Output" )
-      } else {
-         o.deviceName         = Some( "MOTU 828mk2" )
-      }
-      o.programPath        = CMD_SCSYNTH // properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
-      o.inputBusChannels   = 10
-      o.outputBusChannels  = 10
-      o.audioBusChannels   = 512
-      o.loadSynthDefs      = false
-      o.memorySize         = 65536
-      o.zeroConf           = false
-//      o.port               = 0
-      o.transport          = osc.TCP
-//      o.programPath        = properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
-      o.build
-   }
+  val CMD_SCSYNTH         = properties.getProperty(PROP_SCPATH) + fs + "scsynth"
 
-   lazy val SCREEN_BOUNDS =
+  val options = {
+    val o = Server.Config()
+    if (INTERNAL_AUDIO) {
+      o.deviceNames     = Some("Built-in Microphone" -> "Built-in Output")
+    } else {
+      o.deviceName      = Some("MOTU 828mk2")
+    }
+    o.programPath       = CMD_SCSYNTH // properties.getProperty( PROP_SCPATH ) + fs + "scsynth"
+    o.inputBusChannels  = 10
+    o.outputBusChannels = 10
+    o.audioBusChannels  = 512
+    o.loadSynthDefs     = false
+    o.memorySize        = 65536
+    o.zeroConf          = false
+    o.transport         = osc.TCP   // problems with UDP max message size
+    o.maxSynthDefs      = 8192      // severe bug that means we will run out of SynthDefs
+    o.build
+  }
+
+  lazy val SCREEN_BOUNDS =
          GraphicsEnvironment.getLocalGraphicsEnvironment.getDefaultScreenDevice.getDefaultConfiguration.getBounds
-   
-   val support = new REPLSupport
-   var masterBus : AudioBus = null
-   var headphonesBus : AudioBus = null
 
-   var gui: GUI            = null
+  val support                 = new REPLSupport
+  var masterBus    : AudioBus = null
+  var headphonesBus: AudioBus = null
 
-   @volatile var s: Server       = _
-   @volatile var booting: ServerConnection = _
-   @volatile var config: NuagesConfig = _
+  var gui: GUI                = null
 
-   def main( args: Array[ String ]) {
-      guiRun { init() }
-   }
+  @volatile var s: Server = _
+  @volatile var booting: ServerConnection = _
+  @volatile var config: NuagesConfig = _
 
-   def guiRun( code: => Unit ) {
-      EventQueue.invokeLater( new Runnable { def run() { code }})
-   }
+  def main(args: Array[String]) {
+    guiRun { init() }
+  }
+
+  def guiRun(code: => Unit) {
+    EventQueue.invokeLater(new Runnable { def run() { code } })
+  }
 
   def init() {
     // prevent actor starvation!!!
