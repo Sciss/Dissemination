@@ -5,13 +5,18 @@ import java.awt.{RenderingHints, Color, Graphics2D}
 import Swing._
 import de.sciss.file._
 import de.sciss.span.Span
-import java.awt.geom.Rectangle2D
+import java.awt.geom.{GeneralPath, Rectangle2D}
 import javax.swing.WindowConstants
 
 object Score extends SimpleSwingApplication {
-  val file = userHome / "Desktop" / "data1.txt"
+  def data      = file("notes") / "data1.txt"
+  def drawFades = true
 
-  lazy val score = readScore(file)
+  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: Long = 0L)
+
+  type Data = Vector[Vector[Region]]
+
+  lazy val score: Data = readScore(data)
 
   lazy val top = new Frame {
     title = "Dissemination"
@@ -32,19 +37,39 @@ object Score extends SimpleSwingApplication {
   val pixelsPerProc   = 48
   val procSpacing     = 16
 
+  val rect  = new Rectangle2D.Double()
+  val gp    = new GeneralPath()
+
   def paintScore(g: Graphics2D) {
-    val rect = new Rectangle2D.Double()
 
     score.zipWithIndex.foreach { case (events, idx) =>
       events.foreach {
-        case Span(start, stop) =>
+        case Region(Span(start, stop), fadeIn, fadeOut) =>
           val x1 = idx * (pixelsPerProc + procSpacing)
           val x2 = x1 + pixelsPerProc
           val y1 = start * pixelsPerFrame
           val y2 = stop  * pixelsPerFrame
-          rect.setRect(x1, y1, x2 - x1, y2 - y1)
+          val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != 0L)) {
+            gp.reset()
+            val yin1 = (start + fadeIn._1) * pixelsPerFrame
+            val yin2 = (start + fadeIn._2) * pixelsPerFrame
+            val yout = (stop  - fadeOut  ) * pixelsPerFrame
+            val xm   = (x1 + x2) * 0.5
+            gp.moveTo(xm, y1)
+            gp.lineTo(x1, yin1)
+            gp.lineTo(x1, yout)
+            gp.lineTo(xm, y2)
+            gp.lineTo(x2, yout)
+            gp.lineTo(x2, yin2)
+            gp.closePath()
+            gp
+
+          } else {
+            rect.setRect(x1, y1, x2 - x1, y2 - y1)
+            rect
+          }
           g.setColor(Color.black)
-          g.fill(rect)
+          g.fill(shp)
 
         case _ =>
       }
@@ -66,23 +91,71 @@ object Score extends SimpleSwingApplication {
   val procName  = procID.map(_.swap)
   val procNum   = procName.keys.max + 1
 
-  def readScore(f: File): Vector[Vector[Span.HasStart]] = {
+  def readScore(f: File): Data = {
     val lines = io.Source.fromFile(f, "UTF-8").getLines().filter(_.startsWith("<ANA>"))
 
-    var res   = Vector.fill(procNum)(Vector.empty[Span.HasStart])
+    var res   = Vector.fill(procNum)(Vector.empty[Region])
 
     lines.foreach { ln =>
       val words = ln.trim.split(' ')
       val frame = words(1).toLong
       words(2) match {
         case "start-proc" =>
-          val idx = procID(words(3))
-          res = res.updated(idx, res(idx) :+ Span.From(frame))
+          val name  = words(3)
+          if (name != "windspiel") {
+            val idx   = procID(name)
+            res = res.updated(idx, res(idx) :+ Region(Span.From(frame)))
+          }
 
-        case "stop-proc"  =>
-          val idx = procID(words(3))
-          val init :+ last = res(idx)
-          res = res.updated(idx, init :+ Span(last.start, frame))
+        case "windspiel-play" =>
+          require(words(13) == "dur")
+          val dur = words(14).toLong
+          val idx = procID("windspiel")
+          res = res.updated(idx, res(idx) :+ Region(Span(frame, frame + dur)))
+
+        case "stop-proc" =>
+          val name  = words(3)
+          if (/* name == "windspiel" || */ name == "licht") {
+            val idx   = procID(name)
+            val init :+ (last: Region) = res(idx)
+            res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame)))
+          }
+
+        case "fade-in" =>
+          val dur   = words(3).toLong
+          val name  = words(4)
+          if (name != "licht") {
+            val idx   = procID(name)
+            val init :+ (last: Region) = res(idx)
+            res = res.updated(idx, init :+ last.copy(fadeIn = (dur, dur)))
+          }
+
+        case "fade-in-channel" =>
+          val ch    = words(3).toInt
+          val dur   = words(4).toLong
+          val name  = words(5)
+          val idx   = procID(name)
+          val init :+ (last: Region) = res(idx)
+          val oldFade = last.fadeIn
+          val newFade = if (ch == 0) oldFade.copy(_1 = dur) else oldFade.copy(_2 = dur)
+          res = res.updated(idx, init :+ last.copy(fadeIn = newFade))
+
+        case "fade-out" =>
+          val dur   = words(3).toLong
+          val name  = words(4)
+          val idx   = procID(name)
+          val init :+ (last: Region) = res(idx)
+          res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = dur))
+
+        case "fade-out-channel" =>
+          val ch    = words(3).toInt
+          if (ch == 0) {
+            val dur   = words(4).toLong
+            val name  = words(5)
+            val idx   = procID(name)
+            val init :+ (last: Region) = res(idx)
+            res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = dur))
+          }
 
         case other =>
           println(s"Warning: skipping command '$other'")

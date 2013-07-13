@@ -92,7 +92,7 @@ trait WaterLike extends MiddleProcess {
       glide(fdt) {
         ch.procFilter.control("fade").v_=(1)
       }
-      Analysis.log(s"fade-in-channel $idx ${(fdt * 44100L).toLong} $name")
+      Analysis.log(s"fade-in-channel $idx ${chans(idx).idx} ${(fdt * 44100L).toLong} $name")
     }
   }
 

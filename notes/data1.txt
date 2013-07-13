@@ -1,0 +1,763 @@
+<ANA> 0 start-proc windspiel
+<ANA> 448629 stop-proc windspiel
+<ANA> 448629 gen-wind rate 1.353 lo-skew 0.332 hi-skew 2.413 min-step 0.177 max-step 0.681 pow 1.330 steps 103 dur 1845673
+<ANA> 448629 filter-wind daub16 scale 3
+<ANA> 448629 windspiel-play speed 0.267 idx1 3 idx2 0 coin1 false coin2 false dur 991501
+<ANA> 876619 start-proc sprenger
+<ANA> 876619 sprenger-filters idx 1
+<ANA> 876619 sprenger-gen-cut pos 0 dur 3446003
+<ANA> 876619 sprenger-gen-cut pos 0 dur 3446003
+<ANA> 876619 fade-in-channel 0 1187980 sprenger
+<ANA> 876619 fade-in-channel 1 1770009 sprenger
+<ANA> 2007211 start-proc windspiel
+<ANA> 2078918 start-proc phylet
+<ANA> 2078918 phylet-gen1 idx 95 pos 20709937 dur 330001
+<ANA> 2078918 fade-in 361325 phylet
+<ANA> 2288349 stop-proc windspiel
+<ANA> 2288349 gen-wind rate 1.645 lo-skew 0.538 hi-skew 1.523 min-step 0.068 max-step 0.931 pow 1.740 steps 130 dur 2310363
+<ANA> 2288349 filter-wind daub16 scale 2
+<ANA> 2288349 windspiel-play speed 0.393 idx1 6 idx2 4 coin1 false coin2 true dur 2679161
+<ANA> 2527503 start-proc licht
+<ANA> 2527503 fade-in 2902319 licht width 34
+<ANA> 2779490 stop-proc phylet
+<ANA> 2779490 fade-out 475265 phylet
+Fri Jul 05 23:42:23 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 4069636 sprenger-gen-cut pos 4870894 dur 4577989
+<ANA> 4069636 sprenger-gen-cut pos 4870894 dur 4577989
+<ANA> 4703309 start-proc apfel
+<ANA> 4703309 apfel-gen1 idx 23 pos 14059904 dur 493346
+<ANA> 4703309 fade-in 496851 apfel
+<ANA> 5431532 stop-proc licht
+<ANA> 5703408 stop-proc apfel
+<ANA> 5703408 fade-out 353622 apfel
+Fri Jul 05 23:43:26 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 6473042 start-proc licht
+<ANA> 6473042 fade-in 2828187 licht width 43
+<ANA> 8385835 sprenger-gen-cut pos 11660924 dur 3923290
+<ANA> 8385835 sprenger-gen-cut pos 11660924 dur 3923290
+<ANA> 8838830 start-proc windspiel
+<ANA> 8967382 stop-proc windspiel
+<ANA> 8967382 gen-wind rate 1.086 lo-skew 0.441 hi-skew 1.112 min-step 0.115 max-step 0.643 pow 1.709 steps 114 dur 1653557
+<ANA> 8967382 filter-wind daub16 scale 1
+<ANA> 8967382 windspiel-play speed 0.255 idx1 2 idx2 1 coin1 false coin2 false dur 4117945
+<ANA> 9302895 stop-proc licht
+<ANA> 9849161 start-proc windspiel
+<ANA> 10011096 stop-proc windspiel
+<ANA> 10011096 gen-wind rate 1.658 lo-skew 0.528 hi-skew 2.977 min-step 0.092 max-step 0.465 pow 1.803 steps 180 dur 1866868
+<ANA> 10011096 filter-wind daub4 scale 1
+<ANA> 10011096 windspiel-play speed 0.320 idx1 1 idx2 0 coin1 true coin2 false dur 3283064
+<ANA> 11167751 start-proc licht
+<ANA> 11167751 fade-in 2215586 licht width 19
+<ANA> 11426354 start-proc apfel
+<ANA> 11426354 apfel-gen1 idx 16 pos 8522199 dur 287708
+<ANA> 11426354 fade-in 425598 apfel
+<ANA> 11891300 start-proc phylet
+<ANA> 11891300 phylet-gen1 idx 251 pos 58603831 dur 902043
+<ANA> 11891300 fade-in 456736 phylet
+<ANA> 12051824 sprenger-gen-cut pos 16881713 dur 2254429
+<ANA> 12051824 sprenger-gen-cut pos 16881713 dur 2254429
+<ANA> 12145316 stop-proc apfel
+<ANA> 12145316 fade-out 378493 apfel
+Fri Jul 05 23:45:53 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#2 @ in)) : java.lang.IllegalArgumentException
+<ANA> 12562634 start-proc apfel
+<ANA> 12562634 apfel-gen1 idx 36 pos 18944132 dur 338776
+<ANA> 12562634 fade-in 432913 apfel
+<ANA> 13256019 stop-proc phylet
+<ANA> 13256019 fade-out 377861 phylet
+<ANA> 13339985 stop-proc apfel
+<ANA> 13339985 fade-out 493540 apfel
+<ANA> 13385099 stop-proc licht
+Fri Jul 05 23:46:18 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#2 @ in)) : java.lang.IllegalArgumentException
+Fri Jul 05 23:46:22 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#3 @ in)) : java.lang.IllegalArgumentException
+<ANA> 14045805 sprenger-gen-cut pos 20752417 dur 4284970
+<ANA> 14045805 sprenger-gen-cut pos 20752417 dur 4284970
+<ANA> 15210090 start-proc windspiel
+<ANA> 15370437 stop-proc windspiel
+<ANA> 15370437 gen-wind rate 1.675 lo-skew 0.892 hi-skew 1.209 min-step 0.078 max-step 0.515 pow 1.450 steps 168 dur 2028956
+<ANA> 15370437 filter-wind daub4 scale 1
+<ANA> 15370437 windspiel-play speed 0.270 idx1 2 idx2 6 coin1 true coin2 false dur 3889373
+<ANA> 15433368 start-proc windspiel
+<ANA> 15594465 stop-proc windspiel
+<ANA> 15594465 gen-wind rate 1.996 lo-skew 0.973 hi-skew 1.620 min-step 0.051 max-step 0.631 pow 1.419 steps 149 dur 2057609
+<ANA> 15594465 filter-wind daub4 scale 3
+<ANA> 15594465 windspiel-play speed 0.306 idx1 4 idx2 5 coin1 true coin2 false dur 864538
+<ANA> 15641255 start-proc windspiel
+<ANA> 15797898 stop-proc windspiel
+<ANA> 15797898 gen-wind rate 1.960 lo-skew 0.974 hi-skew 3.586 min-step 0.109 max-step 0.503 pow 1.411 steps 152 dur 1972976
+<ANA> 15797898 filter-wind daub4 scale 1
+<ANA> 15797898 windspiel-play speed 0.557 idx1 2 idx2 6 coin1 false coin2 false dur 1890875
+<ANA> 15970550 start-proc windspiel
+<ANA> 16158548 stop-proc windspiel
+<ANA> 16158548 gen-wind rate 1.281 lo-skew 0.661 hi-skew 3.535 min-step 0.072 max-step 0.543 pow 1.324 steps 191 dur 2363636
+<ANA> 16158548 filter-wind daub16 scale 2
+<ANA> 16158548 windspiel-play speed 0.419 idx1 1 idx2 5 coin1 false coin2 false dur 2510831
+<ANA> 16343856 start-proc apfel
+<ANA> 16343856 apfel-gen1 idx 1 pos 508517 dur 397782
+<ANA> 16343856 fade-in 405451 apfel
+<ANA> 16350471 start-proc windspiel
+<ANA> 16495605 stop-proc windspiel
+<ANA> 16495605 gen-wind rate 1.895 lo-skew 0.866 hi-skew 1.152 min-step 0.076 max-step 0.430 pow 1.345 steps 111 dur 1289646
+<ANA> 16495605 filter-wind daub4 scale 1
+<ANA> 16495605 windspiel-play speed 0.298 idx1 3 idx2 4 coin1 false coin2 false dur 3530046
+<ANA> 16765276 start-proc windspiel
+<ANA> 16891843 stop-proc windspiel
+<ANA> 16891843 gen-wind rate 1.217 lo-skew 0.471 hi-skew 1.713 min-step 0.074 max-step 0.415 pow 1.218 steps 100 dur 1097102
+<ANA> 16891843 filter-wind daub4 scale 2
+<ANA> 16891843 windspiel-play speed 0.481 idx1 5 idx2 6 coin1 true coin2 true dur 1098237
+<ANA> 16939383 start-proc windspiel
+<ANA> 17058629 stop-proc windspiel
+<ANA> 17058629 gen-wind rate 1.287 lo-skew 0.899 hi-skew 1.885 min-step 0.104 max-step 0.778 pow 1.597 steps 73 dur 1244316
+<ANA> 17058629 filter-wind daub16 scale 1
+<ANA> 17058629 windspiel-play speed 0.480 idx1 3 idx2 4 coin1 false coin2 false dur 2191566
+<ANA> 17153400 stop-proc apfel
+<ANA> 17153400 fade-out 392780 apfel
+Fri Jul 05 23:47:47 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#4 @ in)) : java.lang.IllegalArgumentException
+<ANA> 17740768 start-proc apfel
+<ANA> 17740768 apfel-gen1 idx 4 pos 1880865 dur 435287
+<ANA> 17740768 fade-in 460962 apfel
+<ANA> 18071606 stop-proc sprenger
+<ANA> 18071606 fade-out-channel 0 1053799 sprenger
+<ANA> 18071606 fade-out-channel 1 1053799 sprenger
+<ANA> 18627707 start-proc licht
+<ANA> 18627707 fade-in 661124 licht width 19
+<ANA> 18640496 stop-proc apfel
+<ANA> 18640496 fade-out 383386 apfel
+<ANA> 18956429 start-proc windspiel
+Fri Jul 05 23:48:20 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#5 @ in)) : java.lang.IllegalArgumentException
+<ANA> 19096005 stop-proc windspiel
+<ANA> 19096005 gen-wind rate 1.022 lo-skew 0.485 hi-skew 2.333 min-step 0.096 max-step 0.482 pow 1.434 steps 164 dur 1925868
+<ANA> 19096005 filter-wind daub4 scale 1
+<ANA> 19096005 windspiel-play speed 0.429 idx1 1 idx2 2 coin1 false coin2 false dur 2452330
+Fri Jul 05 23:48:25 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(water-trans1#2 @ in)) : java.lang.IllegalArgumentException
+Fri Jul 05 23:48:25 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(water-trans1 @ in)) : java.lang.IllegalArgumentException
+<ANA> 19290354 stop-proc licht
+<ANA> 20762544 start-proc windspiel
+<ANA> 20960641 stop-proc windspiel
+<ANA> 20960641 gen-wind rate 1.585 lo-skew 0.916 hi-skew 2.288 min-step 0.069 max-step 0.817 pow 1.717 steps 135 dur 2166523
+<ANA> 20960641 filter-wind daub16 scale 1
+<ANA> 20960641 windspiel-play speed 0.264 idx1 4 idx2 0 coin1 false coin2 false dur 7965141
+<ANA> 20971446 start-proc windspiel
+<ANA> 21108641 stop-proc windspiel
+<ANA> 21108641 gen-wind rate 1.295 lo-skew 0.262 hi-skew 1.884 min-step 0.115 max-step 0.583 pow 1.726 steps 129 dur 1726022
+<ANA> 21108641 filter-wind daub4 scale 3
+<ANA> 21108641 windspiel-play speed 0.518 idx1 5 idx2 1 coin1 false coin2 false dur 514597
+<ANA> 21151197 start-proc phylet
+<ANA> 21151197 phylet-gen1 idx 0 pos 245877 dur 684651
+<ANA> 21151197 fade-in 413789 phylet
+<ANA> 21644368 start-proc windspiel
+<ANA> 21844979 stop-proc windspiel
+<ANA> 21844979 gen-wind rate 1.494 lo-skew 0.414 hi-skew 1.968 min-step 0.125 max-step 0.519 pow 1.370 steps 181 dur 2424761
+<ANA> 21844979 filter-wind daub4 scale 1
+<ANA> 21844979 windspiel-play speed 0.325 idx1 3 idx2 6 coin1 true coin2 false dur 6452507
+<ANA> 22255770 stop-proc phylet
+<ANA> 22255770 fade-out 450407 phylet
+<ANA> 22467759 start-proc phylet
+<ANA> 22467759 phylet-gen1 idx 17 pos 4287319 dur 1071841
+<ANA> 22467759 fade-in 497703 phylet
+<ANA> 22656198 start-proc apfel
+<ANA> 22656198 apfel-gen1 idx 31 pos 17288024 dur 344244
+<ANA> 22656198 fade-in 487971 apfel
+Fri Jul 05 23:49:44 CEST 2013 CAUGHT ProcEdge(aOut(phylet-trans#4 @ out),aIn(phylet-trans#3 @ in)) : java.lang.IllegalArgumentException
+<ANA> 22870260 start-proc windspiel
+<ANA> 23063065 stop-proc windspiel
+<ANA> 23063065 gen-wind rate 1.466 lo-skew 0.977 hi-skew 1.731 min-step 0.143 max-step 0.711 pow 1.652 steps 166 dur 2657057
+<ANA> 23063065 filter-wind daub4 scale 2
+<ANA> 23063065 windspiel-play speed 0.495 idx1 1 idx2 3 coin1 true coin2 false dur 2127797
+<ANA> 23494495 stop-proc apfel
+<ANA> 23494495 fade-out 421286 apfel
+<ANA> 23864715 start-proc windspiel
+Fri Jul 05 23:50:11 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#6 @ in)) : java.lang.IllegalArgumentException
+<ANA> 23930247 start-proc zeven
+<ANA> 23930247 zeven-gen1 pos 45294059 dur 2369439
+<ANA> 23930247 fade-in 920392 zeven
+<ANA> 24035029 stop-proc windspiel
+<ANA> 24035029 gen-wind rate 1.129 lo-skew 0.395 hi-skew 2.436 min-step 0.087 max-step 0.473 pow 1.552 steps 101 dur 1078297
+<ANA> 24035029 filter-wind daub16 scale 2
+<ANA> 24035029 windspiel-play speed 0.437 idx1 2 idx2 6 coin1 false coin2 false dur 1208638
+<ANA> 24047024 stop-proc phylet
+<ANA> 24047024 fade-out 377322 phylet
+<ANA> 24117143 start-proc windspiel
+<ANA> 24264040 stop-proc windspiel
+<ANA> 24264040 gen-wind rate 1.614 lo-skew 0.613 hi-skew 1.343 min-step 0.055 max-step 0.573 pow 1.976 steps 139 dur 1520367
+<ANA> 24264040 filter-wind daub4 scale 2
+<ANA> 24264040 windspiel-play speed 0.364 idx1 4 idx2 0 coin1 false coin2 false dur 1449877
+Fri Jul 05 23:50:23 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#4 @ in)) : java.lang.IllegalArgumentException
+<ANA> 24498652 start-proc windspiel
+<ANA> 24553468 start-proc licht
+<ANA> 24553468 fade-in 576935 licht width 7
+<ANA> 24705393 stop-proc windspiel
+<ANA> 24705393 gen-wind rate 1.897 lo-skew 0.390 hi-skew 1.384 min-step 0.061 max-step 0.764 pow 1.213 steps 146 dur 2551754
+<ANA> 24705393 filter-wind daub4 scale 3
+<ANA> 24705393 windspiel-play speed 0.506 idx1 0 idx2 6 coin1 false coin2 false dur 1044998
+<ANA> 24882763 start-proc windspiel
+<ANA> 25018547 stop-proc windspiel
+<ANA> 25018547 gen-wind rate 1.517 lo-skew 0.433 hi-skew 3.569 min-step 0.182 max-step 0.625 pow 1.453 steps 119 dur 1952655
+<ANA> 25018547 filter-wind daub16 scale 2
+<ANA> 25018547 windspiel-play speed 0.505 idx1 3 idx2 5 coin1 false coin2 false dur 1046381
+<ANA> 25131663 stop-proc licht
+<ANA> 25262685 start-proc apfel
+<ANA> 25262685 apfel-gen1 idx 21 pos 12669291 dur 992954
+<ANA> 25262685 fade-in 488766 apfel
+<ANA> 26310942 stop-proc zeven
+<ANA> 26310942 fade-out 1059994 zeven
+<ANA> 26750266 stop-proc apfel
+<ANA> 26750266 fade-out 427702 apfel
+Fri Jul 05 23:51:25 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#7 @ in)) : java.lang.IllegalArgumentException
+<ANA> 27233161 start-proc windspiel
+Fri Jul 05 23:51:29 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 27387731 stop-proc windspiel
+<ANA> 27387731 gen-wind rate 1.311 lo-skew 0.758 hi-skew 1.923 min-step 0.086 max-step 0.403 pow 1.285 steps 185 dur 1923035
+<ANA> 27387731 filter-wind daub4 scale 3
+<ANA> 27387731 windspiel-play speed 0.376 idx1 2 idx2 1 coin1 false coin2 false dur 706549
+<ANA> 27643335 start-proc apfel
+<ANA> 27643335 apfel-gen1 idx 28 pos 16214938 dur 353373
+<ANA> 27643335 fade-in 445775 apfel
+<ANA> 27837904 start-proc licht
+<ANA> 27837904 fade-in 980421 licht width 39
+<ANA> 28445734 stop-proc apfel
+<ANA> 28445734 fade-out 364056 apfel
+Fri Jul 05 23:52:02 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#8 @ in)) : java.lang.IllegalArgumentException
+<ANA> 28820143 stop-proc licht
+<ANA> 29732087 start-proc licht
+<ANA> 29732087 fade-in 2546446 licht width 43
+<ANA> 31001021 start-proc phylet
+<ANA> 31001021 phylet-gen1 idx 204 pos 48642871 dur 418137
+<ANA> 31001021 fade-in 389256 phylet
+<ANA> 31814710 stop-proc phylet
+<ANA> 31814710 fade-out 475366 phylet
+<ANA> 31867453 start-proc zeven
+<ANA> 31867453 zeven-gen1 pos 73130527 dur 2377614
+<ANA> 31867453 fade-in 939600 zeven
+<ANA> 32254607 start-proc phylet
+<ANA> 32254607 phylet-gen1 idx 116 pos 25229223 dur 971086
+<ANA> 32254607 fade-in 416590 phylet
+<ANA> 32280229 stop-proc licht
+Fri Jul 05 23:53:21 CEST 2013 CAUGHT ProcEdge(aOut(phylet-trans#6 @ out),aIn(phylet-trans#5 @ in)) : java.lang.IllegalArgumentException
+<ANA> 33658663 stop-proc phylet
+<ANA> 33658663 fade-out 441773 phylet
+<ANA> 33709907 start-proc windspiel
+<ANA> 33841810 stop-proc windspiel
+<ANA> 33841810 gen-wind rate 1.656 lo-skew 0.319 hi-skew 1.141 min-step 0.165 max-step 0.650 pow 1.332 steps 84 dur 1507517
+<ANA> 33841810 filter-wind daub16 scale 3
+<ANA> 33841810 windspiel-play speed 0.546 idx1 6 idx2 1 coin1 false coin2 false dur 488789
+Fri Jul 05 23:54:02 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#6 @ in)) : java.lang.IllegalArgumentException
+<ANA> 34137501 start-proc windspiel
+<ANA> 34249647 stop-proc zeven
+<ANA> 34249647 fade-out 831506 zeven
+<ANA> 34264994 start-proc regen
+<ANA> 34264994 regen-filters idx 2
+<ANA> 34264994 regen-gen-L pos 3996527 dur 10715744
+<ANA> 34264994 regen-gen-R pos 770760 dur 12595458
+<ANA> 34264994 fade-in-channel 0 2116119 regen
+<ANA> 34264994 fade-in-channel 1 2115277 regen
+<ANA> 34275093 stop-proc windspiel
+<ANA> 34275093 gen-wind rate 1.085 lo-skew 0.452 hi-skew 1.207 min-step 0.051 max-step 0.454 pow 1.362 steps 149 dur 1529087
+<ANA> 34275093 filter-wind daub4 scale 1
+<ANA> 34275093 windspiel-play speed 0.324 idx1 4 idx2 5 coin1 false coin2 false dur 3241214
+<ANA> 34355664 start-proc windspiel
+<ANA> 34489022 stop-proc windspiel
+<ANA> 34489022 gen-wind rate 1.147 lo-skew 0.322 hi-skew 3.349 min-step 0.079 max-step 0.422 pow 1.728 steps 145 dur 1355885
+<ANA> 34489022 filter-wind daub4 scale 2
+<ANA> 34489022 windspiel-play speed 0.362 idx1 2 idx2 0 coin1 true coin2 false dur 1458956
+<ANA> 34838514 start-proc licht
+<ANA> 34838514 fade-in 2606646 licht width 45
+Fri Jul 05 23:54:24 CEST 2013 CAUGHT ProcEdge(aOut(water-trans2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 35576396 start-proc phylet
+<ANA> 35576396 phylet-gen1 idx 193 pos 45103478 dur 783760
+<ANA> 35576396 fade-in 468983 phylet
+<ANA> 35725939 start-proc windspiel
+<ANA> 35864104 stop-proc windspiel
+<ANA> 35864104 gen-wind rate 1.102 lo-skew 0.671 hi-skew 1.046 min-step 0.100 max-step 0.572 pow 1.430 steps 144 dur 1950025
+<ANA> 35864104 filter-wind daub4 scale 2
+<ANA> 35864104 windspiel-play speed 0.313 idx1 5 idx2 0 coin1 false coin2 false dur 1686092
+<ANA> 36835627 stop-proc phylet
+<ANA> 36835627 fade-out 405312 phylet
+Fri Jul 05 23:55:13 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#7 @ in)) : java.lang.IllegalArgumentException
+<ANA> 37447118 stop-proc licht
+<ANA> 37792685 start-proc apfel
+<ANA> 37792685 apfel-gen1 idx 14 pos 7263365 dur 518219
+<ANA> 37792685 fade-in 383414 apfel
+<ANA> 38327310 start-proc licht
+<ANA> 38327310 fade-in 599980 licht width 27
+<ANA> 38608447 start-proc phylet
+<ANA> 38608447 phylet-gen1 idx 34 pos 8656738 dur 340452
+<ANA> 38608447 fade-in 495076 phylet
+<ANA> 38699558 stop-proc apfel
+<ANA> 38699558 fade-out 485542 apfel
+<ANA> 38928569 stop-proc licht
+<ANA> 39028323 start-proc zeven
+<ANA> 39028323 zeven-gen1 pos 63801643 dur 2382389
+<ANA> 39028323 fade-in 1221790 zeven
+Fri Jul 05 23:55:57 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#9 @ in)) : java.lang.IllegalArgumentException
+<ANA> 39438497 start-proc windspiel
+<ANA> 39449787 stop-proc phylet
+<ANA> 39449787 fade-out 458061 phylet
+<ANA> 39645106 stop-proc windspiel
+<ANA> 39645106 gen-wind rate 1.457 lo-skew 0.262 hi-skew 2.501 min-step 0.134 max-step 0.481 pow 1.384 steps 180 dur 2321123
+<ANA> 39645106 filter-wind daub16 scale 2
+<ANA> 39645106 windspiel-play speed 0.304 idx1 3 idx2 2 coin1 false coin2 false dur 3454452
+Fri Jul 05 23:56:14 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#8 @ in)) : java.lang.IllegalArgumentException
+<ANA> 39931668 start-proc licht
+<ANA> 39931668 fade-in 2153002 licht width 50
+<ANA> 40944512 start-proc windspiel
+<ANA> 41103493 stop-proc windspiel
+<ANA> 41103493 gen-wind rate 1.810 lo-skew 0.335 hi-skew 1.092 min-step 0.135 max-step 0.795 pow 1.435 steps 110 dur 2089420
+<ANA> 41103493 filter-wind daub4 scale 1
+<ANA> 41103493 windspiel-play speed 0.344 idx1 6 idx2 1 coin1 false coin2 false dur 3058104
+<ANA> 41415633 stop-proc zeven
+<ANA> 41415633 fade-out 1143147 zeven
+<ANA> 41949243 start-proc windspiel
+<ANA> 42081587 stop-proc windspiel
+<ANA> 42081587 gen-wind rate 1.916 lo-skew 0.643 hi-skew 3.339 min-step 0.109 max-step 0.814 pow 1.304 steps 64 dur 1259742
+<ANA> 42081587 filter-wind daub4 scale 3
+<ANA> 42081587 windspiel-play speed 0.439 idx1 3 idx2 1 coin1 false coin2 false dur 605759
+<ANA> 42086570 stop-proc licht
+Fri Jul 05 23:57:14 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 42762976 start-proc windspiel
+<ANA> 42837152 start-proc phylet
+<ANA> 42837152 phylet-gen1 idx 10 pos 2566061 dur 392610
+<ANA> 42837152 fade-in 463178 phylet
+<ANA> 42892718 stop-proc windspiel
+<ANA> 42892718 gen-wind rate 1.192 lo-skew 0.773 hi-skew 1.600 min-step 0.053 max-step 0.797 pow 1.263 steps 70 dur 1249244
+<ANA> 42892718 filter-wind daub4 scale 1
+<ANA> 42892718 windspiel-play speed 0.416 idx1 5 idx2 0 coin1 false coin2 false dur 2531092
+<ANA> 42944183 start-proc windspiel
+<ANA> 43136900 stop-proc windspiel
+<ANA> 43136900 gen-wind rate 1.205 lo-skew 0.309 hi-skew 1.371 min-step 0.098 max-step 0.624 pow 1.676 steps 178 dur 2346092
+<ANA> 43136900 filter-wind daub4 scale 3
+<ANA> 43136900 windspiel-play speed 0.486 idx1 4 idx2 2 coin1 false coin2 false dur 1087202
+<ANA> 43220205 start-proc windspiel
+<ANA> 43372791 stop-proc windspiel
+<ANA> 43372791 gen-wind rate 1.932 lo-skew 0.306 hi-skew 1.490 min-step 0.150 max-step 0.474 pow 1.976 steps 104 dur 1406636
+<ANA> 43372791 filter-wind daub4 scale 2
+<ANA> 43372791 windspiel-play speed 0.423 idx1 4 idx2 1 coin1 false coin2 false dur 1247895
+<ANA> 43700013 stop-proc phylet
+<ANA> 43700013 fade-out 459267 phylet
+<ANA> 43786537 start-proc apfel
+<ANA> 43786537 apfel-gen1 idx 29 pos 16568312 dur 315403
+<ANA> 43786537 fade-in 420738 apfel
+<ANA> 44034379 start-proc windspiel
+Fri Jul 05 23:57:50 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#9 @ in)) : java.lang.IllegalArgumentException
+<ANA> 44181232 stop-proc windspiel
+<ANA> 44181232 gen-wind rate 1.136 lo-skew 0.939 hi-skew 1.353 min-step 0.087 max-step 0.841 pow 1.384 steps 69 dur 1298915
+<ANA> 44181232 filter-wind daub4 scale 3
+<ANA> 44181232 windspiel-play speed 0.392 idx1 3 idx2 0 coin1 false coin2 false dur 678130
+<ANA> 44526006 stop-proc apfel
+<ANA> 44526006 fade-out 402070 apfel
+<ANA> 44926434 start-proc phylet
+<ANA> 44926434 phylet-gen1 idx 76 pos 16887203 dur 453580
+<ANA> 44926434 fade-in 478657 phylet
+Fri Jul 05 23:58:08 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#10 @ in)) : java.lang.IllegalArgumentException
+<ANA> 44992539 stop-proc regen
+<ANA> 44992539 fade-out-channel 0 1783676 regen
+<ANA> 44992539 fade-out-channel 1 1783676 regen
+<ANA> 45154298 start-proc licht
+<ANA> 45154298 fade-in 1750810 licht width 6
+<ANA> 45796968 start-proc windspiel
+<ANA> 45865587 stop-proc phylet
+<ANA> 45865587 fade-out 381068 phylet
+<ANA> 45897339 start-proc apfel
+<ANA> 45897339 apfel-gen1 idx 8 pos 3696600 dur 543268
+<ANA> 45897339 fade-in 447114 apfel
+<ANA> 45929179 stop-proc windspiel
+<ANA> 45929179 gen-wind rate 1.643 lo-skew 0.348 hi-skew 1.511 min-step 0.108 max-step 0.692 pow 1.897 steps 79 dur 1136232
+<ANA> 45929179 filter-wind daub16 scale 2
+<ANA> 45929179 windspiel-play speed 0.253 idx1 6 idx2 5 coin1 false coin2 false dur 2083300
+<ANA> 46165158 start-proc windspiel
+Fri Jul 05 23:58:37 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#10 @ in)) : java.lang.IllegalArgumentException
+<ANA> 46301780 stop-proc windspiel
+<ANA> 46301780 gen-wind rate 1.592 lo-skew 0.481 hi-skew 2.048 min-step 0.070 max-step 0.580 pow 1.874 steps 107 dur 1256312
+<ANA> 46301780 filter-wind daub16 scale 3
+<ANA> 46301780 windspiel-play speed 0.585 idx1 4 idx2 1 coin1 false coin2 false dur 456787
+<ANA> 46563029 start-proc windspiel
+<ANA> 46687082 stop-proc windspiel
+<ANA> 46687082 gen-wind rate 1.233 lo-skew 0.907 hi-skew 1.367 min-step 0.114 max-step 0.502 pow 1.846 steps 80 dur 964275
+<ANA> 46687082 filter-wind daub4 scale 1
+<ANA> 46687082 windspiel-play speed 0.405 idx1 6 idx2 3 coin1 false coin2 true dur 1304751
+<ANA> 46893294 stop-proc apfel
+<ANA> 46893294 fade-out 447222 apfel
+<ANA> 46906700 stop-proc licht
+Fri Jul 05 23:58:52 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(water-trans2 @ in)) : java.lang.IllegalArgumentException
+Fri Jul 05 23:58:52 CEST 2013 CAUGHT ProcEdge(aOut(7+#2 @ out),aIn(water-trans2#2 @ in)) : java.lang.IllegalArgumentException
+<ANA> 46923017 start-proc windspiel
+<ANA> 47004470 start-proc licht
+<ANA> 47004470 fade-in 472734 licht width 20
+<ANA> 47153836 stop-proc windspiel
+<ANA> 47153836 gen-wind rate 1.108 lo-skew 0.672 hi-skew 1.859 min-step 0.103 max-step 0.747 pow 1.636 steps 133 dur 2110231
+<ANA> 47153836 filter-wind daub4 scale 1
+<ANA> 47153836 windspiel-play speed 0.390 idx1 0 idx2 5 coin1 true coin2 true dur 5387917
+<ANA> 47254296 start-proc windspiel
+Fri Jul 05 23:59:02 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#11 @ in)) : java.lang.IllegalArgumentException
+<ANA> 47390212 stop-proc windspiel
+<ANA> 47390212 gen-wind rate 1.195 lo-skew 0.474 hi-skew 2.622 min-step 0.149 max-step 0.741 pow 1.579 steps 107 dur 1855271
+<ANA> 47390212 filter-wind daub4 scale 3
+<ANA> 47390212 windspiel-play speed 0.406 idx1 0 idx2 6 coin1 true coin2 false dur 654756
+<ANA> 47478633 stop-proc licht
+<ANA> 47479118 start-proc windspiel
+<ANA> 47606832 stop-proc windspiel
+<ANA> 47606832 gen-wind rate 1.699 lo-skew 0.740 hi-skew 1.723 min-step 0.074 max-step 0.799 pow 1.471 steps 54 dur 982225
+<ANA> 47606832 filter-wind daub4 scale 3
+<ANA> 47606832 windspiel-play speed 0.449 idx1 5 idx2 3 coin1 false coin2 false dur 300784
+<ANA> 48241563 start-proc windspiel
+<ANA> 48376156 stop-proc windspiel
+<ANA> 48376156 gen-wind rate 1.207 lo-skew 0.531 hi-skew 1.527 min-step 0.168 max-step 0.595 pow 1.704 steps 84 dur 1339733
+<ANA> 48376156 filter-wind daub4 scale 3
+<ANA> 48376156 windspiel-play speed 0.477 idx1 1 idx2 4 coin1 false coin2 false dur 557918
+<ANA> 49399849 start-proc windspiel
+<ANA> 49537089 stop-proc windspiel
+<ANA> 49537089 gen-wind rate 1.840 lo-skew 0.795 hi-skew 3.173 min-step 0.192 max-step 0.612 pow 1.885 steps 64 dur 1064575
+<ANA> 49537089 filter-wind daub4 scale 3
+<ANA> 49537089 windspiel-play speed 0.365 idx1 5 idx2 1 coin1 false coin2 false dur 726245
+<ANA> 50273470 start-proc windspiel
+<ANA> 50496925 stop-proc windspiel
+<ANA> 50496925 gen-wind rate 1.704 lo-skew 0.503 hi-skew 3.968 min-step 0.065 max-step 1.000 pow 1.831 steps 64 dur 1164063
+<ANA> 50496925 filter-wind daub16 scale 2
+<ANA> 50496925 windspiel-play speed 0.266 idx1 4 idx2 2 coin1 true coin2 false dur 1979480
+<ANA> 51345189 start-proc regen
+<ANA> 51345189 regen-filters idx 2
+<ANA> 51345189 regen-gen-L pos 12177755 dur 9444639
+<ANA> 51345189 regen-gen-R pos 1310440 dur 11327802
+<ANA> 51345189 fade-in-channel 0 2075552 regen
+<ANA> 51345189 fade-in-channel 1 2232368 regen
+<ANA> 52426168 start-proc apfel
+<ANA> 52426168 apfel-gen1 idx 40 pos 20905410 dur 360158
+<ANA> 52426168 fade-in 374827 apfel
+<ANA> 53167136 stop-proc apfel
+<ANA> 53167136 fade-out 455617 apfel
+<ANA> 53627981 start-proc apfel
+<ANA> 53627981 apfel-gen1 idx 42 pos 22108634 dur 235318
+<ANA> 53627981 fade-in 417292 apfel
+Sat Jul 06 00:01:25 CEST 2013 CAUGHT ProcEdge(aOut(apfel-trans#13 @ out),aIn(apfel-trans#12 @ in)) : java.lang.IllegalArgumentException
+<ANA> 54284454 stop-proc apfel
+<ANA> 54284454 fade-out 424242 apfel
+<ANA> 54346943 start-proc windspiel
+<ANA> 54474701 stop-proc windspiel
+<ANA> 54474701 gen-wind rate 1.546 lo-skew 0.384 hi-skew 3.833 min-step 0.080 max-step 0.816 pow 1.503 steps 57 dur 1029198
+<ANA> 54474701 filter-wind daub4 scale 3
+<ANA> 54474701 windspiel-play speed 0.280 idx1 0 idx2 3 coin1 false coin2 false dur 476904
+Sat Jul 06 00:01:49 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#13 @ in)) : java.lang.IllegalArgumentException
+<ANA> 55211303 start-proc licht
+<ANA> 55211303 fade-in 2168745 licht width 11
+<ANA> 56006823 start-proc windspiel
+<ANA> 56135022 stop-proc windspiel
+<ANA> 56135022 gen-wind rate 1.834 lo-skew 0.446 hi-skew 2.878 min-step 0.140 max-step 0.783 pow 1.284 steps 73 dur 1416662
+<ANA> 56135022 filter-wind daub16 scale 2
+<ANA> 56135022 windspiel-play speed 0.257 idx1 4 idx2 0 coin1 false coin2 false dur 2047170
+<ANA> 57173533 start-proc phylet
+<ANA> 57173533 phylet-gen1 idx 98 pos 21235301 dur 870871
+<ANA> 57173533 fade-in 496343 phylet
+<ANA> 57262615 start-proc windspiel
+<ANA> 57381552 stop-proc licht
+<ANA> 57395135 stop-proc windspiel
+<ANA> 57395135 gen-wind rate 1.724 lo-skew 0.355 hi-skew 1.596 min-step 0.150 max-step 0.749 pow 1.403 steps 73 dur 1385963
+<ANA> 57395135 filter-wind daub4 scale 3
+<ANA> 57395135 windspiel-play speed 0.434 idx1 1 idx2 3 coin1 false coin2 false dur 612266
+<ANA> 58291335 start-proc windspiel
+<ANA> 58428883 stop-proc windspiel
+<ANA> 58428883 gen-wind rate 1.255 lo-skew 0.359 hi-skew 2.275 min-step 0.093 max-step 0.525 pow 1.435 steps 145 dur 1797256
+<ANA> 58428883 filter-wind daub4 scale 1
+<ANA> 58428883 windspiel-play speed 0.577 idx1 5 idx2 6 coin1 true coin2 false dur 1826994
+<ANA> 58457284 start-proc windspiel
+<ANA> 58544337 stop-proc phylet
+<ANA> 58544337 fade-out 362699 phylet
+<ANA> 58585306 stop-proc windspiel
+<ANA> 58585306 gen-wind rate 1.593 lo-skew 0.415 hi-skew 2.334 min-step 0.168 max-step 0.887 pow 1.209 steps 81 dur 1869357
+<ANA> 58585306 filter-wind daub4 scale 3
+<ANA> 58585306 windspiel-play speed 0.300 idx1 2 idx2 5 coin1 false coin2 false dur 882159
+<ANA> 58733262 start-proc windspiel
+Sat Jul 06 00:03:24 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#11 @ in)) : java.lang.IllegalArgumentException
+<ANA> 58923421 stop-proc windspiel
+<ANA> 58923421 gen-wind rate 1.283 lo-skew 0.262 hi-skew 2.473 min-step 0.095 max-step 0.635 pow 1.836 steps 182 dur 2335799
+<ANA> 58923421 filter-wind daub4 scale 3
+<ANA> 58923421 windspiel-play speed 0.307 idx1 6 idx2 1 coin1 false coin2 true dur 1719187
+<ANA> 58997509 start-proc windspiel
+<ANA> 59218229 stop-proc windspiel
+<ANA> 59218229 gen-wind rate 1.302 lo-skew 0.303 hi-skew 3.001 min-step 0.061 max-step 0.458 pow 1.944 steps 279 dur 2499001
+<ANA> 59218229 filter-wind daub4 scale 3
+<ANA> 59218229 windspiel-play speed 0.556 idx1 3 idx2 0 coin1 false coin2 false dur 951099
+<ANA> 60793834 stop-proc regen
+<ANA> 60793834 fade-out-channel 0 2074174 regen
+<ANA> 60793834 fade-out-channel 1 2074174 regen
+<ANA> 61085732 start-proc phylet
+<ANA> 61085732 phylet-gen1 idx 37 pos 8997190 dur 230952
+<ANA> 61085732 fade-in 384224 phylet
+<ANA> 61704279 stop-proc phylet
+<ANA> 61704279 fade-out 504877 phylet
+<ANA> 62028414 start-proc windspiel
+<ANA> 62166358 stop-proc windspiel
+<ANA> 62166358 gen-wind rate 1.834 lo-skew 0.987 hi-skew 2.307 min-step 0.076 max-step 0.677 pow 1.344 steps 109 dur 1728914
+<ANA> 62166358 filter-wind daub4 scale 1
+<ANA> 62166358 windspiel-play speed 0.251 idx1 3 idx2 0 coin1 true coin2 false dur 4186674
+Sat Jul 06 00:04:39 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#12 @ in)) : java.lang.IllegalArgumentException
+<ANA> 62475455 start-proc licht
+<ANA> 62475455 fade-in 1747728 licht width 43
+Sat Jul 06 00:04:57 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(water-trans2#3 @ in)) : java.lang.IllegalArgumentException
+Sat Jul 06 00:04:57 CEST 2013 CAUGHT ProcEdge(aOut(1+#2 @ out),aIn(water-trans2#4 @ in)) : java.lang.IllegalArgumentException
+<ANA> 64224726 stop-proc licht
+<ANA> 64922079 start-proc phylet
+<ANA> 64922079 phylet-gen1 idx 243 pos 56851996 dur 1010647
+<ANA> 64922079 fade-in 488398 phylet
+<ANA> 65678438 start-proc windspiel
+<ANA> 65801477 stop-proc windspiel
+<ANA> 65801477 gen-wind rate 1.442 lo-skew 0.268 hi-skew 1.627 min-step 0.151 max-step 0.657 pow 1.691 steps 64 dur 1012749
+<ANA> 65801477 filter-wind daub4 scale 1
+<ANA> 65801477 windspiel-play speed 0.586 idx1 6 idx2 2 coin1 false coin2 false dur 902958
+<ANA> 66055802 start-proc zeven
+<ANA> 66055802 zeven-gen1 pos 2180437 dur 2490351
+<ANA> 66055802 fade-in 819253 zeven
+<ANA> 66427565 stop-proc phylet
+<ANA> 66427565 fade-out 517822 phylet
+<ANA> 66603700 start-proc windspiel
+<ANA> 66802900 stop-proc windspiel
+<ANA> 66802900 gen-wind rate 1.678 lo-skew 0.488 hi-skew 1.360 min-step 0.077 max-step 0.683 pow 1.592 steps 157 dur 2325913
+<ANA> 66802900 filter-wind daub16 scale 1
+<ANA> 66802900 windspiel-play speed 0.480 idx1 5 idx2 4 coin1 false coin2 true dur 4382312
+Sat Jul 06 00:06:27 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#13 @ in)) : java.lang.IllegalArgumentException
+<ANA> 67231508 start-proc windspiel
+<ANA> 67421403 stop-proc windspiel
+<ANA> 67421403 gen-wind rate 1.005 lo-skew 0.753 hi-skew 1.291 min-step 0.067 max-step 0.741 pow 1.807 steps 193 dur 2661283
+<ANA> 67421403 filter-wind daub4 scale 1
+<ANA> 67421403 windspiel-play speed 0.268 idx1 3 idx2 1 coin1 true coin2 false dur 7844731
+<ANA> 67890582 start-proc apfel
+<ANA> 67890582 apfel-gen1 idx 34 pos 18246999 dur 343892
+<ANA> 67890582 fade-in 480329 apfel
+<ANA> 68117918 start-proc windspiel
+<ANA> 68238090 stop-proc windspiel
+<ANA> 68238090 gen-wind rate 1.313 lo-skew 0.496 hi-skew 1.716 min-step 0.151 max-step 0.849 pow 1.978 steps 73 dur 1301238
+<ANA> 68238090 filter-wind daub4 scale 3
+<ANA> 68238090 windspiel-play speed 0.567 idx1 2 idx2 4 coin1 false coin2 false dur 471012
+<ANA> 68550583 stop-proc zeven
+<ANA> 68550583 fade-out 1089439 zeven
+<ANA> 68718560 stop-proc apfel
+<ANA> 68718560 fade-out 505815 apfel
+<ANA> 68904441 start-proc windspiel
+<ANA> 69028186 stop-proc windspiel
+<ANA> 69028186 gen-wind rate 1.406 lo-skew 0.427 hi-skew 2.989 min-step 0.181 max-step 0.932 pow 1.992 steps 84 dur 1648497
+<ANA> 69028186 filter-wind daub16 scale 3
+<ANA> 69028186 windspiel-play speed 0.359 idx1 0 idx2 6 coin1 false coin2 false dur 738854
+Sat Jul 06 00:07:18 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#14 @ in)) : java.lang.IllegalArgumentException
+<ANA> 69522503 start-proc windspiel
+Sat Jul 06 00:07:28 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 69682233 start-proc apfel
+<ANA> 69682233 apfel-gen1 idx 12 pos 6041236 dur 665542
+<ANA> 69682233 fade-in 373167 apfel
+<ANA> 69719365 stop-proc windspiel
+<ANA> 69719365 gen-wind rate 1.561 lo-skew 0.932 hi-skew 3.033 min-step 0.075 max-step 0.994 pow 1.716 steps 141 dur 2647270
+<ANA> 69719365 filter-wind daub4 scale 1
+<ANA> 69719365 windspiel-play speed 0.543 idx1 0 idx2 1 coin1 false coin2 false dur 3871212
+<ANA> 69867630 start-proc regen
+<ANA> 69867630 regen-filters idx 2
+<ANA> 69867630 regen-gen-L pos 5035818 dur 8596109
+<ANA> 69867630 regen-gen-R pos 182945 dur 11712750
+<ANA> 69867630 fade-in-channel 0 1584143 regen
+<ANA> 69867630 fade-in-channel 1 2738216 regen
+<ANA> 70719686 start-proc licht
+<ANA> 70719686 fade-in 1515586 licht width 36
+<ANA> 70726345 stop-proc apfel
+<ANA> 70726345 fade-out 356047 apfel
+Sat Jul 06 00:08:01 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#15 @ in)) : java.lang.IllegalArgumentException
+<ANA> 72237078 stop-proc licht
+<ANA> 74406093 start-proc phylet
+<ANA> 74406093 phylet-gen1 idx 55 pos 12607588 dur 421993
+<ANA> 74406093 fade-in 502105 phylet
+<ANA> 75335456 stop-proc phylet
+<ANA> 75335456 fade-out 470181 phylet
+Sat Jul 06 00:09:48 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#14 @ in)) : java.lang.IllegalArgumentException
+<ANA> 75954576 start-proc apfel
+<ANA> 75954576 apfel-gen1 idx 25 pos 15014272 dur 398090
+<ANA> 75954576 fade-in 420182 apfel
+<ANA> 76296616 start-proc windspiel
+<ANA> 76422345 stop-proc windspiel
+<ANA> 76422345 gen-wind rate 1.751 lo-skew 0.558 hi-skew 1.660 min-step 0.050 max-step 0.627 pow 1.309 steps 71 dur 1069290
+<ANA> 76422345 filter-wind daub4 scale 3
+<ANA> 76422345 windspiel-play speed 0.426 idx1 3 idx2 6 coin1 false coin2 false dur 624730
+<ANA> 76450745 start-proc windspiel
+<ANA> 76650871 stop-proc windspiel
+<ANA> 76650871 gen-wind rate 1.417 lo-skew 0.552 hi-skew 2.412 min-step 0.076 max-step 0.522 pow 1.722 steps 203 dur 2215393
+<ANA> 76650871 filter-wind daub4 scale 1
+<ANA> 76650871 windspiel-play speed 0.296 idx1 4 idx2 2 coin1 false coin2 false dur 7103225
+<ANA> 76652635 start-proc windspiel
+<ANA> 76776953 stop-proc apfel
+<ANA> 76776953 fade-out 525805 apfel
+<ANA> 76842000 stop-proc windspiel
+<ANA> 76842000 gen-wind rate 1.566 lo-skew 0.945 hi-skew 2.682 min-step 0.155 max-step 0.709 pow 1.712 steps 148 dur 2390309
+<ANA> 76842000 filter-wind daub4 scale 2
+<ANA> 76842000 windspiel-play speed 0.378 idx1 0 idx2 5 coin1 false coin2 false dur 2785554
+<ANA> 77050902 start-proc windspiel
+<ANA> 77221790 stop-proc windspiel
+<ANA> 77221790 gen-wind rate 1.476 lo-skew 0.644 hi-skew 1.370 min-step 0.053 max-step 0.402 pow 1.935 steps 247 dur 1974917
+<ANA> 77221790 filter-wind daub4 scale 1
+<ANA> 77221790 windspiel-play speed 0.585 idx1 6 idx2 2 coin1 false coin2 false dur 1801061
+Sat Jul 06 00:10:22 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#16 @ in)) : java.lang.IllegalArgumentException
+<ANA> 77584468 start-proc windspiel
+<ANA> 77727573 stop-proc windspiel
+<ANA> 77727573 gen-wind rate 1.623 lo-skew 0.343 hi-skew 2.354 min-step 0.141 max-step 0.474 pow 1.223 steps 123 dur 1683765
+<ANA> 77727573 filter-wind daub4 scale 3
+<ANA> 77727573 windspiel-play speed 0.593 idx1 3 idx2 1 coin1 true coin2 false dur 451217
+<ANA> 77820006 start-proc windspiel
+<ANA> 77943442 stop-proc windspiel
+<ANA> 77943442 gen-wind rate 1.535 lo-skew 0.564 hi-skew 2.641 min-step 0.141 max-step 0.984 pow 1.656 steps 78 dur 1615697
+<ANA> 77943442 filter-wind daub4 scale 2
+<ANA> 77943442 windspiel-play speed 0.354 idx1 6 idx2 0 coin1 false coin2 false dur 1489127
+<ANA> 77966021 start-proc windspiel
+<ANA> 78111684 stop-proc windspiel
+<ANA> 78111684 gen-wind rate 1.984 lo-skew 0.274 hi-skew 3.170 min-step 0.149 max-step 0.811 pow 1.298 steps 102 dur 2053141
+<ANA> 78111684 filter-wind daub4 scale 2
+<ANA> 78111684 windspiel-play speed 0.320 idx1 1 idx2 3 coin1 false coin2 false dur 1648619
+<ANA> 78391498 start-proc windspiel
+<ANA> 78470878 stop-proc regen
+<ANA> 78470878 fade-out-channel 0 2404825 regen
+<ANA> 78470878 fade-out-channel 1 2404825 regen
+<ANA> 78514669 stop-proc windspiel
+<ANA> 78514669 gen-wind rate 1.399 lo-skew 0.267 hi-skew 1.731 min-step 0.071 max-step 0.801 pow 1.225 steps 74 dur 1383582
+<ANA> 78514669 filter-wind daub4 scale 2
+<ANA> 78514669 windspiel-play speed 0.390 idx1 4 idx2 5 coin1 false coin2 false dur 1351915
+<ANA> 78570191 start-proc windspiel
+<ANA> 78711885 stop-proc windspiel
+<ANA> 78711885 gen-wind rate 1.819 lo-skew 0.635 hi-skew 2.504 min-step 0.151 max-step 0.508 pow 1.880 steps 109 dur 1467382
+<ANA> 78711885 filter-wind daub4 scale 2
+<ANA> 78711885 windspiel-play speed 0.463 idx1 1 idx2 3 coin1 false coin2 true dur 1141340
+<ANA> 79881593 start-proc windspiel
+<ANA> 80045954 stop-proc windspiel
+<ANA> 80045954 gen-wind rate 1.342 lo-skew 0.905 hi-skew 1.618 min-step 0.079 max-step 0.653 pow 1.554 steps 78 dur 1192448
+<ANA> 80045954 filter-wind daub4 scale 1
+<ANA> 80045954 windspiel-play speed 0.321 idx1 4 idx2 6 coin1 false coin2 true dur 3278349
+<ANA> 80292252 start-proc sprenger
+<ANA> 80292252 sprenger-filters idx 1
+<ANA> 80292252 sprenger-gen-cut pos 0 dur 2187371
+<ANA> 80292252 sprenger-gen-cut pos 0 dur 2187371
+<ANA> 80292252 fade-in-channel 0 907361 sprenger
+<ANA> 80292252 fade-in-channel 1 1994657 sprenger
+<ANA> 80893953 start-proc windspiel
+Sat Jul 06 00:11:46 CEST 2013 CAUGHT ProcEdge(aOut(2+#2 @ out),aIn(water-trans2#5 @ in)) : java.lang.IllegalArgumentException
+Sat Jul 06 00:11:46 CEST 2013 CAUGHT ProcEdge(aOut(water-trans1#4 @ out),aIn(water-trans2#6 @ in)) : java.lang.IllegalArgumentException
+<ANA> 81067398 stop-proc windspiel
+<ANA> 81067398 gen-wind rate 1.008 lo-skew 0.457 hi-skew 3.672 min-step 0.139 max-step 0.712 pow 1.356 steps 130 dur 2228385
+<ANA> 81067398 filter-wind daub16 scale 2
+<ANA> 81067398 windspiel-play speed 0.359 idx1 5 idx2 2 coin1 false coin2 false dur 2931667
+<ANA> 81084994 block-start-proc regen
+<ANA> 81938064 start-proc windspiel
+<ANA> 82139645 stop-proc windspiel
+<ANA> 82139645 gen-wind rate 1.482 lo-skew 0.411 hi-skew 2.217 min-step 0.082 max-step 0.686 pow 1.462 steps 181 dur 2706017
+<ANA> 82139645 filter-wind daub16 scale 1
+<ANA> 82139645 windspiel-play speed 0.362 idx1 4 idx2 2 coin1 false coin2 true dur 5801313
+<ANA> 82144937 start-proc zeven
+<ANA> 82144937 zeven-gen1 pos 27368891 dur 2295699
+<ANA> 82144937 fade-in 1035183 zeven
+<ANA> 82221363 sprenger-gen-cut pos 4589015 dur 2464094
+<ANA> 82221363 sprenger-gen-cut pos 4589015 dur 2464094
+<ANA> 82444994 start-proc windspiel
+<ANA> 82628450 stop-proc windspiel
+<ANA> 82628450 gen-wind rate 1.034 lo-skew 0.350 hi-skew 2.048 min-step 0.088 max-step 0.671 pow 1.307 steps 132 dur 2005551
+<ANA> 82628450 filter-wind daub4 scale 1
+<ANA> 82628450 windspiel-play speed 0.463 idx1 3 idx2 5 coin1 false coin2 false dur 2275064
+<ANA> 83809712 start-proc licht
+<ANA> 83809712 fade-in 1251034 licht width 34
+<ANA> 84079516 start-proc windspiel
+<ANA> 84267470 stop-proc windspiel
+<ANA> 84267470 gen-wind rate 1.809 lo-skew 0.918 hi-skew 2.321 min-step 0.089 max-step 0.729 pow 1.739 steps 110 dur 1695826
+<ANA> 84267470 filter-wind daub4 scale 2
+<ANA> 84267470 windspiel-play speed 0.346 idx1 6 idx2 1 coin1 false coin2 true dur 1523772
+<ANA> 84311967 start-proc windspiel
+<ANA> 84426407 sprenger-gen-cut pos 9651304 dur 2297673
+<ANA> 84426407 sprenger-gen-cut pos 9651304 dur 2297673
+<ANA> 84445634 stop-proc zeven
+<ANA> 84445634 fade-out 921335 zeven
+<ANA> 84483516 start-proc apfel
+<ANA> 84483516 apfel-gen1 idx 41 pos 21265568 dur 843065
+<ANA> 84483516 fade-in 478305 apfel
+<ANA> 84494056 stop-proc windspiel
+<ANA> 84494056 gen-wind rate 1.669 lo-skew 0.576 hi-skew 3.423 min-step 0.099 max-step 0.685 pow 1.252 steps 104 dur 1679754
+<ANA> 84494056 filter-wind daub4 scale 2
+<ANA> 84494056 windspiel-play speed 0.413 idx1 0 idx2 3 coin1 false coin2 false dur 1278250
+<ANA> 84777002 start-proc windspiel
+<ANA> 84901231 stop-proc windspiel
+<ANA> 84901231 gen-wind rate 1.587 lo-skew 0.418 hi-skew 1.413 min-step 0.063 max-step 0.888 pow 1.553 steps 52 dur 930594
+<ANA> 84901231 filter-wind daub4 scale 2
+<ANA> 84901231 windspiel-play speed 0.374 idx1 2 idx2 5 coin1 false coin2 false dur 710042
+<ANA> 85062240 stop-proc licht
+Sat Jul 06 00:13:25 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 85777013 start-proc phylet
+<ANA> 85777013 phylet-gen1 idx 149 pos 33000875 dur 392843
+<ANA> 85777013 fade-in 512435 phylet
+<ANA> 85808765 stop-proc apfel
+<ANA> 85808765 fade-out 373403 apfel
+<ANA> 86106793 start-proc windspiel
+Sat Jul 06 00:13:43 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#17 @ in)) : java.lang.IllegalArgumentException
+<ANA> 86312475 stop-proc windspiel
+<ANA> 86312475 gen-wind rate 1.237 lo-skew 0.719 hi-skew 3.895 min-step 0.071 max-step 0.414 pow 1.776 steps 216 dur 1897936
+<ANA> 86312475 filter-wind daub4 scale 2
+<ANA> 86312475 windspiel-play speed 0.483 idx1 4 idx2 1 coin1 false coin2 false dur 1093531
+<ANA> 86358780 start-proc windspiel
+<ANA> 86465502 sprenger-gen-cut pos 14366269 dur 3690143
+<ANA> 86465502 sprenger-gen-cut pos 14366269 dur 3690143
+<ANA> 86538532 stop-proc windspiel
+<ANA> 86538532 gen-wind rate 1.049 lo-skew 0.492 hi-skew 2.989 min-step 0.078 max-step 0.842 pow 1.681 steps 138 dur 2227636
+<ANA> 86538532 filter-wind daub4 scale 2
+<ANA> 86538532 windspiel-play speed 0.287 idx1 4 idx2 0 coin1 false coin2 false dur 3664366
+<ANA> 86687987 stop-proc phylet
+<ANA> 86687987 fade-out 501029 phylet
+<ANA> 86805249 start-proc windspiel
+<ANA> 86929920 stop-proc windspiel
+<ANA> 86929920 gen-wind rate 1.082 lo-skew 0.647 hi-skew 3.484 min-step 0.140 max-step 0.830 pow 1.877 steps 89 dur 1536351
+<ANA> 86929920 filter-wind daub4 scale 2
+<ANA> 86929920 windspiel-play speed 0.362 idx1 1 idx2 3 coin1 false coin2 true dur 1458484
+Sat Jul 06 00:14:06 CEST 2013 CAUGHT ProcEdge(aOut(4+#2 @ out),aIn(phylet-trans#15 @ in)) : java.lang.IllegalArgumentException
+<ANA> 87396674 start-proc windspiel
+<ANA> 87579689 stop-proc windspiel
+<ANA> 87579689 gen-wind rate 1.163 lo-skew 0.769 hi-skew 1.105 min-step 0.185 max-step 0.786 pow 1.862 steps 122 dur 2194954
+<ANA> 87579689 filter-wind daub4 scale 2
+<ANA> 87579689 windspiel-play speed 0.523 idx1 2 idx2 5 coin1 false coin2 false dur 2013813
+<ANA> 88598972 start-proc windspiel
+<ANA> 88776387 stop-proc windspiel
+<ANA> 88776387 gen-wind rate 1.327 lo-skew 0.954 hi-skew 3.555 min-step 0.067 max-step 0.785 pow 1.626 steps 107 dur 1655318
+<ANA> 88776387 filter-wind daub4 scale 3
+<ANA> 88776387 windspiel-play speed 0.581 idx1 5 idx2 2 coin1 true coin2 false dur 459637
+<ANA> 89568334 start-proc windspiel
+<ANA> 89801623 stop-proc windspiel
+<ANA> 89801623 gen-wind rate 1.444 lo-skew 0.284 hi-skew 1.265 min-step 0.099 max-step 0.506 pow 1.532 steps 230 dur 2695186
+<ANA> 89801623 filter-wind daub4 scale 3
+<ANA> 89801623 windspiel-play speed 0.461 idx1 4 idx2 1 coin1 false coin2 false dur 1145184
+<ANA> 89806474 start-proc zeven
+<ANA> 89806474 zeven-gen1 pos 24936096 dur 2001084
+<ANA> 89806474 fade-in 819735 zeven
+<ANA> 89901863 sprenger-gen-cut pos 20909759 dur 4127628
+<ANA> 89901863 sprenger-gen-cut pos 20909759 dur 4127628
+<ANA> 90295984 start-proc windspiel
+<ANA> 90524246 stop-proc windspiel
+<ANA> 90524246 gen-wind rate 1.646 lo-skew 0.605 hi-skew 1.082 min-step 0.111 max-step 0.420 pow 1.527 steps 234 dur 2506653
+<ANA> 90524246 filter-wind daub16 scale 1
+<ANA> 90524246 windspiel-play speed 0.566 idx1 6 idx2 0 coin1 false coin2 false dur 3711873
+<ANA> 90938654 start-proc licht
+<ANA> 90938654 fade-in 2522103 licht width 33
+<ANA> 91056401 start-proc apfel
+<ANA> 91056401 apfel-gen1 idx 22 pos 13662245 dur 397659
+<ANA> 91056401 fade-in 360362 apfel
+<ANA> 91771747 start-proc windspiel
+<ANA> 91812231 stop-proc zeven
+<ANA> 91812231 fade-out 1129122 zeven
+<ANA> 91819419 stop-proc apfel
+<ANA> 91819419 fade-out 450434 apfel
+<ANA> 91891478 stop-proc windspiel
+<ANA> 91891478 gen-wind rate 1.008 lo-skew 0.731 hi-skew 1.029 min-step 0.170 max-step 0.465 pow 1.544 steps 74 dur 1003875
+<ANA> 91891478 filter-wind daub4 scale 1
+<ANA> 91891478 windspiel-play speed 0.437 idx1 1 idx2 0 coin1 true coin2 false dur 1209515
+<ANA> 91908986 start-proc windspiel
+<ANA> 92071847 block-start-proc regen
+<ANA> 92084151 stop-proc windspiel
+<ANA> 92084151 gen-wind rate 1.683 lo-skew 0.408 hi-skew 2.216 min-step 0.100 max-step 0.607 pow 1.450 steps 81 dur 1214072
+<ANA> 92084151 filter-wind daub4 scale 2
+<ANA> 92084151 windspiel-play speed 0.312 idx1 6 idx2 4 coin1 false coin2 false dur 1690845
+<ANA> 92209086 start-proc windspiel
+Sat Jul 06 00:16:01 CEST 2013 CAUGHT ProcEdge(aOut(3+#2 @ out),aIn(apfel-trans#18 @ in)) : java.lang.IllegalArgumentException
+<ANA> 92331067 stop-proc windspiel
+<ANA> 92331067 gen-wind rate 1.110 lo-skew 0.785 hi-skew 1.327 min-step 0.083 max-step 0.813 pow 1.482 steps 57 dur 1007241
+<ANA> 92331067 filter-wind daub4 scale 3
+<ANA> 92331067 windspiel-play speed 0.388 idx1 2 idx2 3 coin1 false coin2 true dur 346297
+Sat Jul 06 00:16:16 CEST 2013 CAUGHT ProcEdge(aOut(5+#2 @ out),aIn(zeven-trans @ in)) : java.lang.IllegalArgumentException
+<ANA> 93462673 stop-proc licht
+<ANA> 93769344 stop-proc sprenger
+<ANA> 93769344 fade-out-channel 0 1560387 sprenger
+<ANA> 93769344 fade-out-channel 1 1560387 sprenger
+ERROR: Could not add SynthDef proc1024.
+Try adjusting ServerOptions:maxSynthDefs or the -d cmdline flag.

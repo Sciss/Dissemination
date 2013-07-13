@@ -1,0 +1,16 @@
+num-plates = 7
+transits = (true, true, false, false, false, true, true)
+              0    1      2      3     4      5     6
+
+		fade-in			fade-out
+
+windspiel	-
+
+licht		width 1..100		-
+
+sprenger	2-chan (all urn)	2-chan sync
+regen		2-chan (all urn)	2-chan sync
+
+apfel		ok (2)			ok
+phylet		ok (3)			ok
+zeven		ok (4)			ok
