@@ -7,6 +7,7 @@ import de.sciss.file._
 import de.sciss.span.Span
 import java.awt.geom.{Line2D, GeneralPath, Rectangle2D}
 import javax.swing.WindowConstants
+import Dissemination.NUM_PLATES
 
 object Score extends SimpleSwingApplication {
   def data      = file("notes") / "data1.txt"
@@ -37,16 +38,44 @@ object Score extends SimpleSwingApplication {
 
   val pixelsPerFrame  = 28.0 / (44100 * 60) // 10.0 / 44100
   val pixelsPerProc   = 48
-  val pixelsPerChan   = pixelsPerProc.toDouble / Dissemination.NUM_PLATES
+  val pixelsPerChan   = pixelsPerProc.toDouble / NUM_PLATES
   val procSpacing     = 16
+
+  //windspiel
+  //
+  //licht
+  //
+  //sprenger
+  //regen
+  //
+  //phylet
+  //apfel
+  //zeven
+
+  val procID    = Map(
+    "plates" -> 0, "windspiel" -> 1, "licht" -> 2, "sprenger" -> 3,
+    "regen"  -> 4, "phylet"    -> 5, "apfel" -> 6, "zeven"    -> 7
+  )
+  val procName  = procID.map(_.swap)
+  val procNum   = procName.keys.max + 1
+
+  val widths  = Map(
+    "plates"   -> NUM_PLATES, "windspiel" -> NUM_PLATES, "licht"  -> NUM_PLATES,
+    "sprenger" -> 2         , "regen"     -> 2         , "phylet" -> 2,
+    "apfel"    -> 2         , "zeven"     -> 2
+  )
 
   val rect  = new Rectangle2D.Double()
   val gp    = new GeneralPath()
   val line  = new Line2D.Double()
 
   def paintScore(g: Graphics2D) {
-
+    var xoff = 0.0
     score.zipWithIndex.foreach { case (events, idx) =>
+      val x01   = xoff
+      val name  = procName(idx)
+      val w     = pixelsPerProc * widths(name)/NUM_PLATES
+      val x02   = x01 + w
       events.foreach {
         case Region(Span(start, stop), fadeIn, fadeOut, chans) =>
           val y1 = start * pixelsPerFrame
@@ -76,9 +105,6 @@ object Score extends SimpleSwingApplication {
             g.fill(shp)
           }
 
-          val x01 = idx * (pixelsPerProc + procSpacing)
-          val x02 = x01 + pixelsPerProc
-
           chans match {
             case Wind(ch1, ch2) =>
               val x11 = x01 + ch1 * pixelsPerChan
@@ -96,23 +122,10 @@ object Score extends SimpleSwingApplication {
 
         case _ =>
       }
+
+      xoff += w + procSpacing
     }
   }
-
-  //windspiel
-  //
-  //licht
-  //
-  //sprenger
-  //regen
-  //
-  //phylet
-  //apfel
-  //zeven
-
-  val procID    = Map("windspiel" -> 1, "licht" -> 2, "sprenger" -> 3, "regen" -> 4, "phylet" -> 5, "apfel" -> 6, "zeven" -> 7)
-  val procName  = procID.map(_.swap)
-  val procNum   = procName.keys.max + 1
 
   def readScore(f: File): Data = {
     val lines = io.Source.fromFile(f, "UTF-8").getLines().filter(_.startsWith("<ANA>"))
