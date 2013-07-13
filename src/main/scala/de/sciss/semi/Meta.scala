@@ -63,7 +63,7 @@ class Meta {
           //                  }
           //               }
           val onTrig  =   tr .max(0)
-          val offTrig = (-tr).max(0)
+          val offTrig = (-tr).max(0)  // XXX  TODO: this must be wrong? All triggers use Dust which is always >= 0
           onTrig.react {
             if (verbose) println("ACTIVATING " + proc.name)
             ProcTxn.spawnAtomic { implicit tx =>
