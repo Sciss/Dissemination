@@ -5,14 +5,16 @@ import java.awt.{RenderingHints, Color, Graphics2D}
 import Swing._
 import de.sciss.file._
 import de.sciss.span.Span
-import java.awt.geom.{GeneralPath, Rectangle2D}
+import java.awt.geom.{Line2D, GeneralPath, Rectangle2D}
 import javax.swing.WindowConstants
 
 object Score extends SimpleSwingApplication {
   def data      = file("notes") / "data1.txt"
   def drawFades = true
 
-  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: Long = 0L)
+  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: Long = 0L, chans: Any = ())
+
+  case class Wind(ch1: Int, ch2: Int)
 
   type Data = Vector[Vector[Region]]
 
@@ -35,41 +37,62 @@ object Score extends SimpleSwingApplication {
 
   val pixelsPerFrame  = 28.0 / (44100 * 60) // 10.0 / 44100
   val pixelsPerProc   = 48
+  val pixelsPerChan   = pixelsPerProc.toDouble / Dissemination.NUM_PLATES
   val procSpacing     = 16
 
   val rect  = new Rectangle2D.Double()
   val gp    = new GeneralPath()
+  val line  = new Line2D.Double()
 
   def paintScore(g: Graphics2D) {
 
     score.zipWithIndex.foreach { case (events, idx) =>
       events.foreach {
-        case Region(Span(start, stop), fadeIn, fadeOut) =>
-          val x1 = idx * (pixelsPerProc + procSpacing)
-          val x2 = x1 + pixelsPerProc
+        case Region(Span(start, stop), fadeIn, fadeOut, chans) =>
           val y1 = start * pixelsPerFrame
           val y2 = stop  * pixelsPerFrame
-          val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != 0L)) {
-            gp.reset()
-            val yin1 = (start + fadeIn._1) * pixelsPerFrame
-            val yin2 = (start + fadeIn._2) * pixelsPerFrame
-            val yout = (stop  - fadeOut  ) * pixelsPerFrame
-            val xm   = (x1 + x2) * 0.5
-            gp.moveTo(xm, y1)
-            gp.lineTo(x1, yin1)
-            gp.lineTo(x1, yout)
-            gp.lineTo(xm, y2)
-            gp.lineTo(x2, yout)
-            gp.lineTo(x2, yin2)
-            gp.closePath()
-            gp
 
-          } else {
-            rect.setRect(x1, y1, x2 - x1, y2 - y1)
-            rect
+          def bang(x1: Double, x2: Double) {
+            val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != 0L)) {
+              gp.reset()
+              val yin1 = (start + fadeIn._1) * pixelsPerFrame
+              val yin2 = (start + fadeIn._2) * pixelsPerFrame
+              val yout = (stop  - fadeOut  ) * pixelsPerFrame
+              val xm   = (x1 + x2) * 0.5
+              gp.moveTo(xm, y1)
+              gp.lineTo(x1, yin1)
+              gp.lineTo(x1, yout)
+              gp.lineTo(xm, y2)
+              gp.lineTo(x2, yout)
+              gp.lineTo(x2, yin2)
+              gp.closePath()
+              gp
+
+            } else {
+              rect.setRect(x1, y1, x2 - x1, y2 - y1)
+              rect
+            }
+            g.setColor(Color.black)
+            g.fill(shp)
           }
-          g.setColor(Color.black)
-          g.fill(shp)
+
+          val x01 = idx * (pixelsPerProc + procSpacing)
+          val x02 = x01 + pixelsPerProc
+
+          chans match {
+            case Wind(ch1, ch2) =>
+              val x11 = x01 + ch1 * pixelsPerChan
+              val x12 = x11 + pixelsPerChan
+              val x21 = x01 + ch2 * pixelsPerChan
+              val x22 = x21 + pixelsPerChan
+              bang(x11, x12)
+              bang(x21, x22)
+              line.setLine(math.min(x11, x21), y1, math.max(x12, x22), y1)
+              g.draw(line)
+
+            case _ =>
+              bang(x01, x02)
+          }
 
         case _ =>
       }
@@ -108,10 +131,12 @@ object Score extends SimpleSwingApplication {
           }
 
         case "windspiel-play" =>
-          require(words(13) == "dur")
+          require(words(5) == "idx1" && words(7) == "idx2" && words(13) == "dur")
+          val ch1 = words(6).toInt
+          val ch2 = words(8).toInt
           val dur = words(14).toLong
           val idx = procID("windspiel")
-          res = res.updated(idx, res(idx) :+ Region(Span(frame, frame + dur)))
+          res = res.updated(idx, res(idx) :+ Region(Span(frame, frame + dur), chans = Wind(ch1, ch2)))
 
         case "stop-proc" =>
           val name  = words(3)
