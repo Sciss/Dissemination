@@ -13,9 +13,11 @@ object Score extends SimpleSwingApplication {
   def data      = file("notes") / "data1.txt"
   def drawFades = true
 
-  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: Long = 0L, chans: Any = ())
+  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: (Long, Long) = (0L, 0L), chans: Any = ())
 
   case class Wind(ch1: Int, ch2: Int)
+
+  case object Light // class Light(isLTR: Boolean)
 
   type Data = Vector[Vector[Region]]
 
@@ -30,13 +32,13 @@ object Score extends SimpleSwingApplication {
         paintScore(g)
       }
     }
-    size = (512, 1024)
+    size = (336, 1024)
     centerOnScreen()
     peer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
     open()
   }
 
-  val pixelsPerFrame  = 28.0 / (44100 * 60) // 10.0 / 44100
+  val pixelsPerFrame  = 27.5 / (44100 * 60) // 10.0 / 44100
   val pixelsPerProc   = 48
   val pixelsPerChan   = pixelsPerProc.toDouble / NUM_PLATES
   val procSpacing     = 16
@@ -81,18 +83,20 @@ object Score extends SimpleSwingApplication {
           val y1 = start * pixelsPerFrame
           val y2 = stop  * pixelsPerFrame
 
-          def bang(x1: Double, x2: Double) {
-            val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != 0L)) {
+          def bang(x1: Double, x2: Double, xw1: Double = 0.5, xw2: Double = 0.5) {
+            val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != (0L, 0L))) {
               gp.reset()
-              val yin1 = (start + fadeIn._1) * pixelsPerFrame
-              val yin2 = (start + fadeIn._2) * pixelsPerFrame
-              val yout = (stop  - fadeOut  ) * pixelsPerFrame
-              val xm   = (x1 + x2) * 0.5
-              gp.moveTo(xm, y1)
+              val yin1  = (start + fadeIn ._1) * pixelsPerFrame
+              val yin2  = (start + fadeIn ._2) * pixelsPerFrame
+              val yout1 = (stop  - fadeOut._1) * pixelsPerFrame
+              val yout2 = (stop  - fadeOut._2) * pixelsPerFrame
+              val xm1   = x1 + (x2 - x1) * xw1
+              val xm2   = x1 + (x2 - x1) * xw2
+              gp.moveTo(xm1, y1)
               gp.lineTo(x1, yin1)
-              gp.lineTo(x1, yout)
-              gp.lineTo(xm, y2)
-              gp.lineTo(x2, yout)
+              gp.lineTo(x1, yout1)
+              gp.lineTo(xm2, y2)
+              gp.lineTo(x2, yout2)
               gp.lineTo(x2, yin2)
               gp.closePath()
               gp
@@ -115,6 +119,9 @@ object Score extends SimpleSwingApplication {
               bang(x21, x22)
               line.setLine(math.min(x11, x21), y1, math.max(x12, x22), y1)
               g.draw(line)
+
+            case Light =>
+              bang(x01, x02, xw1 = if (fadeIn._1 == 0L) 0.0 else 1.0, xw2 = if (fadeOut._1 == 0L) 0.0 else 1.0)
 
             case _ =>
               bang(x01, x02)
@@ -162,9 +169,18 @@ object Score extends SimpleSwingApplication {
         case "fade-in" =>
           val dur   = words(3).toLong
           val name  = words(4)
-          if (name != "licht") {
-            val idx   = procID(name)
-            val init :+ (last: Region) = res(idx)
+          val idx   = procID(name)
+          val init :+ (last: Region) = res(idx)
+          if (name == "licht") {
+            require(words(5) == "width")
+            val width = words(6).toInt
+            val fdt     = 17.0 / (width + 18) // approx
+            val isLTR   = (init.size % 2) == 0
+            val fdfr    = (fdt * dur + 0.5).toLong
+            val fadeIn  = if (isLTR) (0L, fdfr) else (fdfr, 0L)
+            val fadeOut = fadeIn.swap
+            res = res.updated(idx, init :+ last.copy(fadeIn = fadeIn, fadeOut = fadeOut, chans = Light))
+          } else {
             res = res.updated(idx, init :+ last.copy(fadeIn = (dur, dur)))
           }
 
@@ -183,7 +199,7 @@ object Score extends SimpleSwingApplication {
           val name  = words(4)
           val idx   = procID(name)
           val init :+ (last: Region) = res(idx)
-          res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = dur))
+          res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = (dur, dur)))
 
         case "fade-out-channel" =>
           val ch    = words(3).toInt
@@ -192,7 +208,7 @@ object Score extends SimpleSwingApplication {
             val name  = words(5)
             val idx   = procID(name)
             val init :+ (last: Region) = res(idx)
-            res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = dur))
+            res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = (dur, dur)))
           }
 
         case other =>

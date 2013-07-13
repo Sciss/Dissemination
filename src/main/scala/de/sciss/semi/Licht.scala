@@ -1,7 +1,7 @@
 package de.sciss.semi
 
 import de.sciss.synth
-import synth.proc.{DSL, Proc, ProcTxn, Ref}
+import synth.proc.{DSL, Proc, ProcTxn}
 import synth.ugen._
 import synth.GE
 import DSL._
@@ -36,17 +36,22 @@ class Licht(proc: Proc) extends BasicProcess {
   protected def start()(implicit tx: ProcTxn) {
     if (verbose) println(s"${new java.util.Date()} : Licht AN")
 
-    val fdt   = rrand(MIN_FADE, MAX_FADE)
+    val fdt   = rrand(MIN_FADE , MAX_FADE )
     val width = rrand(MIN_WIDTH, MAX_WIDTH)
+    // see notes in SemiNuages.scala
+
+    val pcon    = proc.control("pos")
+    val srcPos  = pcon.v
+    val tgtPos  = if (srcPos == 0.0) width + 18 else 0
+
     glide(fdt) {
-      val pcon  = proc.control("pos")
-      pcon                 .v_=(if (pcon.v == 0.0) width + 18 else 0)
+      pcon                 .v_=(tgtPos) // i.e. glide to opposite side
       proc.control("width").v_=(width)
     }
     ProcHelper.whenGlideDone(proc, "pos") { implicit tx =>
       if (verbose) println(s"${new java.util.Date()} : Licht AUS")
       active_=(onOff = false)
     }
-    Analysis.log(s"fade-in ${(fdt * 44100L).toLong} $name width $width")
+    Analysis.log(s"fade-in ${(fdt * 44100L).toLong} $name width $width from $srcPos to $tgtPos")
   }
 }

@@ -31,52 +31,49 @@ package de.sciss.semi
 import util.Random
 
 object Util {
-   private val rnd = new Random()
+  private val rnd = new Random()
 
-   def exprand( lo: Double, hi: Double ) : Double = {
-      lo * math.exp( math.log( hi / lo ) * rnd.nextDouble )
-   }
+  def exprand(lo: Double, hi: Double): Double = lo * math.exp(math.log(hi / lo) * rnd.nextDouble)
 
-   def rrand( lo: Double, hi: Double ) : Double = {
-      rnd.nextDouble() * (hi - lo) + lo
-   }
+  def rrand  (lo: Double, hi: Double): Double = rnd.nextDouble() * (hi - lo) + lo
 
-   // lo to hi
-   def rrand( lo: Int, hi: Int ) : Int = {
-      if( lo <= hi ) {
-         rnd.nextInt( hi - lo + 1 ) + lo
-      } else {
-         rnd.nextInt( lo - hi + 1 ) + hi
-      }
-   }
+  // lo to hi
+  def rrand(lo: Int, hi: Int): Int =
+    if (lo <= hi) {
+      rnd.nextInt(hi - lo + 1) + lo
+    } else {
+      rnd.nextInt(lo - hi + 1) + hi
+    }
 
-   // 0 to i - 1 (0 until i)
-   def rand( i: Int ) : Int= rnd.nextInt( i )
+  // 0 to i - 1 (0 until i)
+  def rand(i: Int   ): Int     = rnd.nextInt(i)
 
-   def rand( d: Double ) : Double = rnd.nextDouble() * d
+  def rand(d: Double): Double  = rnd.nextDouble() * d
 
-   def coin( w: Double ) : Boolean = rnd.nextDouble() < w
+  def coin(w: Double): Boolean = rnd.nextDouble() < w
 
-   def choose[ T ]( seq: Traversable[ T ]) : T = {
-      val idxSeq = seq.toIndexedSeq
-      idxSeq( rnd.nextInt( idxSeq.size ))
-   }
+  def choose[T](seq: Traversable[T]): T = {
+    val idxSeq = seq.toIndexedSeq
+    idxSeq(rnd.nextInt(idxSeq.size))
+  }
 
-   def wchoose[ T ]( seq: Traversable[ T ])( fun: T => Double ) : T = {
-      val i    = rnd.nextDouble()
-      var sum  = 0.0
-      seq find { e => sum += fun( e ); sum >= i } getOrElse seq.last
-   }
+  def wchoose[T](seq: Traversable[T])(fun: T => Double): T = {
+    val i = rnd.nextDouble()
+    var sum = 0.0
+    seq find {
+      e => sum += fun(e); sum >= i
+    } getOrElse seq.last
+  }
 
-   def nextPowerOfTwo( x: Int ) : Int = {
-      var y = 1
-      while( y < x ) y <<= 1
-      y
-   }
+  def nextPowerOfTwo(x: Int): Int = {
+    var y = 1
+    while (y < x) y <<= 1
+    y
+  }
 
-   def nextPowerOfTwo( x: Long ) : Long = {
-      var y = 1
-      while( y < x ) y <<= 1
-      y
-   }
+  def nextPowerOfTwo(x: Long): Long = {
+    var y = 1
+    while (y < x) y <<= 1
+    y
+  }
 }
