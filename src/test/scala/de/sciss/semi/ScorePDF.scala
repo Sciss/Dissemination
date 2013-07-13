@@ -3,7 +3,7 @@ package semi
 
 import scala.swing.{Frame, SimpleSwingApplication}
 
-object MakePDF extends SimpleSwingApplication {
+object ScorePDF extends SimpleSwingApplication {
   lazy val top: Frame = {
     sys.props("apple.laf.useScreenMenuBar") = "true"
     val res = Score.top

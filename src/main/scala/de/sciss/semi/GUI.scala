@@ -36,12 +36,12 @@ import javax.swing.{JButton, JCheckBox, JLabel, GroupLayout, JPanel, AbstractBut
 import java.awt.{Font, BorderLayout, FlowLayout}
 
 class GUI {
-   // hp
-   // solo
+  // hp
+  // solo
 
-   val frame = new JFrame( "Dissemination" )
-   
-   {
+  val frame = new JFrame("Dissemination")
+
+  {
       // --- process control ----
       val procPane      = new JPanel()
       val procLay       = new GroupLayout( procPane )

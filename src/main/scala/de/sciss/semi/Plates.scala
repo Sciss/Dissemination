@@ -41,11 +41,13 @@ object Plates {
   val MIN_OFF_DUR =  60.0
   val MAX_OFF_DUR = 120.0
 
-  def create(implicit tx: ProcTxn): Plates = {
+  def create()(implicit tx: ProcTxn): Plates = {
     val res = new Plates
     res.init()
     res
   }
+
+  val verbose = false
 }
 
 class Plates private() extends SemiProcess {
@@ -57,12 +59,18 @@ class Plates private() extends SemiProcess {
 
   def trigger: GE = {
     import synth._
-    TDuty.kr(Dseq(Dwhite(MIN_ON_DUR, MAX_ON_DUR) :: Dwhite(MIN_OFF_DUR, MAX_OFF_DUR) :: Nil, inf), Dseq(1 :: -1 :: Nil, inf))
+    // IMPORTANT: prior to ScalaColliderUGens-Core 1.6.2, there is a spec error with TDuty,
+    //            where the argument positions of `doneAction` and `level` are swapped.
+    //            since Dissemination runs with an old ScalaCollider version (1.3.0),
+    //            we have to swap the arguments as well.
+    //                                                                                             doneAction         level
+    TDuty.kr(Dseq(Dwhite(MIN_ON_DUR, MAX_ON_DUR) :: Dwhite(MIN_OFF_DUR, MAX_OFF_DUR) :: Nil, inf), level = doNothing, doneAction = Dseq(1 :: -1 :: Nil, inf))
   }
 
   private var plates: IIdxSeq[Plate] = _
 
   private def init()(implicit tx: ProcTxn) {
+    if (verbose) println("------- PLATES INIT")
     plates = PLATE_TRANSITS.zipWithIndex map { case (transit, idx) =>
       Plate(idx, transit)
     }
@@ -77,6 +85,7 @@ class Plates private() extends SemiProcess {
 
   def active(implicit tx: ProcTxn): Boolean = plates(0).active
   def active_=(onOff: Boolean)(implicit tx: ProcTxn) {
+    if (verbose) println(s"------- PLATES ACTIVE $onOff")
     plates.foreach(_.active_=(onOff))
   }
 

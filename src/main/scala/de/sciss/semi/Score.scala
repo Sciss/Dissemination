@@ -10,7 +10,7 @@ import javax.swing.WindowConstants
 import Dissemination.NUM_PLATES
 
 object Score extends SimpleSwingApplication {
-  def data      = file("notes") / "data1.txt"
+  def data      = file("notes") / "data2.txt"
   def drawFades = true
 
   case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: (Long, Long) = (0L, 0L), chans: Any = ())
@@ -38,7 +38,7 @@ object Score extends SimpleSwingApplication {
     open()
   }
 
-  val pixelsPerFrame  = 27.5 / (44100 * 60) // 10.0 / 44100
+  val pixelsPerFrame  = 25.0 / (44100 * 60) // 10.0 / 44100
   val pixelsPerProc   = 48
   val pixelsPerChan   = pixelsPerProc.toDouble / NUM_PLATES
   val procSpacing     = 16
@@ -185,13 +185,14 @@ object Score extends SimpleSwingApplication {
           }
 
         case "fade-in-channel" =>
-          val ch    = words(3).toInt
-          val dur   = words(4).toLong
-          val name  = words(5)
+          val chOff = words(3).toInt
+          // val ch    = words(4).toInt
+          val dur   = words(5).toLong
+          val name  = words(6)
           val idx   = procID(name)
           val init :+ (last: Region) = res(idx)
           val oldFade = last.fadeIn
-          val newFade = if (ch == 0) oldFade.copy(_1 = dur) else oldFade.copy(_2 = dur)
+          val newFade = if (chOff == 0) oldFade.copy(_1 = dur) else oldFade.copy(_2 = dur)
           res = res.updated(idx, init :+ last.copy(fadeIn = newFade))
 
         case "fade-out" =>
@@ -212,7 +213,7 @@ object Score extends SimpleSwingApplication {
           }
 
         case other =>
-          println(s"Warning: skipping command '$other'")
+          // println(s"Warning: skipping command '$other'")
       }
     }
 

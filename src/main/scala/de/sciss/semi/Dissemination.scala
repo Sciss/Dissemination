@@ -188,6 +188,8 @@ object Dissemination {
     //      booting.start
   }
 
+  var nuagesGUI = (_: NuagesFrame) => ()
+
   private def initNuages() {
     masterBus = if (INTERNAL_AUDIO) {
       new AudioBus(s, 0, 2)
@@ -205,6 +207,8 @@ object Dissemination {
       f.setLocation((SCREEN_BOUNDS.width - f.getWidth >> 1) + 100, 10)
       f.setVisible(true)
       support.nuages = f
+
+      nuagesGUI(f)
     }
 
     Actor.actor {

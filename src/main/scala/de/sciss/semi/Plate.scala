@@ -241,7 +241,7 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
 
     if (!active) return
 
-    Analysis.log(s"$name-newAnalysis loud $loud centr $centr flat $flat")
+    // Analysis.log(f"$name-newAnalysis loud $loud%1.3f centr $centr%1.3f flat $flat%1.3f")
 
     val exhaust = exhaustedRef()
 
@@ -268,7 +268,7 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
     energyCons.set(eCons)
     energyProd.set(eProd)
 
-    Analysis.log(s"$name-balance prod $eProd cons $eCons")
+    // Analysis.log(f"$name-balance prod $eProd%1.3f cons $eCons%1.3f")
 
     if (exhaust > 0) {
       exhaustedRef.set(exhaust - 1)

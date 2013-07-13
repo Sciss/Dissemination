@@ -659,7 +659,7 @@ object SemiNuages extends {
       }
     }.make
 
-    plates = Plates.create
+    plates = Plates.create()
 //      plates = PLATE_TRANSITS.zipWithIndex map { tup =>
 //         val (transit, idx) = tup
 //         Plate( idx, transit )
