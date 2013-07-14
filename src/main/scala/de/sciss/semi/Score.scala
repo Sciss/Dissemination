@@ -10,8 +10,9 @@ import javax.swing.WindowConstants
 import Dissemination.NUM_PLATES
 
 object Score extends SimpleSwingApplication {
-  def data      = file("notes") / "data2.txt"
-  def drawFades = true
+  def data            = file("notes") / "data2.txt"
+  def drawFades       = true
+  def drawRecordConn  = false // too messy
 
   case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: (Long, Long) = (0L, 0L), detail: Any = ())
 
@@ -36,13 +37,14 @@ object Score extends SimpleSwingApplication {
         paintScore(g)
       }
     }
-    size = (336, 1024)
+    size = (400, 1024)
     centerOnScreen()
     peer.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
     open()
   }
 
-  val pixelsPerFrame  = 25.0 / (44100 * 60) // 10.0 / 44100
+  // i.e. 26 pixels per minute, with 1024 pixels height, yielding roughly 40 minutes (39.38)
+  val pixelsPerFrame  = 26.0 / (44100 * 60) // 10.0 / 44100
   val pixelsPerProc   = 48
   val pixelsPerChan   = pixelsPerProc.toDouble / NUM_PLATES
   val procSpacing     = 16
@@ -66,9 +68,9 @@ object Score extends SimpleSwingApplication {
   val procNum   = procName.keys.max + 1
 
   val widths  = Map(
-    "plates"   -> NUM_PLATES, "windspiel" -> NUM_PLATES, "licht"  -> NUM_PLATES,
-    "sprenger" -> 2         , "regen"     -> 2         , "phylet" -> 2,
-    "apfel"    -> 2         , "zeven"     -> 2
+    "plates"   -> NUM_PLATES * 2, "windspiel" -> NUM_PLATES, "licht"  -> NUM_PLATES,
+    "sprenger" -> 2             , "regen"     -> 2         , "phylet" -> 2,
+    "apfel"    -> 2             , "zeven"     -> 2
   )
 
   val rect  = new Rectangle2D.Double()
@@ -128,9 +130,19 @@ object Score extends SimpleSwingApplication {
               bang(x01, x02, xw1 = if (fadeIn._1 == 0L) 0.0 else 1.0, xw2 = if (fadeOut._1 == 0L) 0.0 else 1.0)
 
             case Inject(ch1, src, _, recOpt) =>
-              val x11 = x01 + ch1 * pixelsPerChan
-              val x12 = x11 + pixelsPerChan
+              val ch2 = ch1 * 2 + (if (src) 0 else 1)
+              val x11 = x01 + ch2 * pixelsPerChan + 1
+              val x12 = x11 + pixelsPerChan - 2
               bang(x11, x12, fill = !src)
+
+              if (drawRecordConn) recOpt.foreach { rec =>
+                val ch3 = rec.chan * 2
+                val x21 = x01 + ch3 * pixelsPerChan + 1
+                val x22 = x21 + pixelsPerChan - 2
+                val y3  = rec.span.stop * pixelsPerFrame
+                line.setLine((x11 + x12) * 0.5, y1, (x21 + x22) * 0.5, y3)
+                g.draw(line)
+              }
 
             case _ =>
               bang(x01, x02)
