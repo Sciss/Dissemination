@@ -13,11 +13,15 @@ object Score extends SimpleSwingApplication {
   def data      = file("notes") / "data2.txt"
   def drawFades = true
 
-  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: (Long, Long) = (0L, 0L), chans: Any = ())
+  case class Region(span: Span.HasStart, fadeIn: (Long, Long) = (0L, 0L), fadeOut: (Long, Long) = (0L, 0L), detail: Any = ())
 
   case class Wind(ch1: Int, ch2: Int)
 
   case object Light // class Light(isLTR: Boolean)
+
+  case class Record(chan: Int, span: Span)
+
+  case class Inject(chan: Int, source: Boolean, name: String, rec: Option[Record])
 
   type Data = Vector[Vector[Region]]
 
@@ -72,7 +76,7 @@ object Score extends SimpleSwingApplication {
   val line  = new Line2D.Double()
 
   def paintScore(g: Graphics2D) {
-    var xoff = 0.0
+    var xoff = procSpacing * 0.5
     score.zipWithIndex.foreach { case (events, idx) =>
       val x01   = xoff
       val name  = procName(idx)
@@ -83,7 +87,7 @@ object Score extends SimpleSwingApplication {
           val y1 = start * pixelsPerFrame
           val y2 = stop  * pixelsPerFrame
 
-          def bang(x1: Double, x2: Double, xw1: Double = 0.5, xw2: Double = 0.5) {
+          def bang(x1: Double, x2: Double, xw1: Double = 0.5, xw2: Double = 0.5, fill: Boolean = true) {
             val shp = if (drawFades && (fadeIn != (0L, 0L) || fadeOut != (0L, 0L))) {
               gp.reset()
               val yin1  = (start + fadeIn ._1) * pixelsPerFrame
@@ -106,7 +110,7 @@ object Score extends SimpleSwingApplication {
               rect
             }
             g.setColor(Color.black)
-            g.fill(shp)
+            if (fill) g.fill(shp) else g.draw(shp)
           }
 
           chans match {
@@ -123,6 +127,11 @@ object Score extends SimpleSwingApplication {
             case Light =>
               bang(x01, x02, xw1 = if (fadeIn._1 == 0L) 0.0 else 1.0, xw2 = if (fadeOut._1 == 0L) 0.0 else 1.0)
 
+            case Inject(ch1, src, _, recOpt) =>
+              val x11 = x01 + ch1 * pixelsPerChan
+              val x12 = x11 + pixelsPerChan
+              bang(x11, x12, fill = !src)
+
             case _ =>
               bang(x01, x02)
           }
@@ -135,9 +144,11 @@ object Score extends SimpleSwingApplication {
   }
 
   def readScore(f: File): Data = {
-    val lines = io.Source.fromFile(f, "UTF-8").getLines().filter(_.startsWith("<ANA>"))
+    val lines       = io.Source.fromFile(f, "UTF-8").getLines().filter(_.startsWith("<ANA>"))
 
-    var res   = Vector.fill(procNum)(Vector.empty[Region])
+    var res         = Vector.fill(procNum   )(Vector.empty[Region])
+    var plateRec    = Vector.fill(NUM_PLATES)(Option.empty[Record])
+    var injectPool  = Vector.fill(NUM_PLATES)(Map   .empty[String, Record])
 
     lines.foreach { ln =>
       val words = ln.trim.split(' ')
@@ -156,7 +167,7 @@ object Score extends SimpleSwingApplication {
           val ch2 = words(8).toInt
           val dur = words(14).toLong
           val idx = procID("windspiel")
-          res = res.updated(idx, res(idx) :+ Region(Span(frame, frame + dur), chans = Wind(ch1, ch2)))
+          res = res.updated(idx, res(idx) :+ Region(Span(frame, frame + dur), detail = Wind(ch1, ch2)))
 
         case "stop-proc" =>
           val name  = words(3)
@@ -179,7 +190,7 @@ object Score extends SimpleSwingApplication {
             val fdfr    = (fdt * dur + 0.5).toLong
             val fadeIn  = if (isLTR) (0L, fdfr) else (fdfr, 0L)
             val fadeOut = fadeIn.swap
-            res = res.updated(idx, init :+ last.copy(fadeIn = fadeIn, fadeOut = fadeOut, chans = Light))
+            res = res.updated(idx, init :+ last.copy(fadeIn = fadeIn, fadeOut = fadeOut, detail = Light))
           } else {
             res = res.updated(idx, init :+ last.copy(fadeIn = (dur, dur)))
           }
@@ -210,6 +221,75 @@ object Score extends SimpleSwingApplication {
             val idx   = procID(name)
             val init :+ (last: Region) = res(idx)
             res = res.updated(idx, init :+ last.copy(span = Span(last.span.start, frame + dur), fadeOut = (dur, dur)))
+          }
+
+        case s if s.startsWith("plate<") =>
+          val j     = s.indexOf(">-", 6)
+          val plate = s.substring(6, j).toInt
+          val cmd   = s.substring(j + 2)
+
+          def stopPlate(key: String, fdt: Long) {
+            val idx = procID("plates")
+            val seq = res(idx)
+            val j   = seq.lastIndexWhere(_.detail match {
+              case Inject(_, false, `key`, _) => true
+              case _ => false
+            })
+            val Region(Span.HasStart(start), (fadeIn0, _), _, detail) = seq(j)
+            val fadeIn = math.min(fadeIn0, frame - start)
+            res = res.updated(idx, seq.updated(j, Region(Span(start, frame + fdt),
+              fadeIn = (fadeIn, fadeIn), fadeOut = (fdt, fdt), detail = detail)))
+          }
+
+          cmd match {
+            case "reset" =>
+            case "balance" =>
+            case "create" =>
+              val key       = words(3)
+              require(words(4) == "death-dur" && words(6) == "fade")
+              val dur       = words(5).toLong
+              val fdt       = words(7).toLong
+              val isInject  = key.startsWith("inject")
+              val rec       = if (isInject) Some(injectPool(plate).getOrElse(key, sys.error(s"At $frame plate $plate key $key"))) else None
+              val in        = Inject(plate, source = false, name = key, rec = rec)
+              val idx       = procID("plates")
+              res = res.updated(idx, res(idx) :+ Region(Span.from(frame), fadeIn = (fdt, fdt), detail = in))
+
+            case "stop" =>
+              val key   = words(3)
+              require(words(4) == "fade" && words(6) == "shade")
+              val fdt   = words(5).toLong
+              val shade = words(7).toBoolean
+              if (!shade) {
+                stopPlate(key, fdt)
+              }
+
+            case "release" =>
+              val key   = words(3)
+              require(words(4) == "fade")
+              val fdt   = words(5).toLong
+              stopPlate(key, fdt)
+
+            case "produce" =>
+              require(words(3) == "dur")
+              val dur = words(4).toLong
+              plateRec = plateRec.updated(plate, Some(Record(plate, Span(frame, frame + dur))))
+
+            case "rec-done" =>
+              require(words(3) == "neighbour" && words(5) == "transform")
+              val neigh = words(4).toInt
+              val trans = words(6).toInt
+
+            case "inject" =>
+              require(words(3) == "neighbour" && words(5) == "transform" && words(7) == "path")
+              val neigh = words(4).toInt
+              val trans = words(6).toInt
+              val key   = s"${words(8)}_$neigh"
+              val rec   = plateRec(plate).get
+              val old   = injectPool(neigh)
+              injectPool = injectPool.updated(neigh, old + (key -> rec))
+              val idx       = procID("plates")
+              res = res.updated(idx, res(idx) :+ Region(rec.span, detail = Inject(plate, source = true, name = key, rec = None)))
           }
 
         case other =>

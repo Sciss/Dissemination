@@ -34,8 +34,9 @@ import DSL._
 import ugen._
 import Util._
 import Dissemination._
-import java.io.{FilenameFilter, File}
+import java.io.FilenameFilter
 import scala.annotation.switch
+import de.sciss.file._
 
 object Plate {
   val verbose = false
@@ -135,10 +136,9 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
   private val flatnessRef = Ref(0.0)
 
   private val injectPath = {
-    val res = INJECT_PATH + fs + id
-    val f = new File(res)
+    val f = file(INJECT_PATH) / id.toString
     if (!f.exists) f.mkdir()
-    res
+    f.path
   }
 
   private val (injectIndex, injected) = {
@@ -268,7 +268,7 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
     energyCons.set(eCons)
     energyProd.set(eProd)
 
-    // Analysis.log(f"$name-balance prod $eProd%1.3f cons $eCons%1.3f")
+    Analysis.log(f"$name-balance loud $loud%1.3f centr $centr%1.3f flat $flat%1.3f prod $eProd%1.3f cons $eCons%1.3f")
 
     if (exhaust > 0) {
       exhaustedRef.set(exhaust - 1)
@@ -459,7 +459,7 @@ class Plate(val id: Int, val collector1: Proc, val collector2: Proc, val analyze
         ProcTxn.spawnAtomic { implicit tx => // XXX spawn?
           if (success) {
             if (verbose) println(this.toString + " RENDER DONE")
-            Analysis.log(s"$name-fscape-done neighbour ${neighbour.id} transform $docID")
+            Analysis.log(s"$name-inject neighbour ${neighbour.id} transform $docID path ${file(outPath).base}")
             neighbour.inject(outPath)
             tmpAF   .delete()
             tmpBF   .delete()
